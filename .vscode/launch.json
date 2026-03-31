@@ -9,8 +9,8 @@
             "preLaunchTask": "build",
             "serverReadyAction": {
                 "action": "openExternally",
-                "pattern": "\\bNow listening on:\\s+https?://\\S+",
-                "uriFormat": "http://localhost:5112/health"
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)",
+                "uriFormat": "{0}/health"
             }
         }
     ]
