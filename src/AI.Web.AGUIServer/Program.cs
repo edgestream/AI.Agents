@@ -11,10 +11,10 @@ builder.Services.AddHttpClient().AddLogging();
 builder.Services.AddOpenApi();
 builder.Services.AddAGUI();
 
-string endpoint = builder.Configuration["AzureOpenAI:Endpoint"]
-    ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is not set.");
-string deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"]
-    ?? throw new InvalidOperationException("AzureOpenAI:DeploymentName is not set.");
+var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
+var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
+if (string.IsNullOrWhiteSpace(endpoint)) throw new InvalidOperationException("Azure OpenAI endpoint is not configured.");
+if (string.IsNullOrWhiteSpace(deploymentName)) throw new InvalidOperationException("Azure OpenAI deployment name is not configured.");
 
 builder.Services.AddSingleton<IChatClient>(_ =>
 {
