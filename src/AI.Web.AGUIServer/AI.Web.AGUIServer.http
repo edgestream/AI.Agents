@@ -1,6 +1,5 @@
-@AI.Web.AGUIServer_HostAddress = http://localhost:5112
+@AGUIServer_HostAddress = http://localhost:5112
 
-GET {{AI.Web.AGUIServer_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
+### Health check — expect 200 OK with body "OK"
+GET {{AGUIServer_HostAddress}}/health
+Accept: text/plain
