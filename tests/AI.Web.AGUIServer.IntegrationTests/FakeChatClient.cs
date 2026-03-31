@@ -25,7 +25,6 @@ internal sealed class FakeChatClient : IChatClient
     {
         yield return new ChatResponseUpdate(ChatRole.Assistant, "Hello ");
         yield return new ChatResponseUpdate(ChatRole.Assistant, "from FakeChatClient");
-        await Task.CompletedTask;
     }
 
     public object? GetService(Type serviceType, object? serviceKey = null)
