@@ -9,16 +9,16 @@
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "dev"],
             "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "- Local:.+(https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            },
             "resolveSourceMapLocations": [
                 "${workspaceFolder}/**",
                 "!**/node_modules/**",
                 "!**/.next/**"
-            ],
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "Now listening on:\\s+(https?://\\S+)",
-                "uriFormat": "%s/health"
-            }
+            ]
         },
         {
             "name": "Launch AGUIServer",
