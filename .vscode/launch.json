@@ -2,16 +2,37 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Launch AGUIChat",
+            "type": "node",
+            "request": "launch",
+            "cwd": "${workspaceFolder}/src/AI.Web.AGUIChat",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
+            "console": "integratedTerminal",
+            "serverReadyAction": {
+                "pattern": "- Local:.+(https?://\\S+)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            },
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/**",
+                "!**/node_modules/**",
+                "!**/.next/**"
+            ]
+        },
+        {
             "name": "Launch AGUIServer",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj",
-            "preLaunchTask": "build",
-            "serverReadyAction": {
-                "action": "openExternally",
-                "pattern": "Now listening on:\\s+(https?://\\S+)",
-                "uriFormat": "%s/health"
-            }
+            "preLaunchTask": "build"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Fullstack (Server + Chat)",
+            "configurations": ["Launch AGUIServer", "Launch AGUIChat"],
+            "stopAll": true
         }
     ]
 }
