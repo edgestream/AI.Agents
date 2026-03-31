@@ -16,8 +16,8 @@
             ],
             "serverReadyAction": {
                 "action": "openExternally",
-                "pattern": "- Local:\\s+(https?://\\S+)",
-                "uriFormat": "%s"
+                "pattern": "Now listening on:\\s+(https?://\\S+)",
+                "uriFormat": "%s/health"
             }
         },
         {
