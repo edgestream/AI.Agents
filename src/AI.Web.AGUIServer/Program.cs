@@ -41,3 +41,5 @@ app.MapGet("/health", () => "OK");
 app.MapAGUI("/", app.Services.GetRequiredService<AIAgent>());
 
 await app.RunAsync();
+
+public partial class Program { }
