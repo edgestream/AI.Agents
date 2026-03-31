@@ -1,0 +1,5 @@
+@AGUIServer_HostAddress = http://localhost:5112
+
+### Health check — expect 200 OK with body "OK"
+GET {{AGUIServer_HostAddress}}/health
+Accept: text/plain
