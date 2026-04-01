@@ -4,5 +4,6 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/AI.Web.AGUIServer.IntegrationTests/AI.Web.AGUIServer.IntegrationTests.csproj" />
+    <Project Path="tests/AI.Web.E2ETests/AI.Web.E2ETests.csproj" />
   </Folder>
 </Solution>

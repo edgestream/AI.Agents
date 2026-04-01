@@ -69,3 +69,39 @@ BACKEND_URL=http://localhost:8000/
 ```bash
 dotnet test
 ```
+
+### Running E2E tests
+
+E2E tests use [Playwright](https://playwright.dev/dotnet/) and require a running frontend (and optionally a backend). They live in `tests/AI.Web.E2ETests`.
+
+#### 1. Build and install browsers (once)
+
+```bash
+dotnet build tests/AI.Web.E2ETests
+pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+```
+
+#### 2. Run against the docker-compose E2E stack (stub backend – no Azure credentials needed)
+
+```bash
+docker compose -f docker-compose.e2e.yml up --build -d
+E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
+docker compose -f docker-compose.e2e.yml down
+```
+
+#### 3. Run against the full stack (real Azure backend)
+
+Start the main docker-compose stack first:
+
+```bash
+docker compose up -d
+E2E_BASE_URL=http://localhost:3000 E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
+docker compose down
+```
+
+#### Configuration
+
+| Environment variable | Default                  | Description                                                                 |
+|----------------------|--------------------------|-----------------------------------------------------------------------------|
+| `E2E_BASE_URL`       | `http://localhost:3000`  | Base URL of the running frontend.                                           |
+| `E2E_LIVE_TEST`      | *(unset)*                | Set to `true` to run the send-message test (requires a live backend).       |
