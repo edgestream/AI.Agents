@@ -17,7 +17,10 @@ namespace AI.Web.E2ETests;
 ///
 /// Configuration (environment variables):
 ///   E2E_BASE_URL  – Base URL of the running frontend (default: http://localhost:3000).
-///   E2E_LIVE_TEST – Set to "true" to run the send-message test.
+///
+/// Test categories:
+///   Live – Tests that require a running frontend. Run with:
+///          dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Live"
 /// </summary>
 [TestClass]
 public sealed class ChatPageTests : PageTest
@@ -57,18 +60,12 @@ public sealed class ChatPageTests : PageTest
     /// Sends a message and verifies that the assistant's response is rendered.
     /// The backend stub (<see cref="FakeChatClient"/>) streams "Hello from FakeChatClient"
     /// through the real AG-UI SSE serialization path.
-    /// Gated by the <c>E2E_LIVE_TEST=true</c> environment variable.
+    /// Requires a running frontend — see <c>docker-compose.e2e.yml</c> or <c>npm run dev</c>.
     /// </summary>
     [TestMethod]
+    [TestCategory("Live")]
     public async Task ChatPage_CanSendMessage_ReceivesResponse()
     {
-        if (!bool.TryParse(Environment.GetEnvironmentVariable("E2E_LIVE_TEST"), out var live) || !live)
-        {
-            Assert.Inconclusive(
-                "Set E2E_LIVE_TEST=true to run this test. " +
-                "A running frontend is required (see docker-compose.e2e.yml or npm run dev).");
-        }
-
         await Page.GotoAsync("/");
 
         // Type and submit the user message.

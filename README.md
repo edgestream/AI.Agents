@@ -67,21 +67,41 @@ BACKEND_URL=http://localhost:8000/
 ### Running tests
 
 ```bash
-dotnet test
+# Run all non-live tests (unit + integration, excluding tests that require external services):
+dotnet test --filter "TestCategory!=Live"
+
+# Run only the live integration tests (requires valid Azure OpenAI credentials):
+dotnet test tests/AI.Web.AGUIServer.IntegrationTests --filter "TestCategory=Live"
+```
+
+Configure Azure OpenAI credentials for live tests using the [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets):
+
+```bash
+cd src/AI.Web.AGUIServer
+dotnet user-secrets set "AzureOpenAI:Endpoint" "https://<your-resource>.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
 ```
 
 ### Running E2E tests
 
-End-to-end tests use [Playwright](https://playwright.dev/dotnet/). The backend is started automatically by the test assembly setup via `WebApplicationFactory<Program>` with a `FakeChatClient` — no Azure credentials and no extra backend container are needed. Only the Next.js frontend must be running externally.
+End-to-end tests use [Playwright](https://playwright.dev/dotnet/). The backend is started automatically by the test assembly setup via `WebApplicationFactory<Program>` with a `FakeChatClient` — no Azure credentials and no extra backend container are needed. Only the Next.js frontend must be running externally for tests tagged `Live`.
 
 Build and install browsers once:
 
 ```bash
 dotnet build tests/AI.Web.E2ETests
-tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
 ```
 
 Start the frontend:
+
+**Option A – Docker:**
+
+```bash
+docker compose -f docker-compose.e2e.yml up --build -d
+```
+
+**Option B – locally with npm:**
 
 ```bash
 cd src/AI.Web.AGUIChat
@@ -91,6 +111,24 @@ BACKEND_URL=http://localhost:8080/ npm run dev
 Run the tests:
 
 ```bash
+# Run non-live E2E tests only (no frontend required):
+dotnet test tests/AI.Web.E2ETests --filter "TestCategory!=Live"
+
+# Run all E2E tests including send-message (requires running frontend):
+dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Live"
+
+# Run the full E2E suite:
 dotnet test tests/AI.Web.E2ETests
-E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
 ```
+
+Tear down the frontend (if using Docker):
+
+```bash
+docker compose -f docker-compose.e2e.yml down
+```
+
+#### Configuration
+
+| Environment variable | Default                  | Description                             |
+|----------------------|--------------------------|-----------------------------------------|
+| `E2E_BASE_URL`       | `http://localhost:3000`  | Base URL of the running frontend.       |
