@@ -16,10 +16,10 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 ///   dotnet user-secrets set "AzureOpenAI:DeploymentName" "&lt;deployment&gt;"
 /// </summary>
 [TestClass]
+[TestCategory("Live")]
 public sealed class LiveTests
 {
     [TestMethod]
-    [TestCategory("Live")]
     public async Task Live_HealthEndpoint_ReturnsOk()
     {
         using var factory = new WebApplicationFactory<Program>();
@@ -31,7 +31,6 @@ public sealed class LiveTests
     }
 
     [TestMethod]
-    [TestCategory("Live")]
     public async Task Live_AGUIEndpoint_ReturnsSSEStream()
     {
         using var factory = new WebApplicationFactory<Program>();

@@ -23,6 +23,7 @@ namespace AI.Web.E2ETests;
 ///                 dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Integration"
 /// </summary>
 [TestClass]
+[TestCategory("Integration")]
 public sealed class ChatPageTests : PageTest
 {
     private static string BaseUrl =>
@@ -63,7 +64,6 @@ public sealed class ChatPageTests : PageTest
     /// Requires a running frontend — see <c>docker-compose.e2e.yml</c> or <c>npm run dev</c>.
     /// </summary>
     [TestMethod]
-    [TestCategory("Integration")]
     public async Task ChatPage_CanSendMessage_ReceivesResponse()
     {
         await Page.GotoAsync("/");
