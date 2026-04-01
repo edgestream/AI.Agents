@@ -1,0 +1,6 @@
+**/obj/
+**/bin/
+**/.git/
+**/.gitignore
+src/AI.Web.AGUIChat/node_modules/
+src/AI.Web.AGUIChat/.next/
