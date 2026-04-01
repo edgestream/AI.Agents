@@ -2,4 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/AI.Web.AGUIServer.IntegrationTests/AI.Web.AGUIServer.IntegrationTests.csproj" />
+  </Folder>
 </Solution>
