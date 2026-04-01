@@ -1,76 +1,56 @@
 # AI.Web
+> Conversational [AG-UI](https://docs.ag-ui.com/introduction) web interface and backend services
 
-AI.Web is a conversational AI interface built with a .NET backend ([AG-UI](https://docs.ag-ui.com) server) and a Next.js frontend ([CopilotKit](https://www.copilotkit.ai/) chat UI).
+![image](https://mintcdn.com/tawkitai/-0mlsyK2_Ht4cjV3/images/ag-ui-overview-with-partners-dark.png?w=1650&fit=max&auto=format&n=-0mlsyK2_Ht4cjV3&q=85&s=e581c90e6ee93decb9151cb92355c435)
 
-## Prerequisites
+## Quickstart
 
-- [.NET 10 SDK](https://dotnet.microsoft.com/) (see `global.json`)
-- [Node.js 20](https://nodejs.org/)
-- [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) (for containerised development)
+The backend requires Azure OpenAI credentials. Copy the provided template and fill in your values:
 
-## Project structure
-
-| Path | Description |
-|------|-------------|
-| `src/AI.Web.AGUIServer` | .NET backend – hosts the AG-UI agent endpoint |
-| `src/AI.Web.AGUIChat` | Next.js frontend – CopilotKit chat UI |
-| `tests/` | Integration and unit tests |
-| `docker-compose.yml` | Compose file for local development |
-
-## Running with Docker Compose
-
-Docker Compose orchestrates both the backend and frontend containers with
-health checks and internal networking so the frontend can reach the backend
-automatically.
-
-### 1. Set environment variables
-
-The backend requires Azure OpenAI credentials. Create a `.env` file in the
-project root (this file is git-ignored):
-
-```bash
+```.env
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
 AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>
+AZURE_OPENAI_API_KEY=<your-api-key>
 ```
 
-### 2. Start the services
+Start the services:
 
 ```bash
-docker compose up --build
+docker compose up
 ```
 
-This builds and starts both containers:
+Open the frontend at: http://localhost:3000
 
-| Service | URL | Health check |
-|---------|-----|--------------|
-| **backend** | http://localhost:8080 | `GET /health` |
-| **frontend** | http://localhost:3000 | `GET /` |
-
-The frontend waits for the backend health check to pass before starting.
-
-### 3. Stop the services
+Stop the services:
 
 ```bash
 docker compose down
 ```
 
-### Image and tagging conventions
+## Build
 
-Local builds tag images as `ai-web-aguiserver:latest` and
-`ai-web-aguichat:latest`. The CI pipeline publishes to GitHub Container
-Registry (`ghcr.io`) using branch, PR, SHA, and `latest` tags. See
-`.github/workflows/ci.yml` for details.
+### Run locally (without docker)
 
-## Running locally (without Docker)
-
-### Backend
+The backend requires Azure OpenAI credentials. Use the [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets)
+to store them outside the repository:
 
 ```bash
 cd src/AI.Web.AGUIServer
+dotnet user-secrets set "AzureOpenAI:Endpoint" "https://<your-resource>.openai.azure.com/"
+dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
+```
+
+Secrets are stored in your user profile and loaded automatically when
+`ASPNETCORE_ENVIRONMENT` is `Development` (the default for `dotnet run`).
+
+```bash
 dotnet run
 ```
 
-### Frontend
+The backend listens on http://localhost:8000.
+
+The frontend reads `BACKEND_URL` from the environment. It defaults to
+`http://localhost:8000/`, which matches the backend's local address above.
 
 ```bash
 cd src/AI.Web.AGUIChat
@@ -78,7 +58,13 @@ npm ci
 npm run dev
 ```
 
-## Running tests
+To override it, create `src/AI.Web.AGUIChat/.env.local`:
+
+```bash
+BACKEND_URL=http://localhost:8000/
+```
+
+### Running tests
 
 ```bash
 dotnet test

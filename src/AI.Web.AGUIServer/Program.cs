@@ -1,4 +1,5 @@
 using Azure.AI.OpenAI;
+using Azure.Core;
 using Azure.Identity;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
@@ -18,11 +19,11 @@ if (string.IsNullOrWhiteSpace(deploymentName)) throw new InvalidOperationExcepti
 
 builder.Services.AddSingleton<IChatClient>(_ =>
 {
-    ChatClient chatClient = new AzureOpenAIClient(
-            new Uri(endpoint),
-            new DefaultAzureCredential())
-        .GetChatClient(deploymentName);
-    return chatClient.AsIChatClient();
+    var apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
+    AzureOpenAIClient client = string.IsNullOrWhiteSpace(apiKey)
+        ? new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
+        : new AzureOpenAIClient(new Uri(endpoint), new Azure.AzureKeyCredential(apiKey));
+    return client.GetChatClient(deploymentName).AsIChatClient();
 });
 
 builder.Services.AddSingleton<AIAgent>(sp =>

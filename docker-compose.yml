@@ -9,6 +9,7 @@ services:
     environment:
       - AzureOpenAI__Endpoint=${AZURE_OPENAI_ENDPOINT}
       - AzureOpenAI__DeploymentName=${AZURE_OPENAI_DEPLOYMENT_NAME}
+      - AzureOpenAI__ApiKey=${AZURE_OPENAI_API_KEY:-}
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
       interval: 10s
