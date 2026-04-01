@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: src/AI.Web.AGUIServer/Dockerfile
-    image: ai-web-aguiserver:latest
+    image: ghcr.io/edgestream/ai-web-aguiserver:latest
     ports:
       - "8080:8080"
     environment:
@@ -21,7 +21,7 @@ services:
     build:
       context: src/AI.Web.AGUIChat
       dockerfile: Dockerfile
-    image: ai-web-aguichat:latest
+    image: ghcr.io/edgestream/ai-web-aguichat:latest
     ports:
       - "3000:3000"
     environment:
