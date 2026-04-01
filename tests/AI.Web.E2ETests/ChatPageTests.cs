@@ -19,8 +19,8 @@ namespace AI.Web.E2ETests;
 ///   E2E_BASE_URL  – Base URL of the running frontend (default: http://localhost:3000).
 ///
 /// Test categories:
-///   Live – Tests that require a running frontend. Run with:
-///          dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Live"
+///   Integration – Tests that require the Next.js frontend to be running. Run with:
+///                 dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Integration"
 /// </summary>
 [TestClass]
 public sealed class ChatPageTests : PageTest
@@ -63,7 +63,7 @@ public sealed class ChatPageTests : PageTest
     /// Requires a running frontend — see <c>docker-compose.e2e.yml</c> or <c>npm run dev</c>.
     /// </summary>
     [TestMethod]
-    [TestCategory("Live")]
+    [TestCategory("Integration")]
     public async Task ChatPage_CanSendMessage_ReceivesResponse()
     {
         await Page.GotoAsync("/");

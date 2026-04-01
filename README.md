@@ -66,11 +66,19 @@ BACKEND_URL=http://localhost:8000/
 
 ### Running tests
 
-```bash
-# Run all non-live tests (unit + integration, excluding tests that require external services):
-dotnet test --filter "TestCategory!=Live"
+Tests are grouped into categories to make it easy to run only what you need:
 
-# Run only the live integration tests (requires valid Azure OpenAI credentials):
+| Category        | Description                                                              |
+|-----------------|--------------------------------------------------------------------------|
+| *(default)*     | Unit and fake-backed integration tests — no external services required.  |
+| `Integration`   | Tests that require a service container (e.g. running Next.js frontend).  |
+| `Live`          | Tests that require an internet connection or configured Azure credentials.|
+
+```bash
+# Run all default tests (excludes Integration and Live):
+dotnet test --filter "TestCategory!=Integration&TestCategory!=Live"
+
+# Run only tests that require Azure OpenAI credentials:
 dotnet test tests/AI.Web.AGUIServer.IntegrationTests --filter "TestCategory=Live"
 ```
 
@@ -84,7 +92,7 @@ dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
 
 ### Running E2E tests
 
-End-to-end tests use [Playwright](https://playwright.dev/dotnet/). The backend is started automatically by the test assembly setup via `WebApplicationFactory<Program>` with a `FakeChatClient` — no Azure credentials and no extra backend container are needed. Only the Next.js frontend must be running externally for tests tagged `Live`.
+End-to-end tests use [Playwright](https://playwright.dev/dotnet/). The backend is started automatically by the test assembly setup via `WebApplicationFactory<Program>` with a `FakeChatClient` — no Azure credentials and no extra backend container are needed. Only the Next.js frontend must be running externally for tests tagged `Integration`.
 
 Build and install browsers once:
 
@@ -111,11 +119,11 @@ BACKEND_URL=http://localhost:8080/ npm run dev
 Run the tests:
 
 ```bash
-# Run non-live E2E tests only (no frontend required):
-dotnet test tests/AI.Web.E2ETests --filter "TestCategory!=Live"
+# Run non-integration E2E tests only (no frontend required):
+dotnet test tests/AI.Web.E2ETests --filter "TestCategory!=Integration"
 
-# Run all E2E tests including send-message (requires running frontend):
-dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Live"
+# Run only the E2E send-message test (requires running frontend):
+dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Integration"
 
 # Run the full E2E suite:
 dotnet test tests/AI.Web.E2ETests
