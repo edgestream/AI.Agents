@@ -1,8 +1,9 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /repo
-COPY . .
+COPY src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj src/AI.Web.AGUIServer/
 RUN dotnet restore src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj
+COPY . .
 RUN dotnet publish src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj \
     -c Release \
     --no-restore \
