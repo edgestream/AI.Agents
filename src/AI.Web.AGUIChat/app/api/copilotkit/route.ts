@@ -14,7 +14,7 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
 //    AG-UI integration to setup the connection.
 const runtime = new CopilotRuntime({
   agents: {
-    my_agent: new HttpAgent({ url: "http://localhost:8000/" }),
+    my_agent: new HttpAgent({ url: process.env.BACKEND_URL || "http://localhost:8000/" }),
   },
 });
 
