@@ -7,10 +7,17 @@ namespace AI.Web.E2ETests;
 ///   1. Build this project.
 ///   2. Install Playwright browsers once:
 ///      pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+///   3. Start the Next.js frontend (docker or npm):
+///      docker compose -f docker-compose.e2e.yml up -d
+///      — or —
+///      cd src/AI.Web.AGUIChat && BACKEND_URL=http://localhost:8080/ npm run dev
+///
+/// The backend is started automatically by <see cref="StubBackendFixture"/> as part of
+/// the test assembly setup, so no separate backend process is required.
 ///
 /// Configuration (environment variables):
 ///   E2E_BASE_URL  – Base URL of the running frontend (default: http://localhost:3000).
-///   E2E_LIVE_TEST – Set to "true" to run the send-message test (requires a live backend).
+///   E2E_LIVE_TEST – Set to "true" to run the send-message test.
 /// </summary>
 [TestClass]
 public sealed class ChatPageTests : PageTest
@@ -48,9 +55,9 @@ public sealed class ChatPageTests : PageTest
 
     /// <summary>
     /// Sends a message and verifies that the assistant's response is rendered.
-    /// Requires a running backend; gated by the <c>E2E_LIVE_TEST=true</c> environment variable.
-    /// With the docker-compose E2E stack (<c>docker compose -f docker-compose.e2e.yml up</c>)
-    /// the stub backend returns "Hello from stub!" as its response.
+    /// The backend stub (<see cref="FakeChatClient"/>) streams "Hello from FakeChatClient"
+    /// through the real AG-UI SSE serialization path.
+    /// Gated by the <c>E2E_LIVE_TEST=true</c> environment variable.
     /// </summary>
     [TestMethod]
     public async Task ChatPage_CanSendMessage_ReceivesResponse()
@@ -59,7 +66,7 @@ public sealed class ChatPageTests : PageTest
         {
             Assert.Inconclusive(
                 "Set E2E_LIVE_TEST=true to run this test. " +
-                "A running frontend and backend are required (see docker-compose.e2e.yml).");
+                "A running frontend is required (see docker-compose.e2e.yml or npm run dev).");
         }
 
         await Page.GotoAsync("/");
@@ -69,8 +76,8 @@ public sealed class ChatPageTests : PageTest
         await input.FillAsync("Hello, are you there?");
         await input.PressAsync("Enter");
 
-        // Wait for an assistant response to appear (stub responds with "Hello from stub!").
-        await Expect(Page.GetByText("Hello from stub!"))
+        // Wait for the assistant response from FakeChatClient to appear.
+        await Expect(Page.GetByText("Hello from FakeChatClient"))
             .ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 30_000 });
     }
 }

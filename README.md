@@ -72,7 +72,7 @@ dotnet test
 
 ### Running E2E tests
 
-E2E tests use [Playwright](https://playwright.dev/dotnet/) and require a running frontend (and optionally a backend). They live in `tests/AI.Web.E2ETests`.
+E2E tests use [Playwright](https://playwright.dev/dotnet/) and live in `tests/AI.Web.E2ETests`. The backend is started automatically by the test assembly setup via `WebApplicationFactory<Program>` with `FakeChatClient` — no Azure credentials and no extra backend container are needed. Only the Next.js frontend must be running externally.
 
 #### 1. Build and install browsers (once)
 
@@ -81,22 +81,35 @@ dotnet build tests/AI.Web.E2ETests
 pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
 ```
 
-#### 2. Run against the docker-compose E2E stack (stub backend – no Azure credentials needed)
+#### 2. Start the frontend
+
+**Option A – Docker (recommended for CI):**
 
 ```bash
 docker compose -f docker-compose.e2e.yml up --build -d
-E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
-docker compose -f docker-compose.e2e.yml down
 ```
 
-#### 3. Run against the full stack (real Azure backend)
-
-Start the main docker-compose stack first:
+**Option B – locally with npm:**
 
 ```bash
-docker compose up -d
-E2E_BASE_URL=http://localhost:3000 E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
-docker compose down
+cd src/AI.Web.AGUIChat
+BACKEND_URL=http://localhost:8080/ npm run dev
+```
+
+#### 3. Run the tests
+
+```bash
+# Title / input visibility tests (no backend required):
+dotnet test tests/AI.Web.E2ETests
+
+# Full send-message test (requires frontend to be running):
+E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
+```
+
+#### 4. Tear down the frontend (if using Docker)
+
+```bash
+docker compose -f docker-compose.e2e.yml down
 ```
 
 #### Configuration
@@ -104,4 +117,4 @@ docker compose down
 | Environment variable | Default                  | Description                                                                 |
 |----------------------|--------------------------|-----------------------------------------------------------------------------|
 | `E2E_BASE_URL`       | `http://localhost:3000`  | Base URL of the running frontend.                                           |
-| `E2E_LIVE_TEST`      | *(unset)*                | Set to `true` to run the send-message test (requires a live backend).       |
+| `E2E_LIVE_TEST`      | *(unset)*                | Set to `true` to run the send-message test (requires a running frontend).   |

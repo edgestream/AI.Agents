@@ -1,28 +1,19 @@
 # docker-compose.e2e.yml
 #
-# Extends the main docker-compose.yml by replacing the backend service with a
-# lightweight AG-UI stub so that E2E tests can run without Azure credentials.
+# Starts only the Next.js frontend for E2E testing. The backend is started
+# automatically by the test assembly fixture (StubBackendFixture) using
+# WebApplicationFactory<Program> bound to http://localhost:8080, so no separate
+# backend container is needed.
 #
-# Usage:
+# Usage (Linux / macOS):
 #   docker compose -f docker-compose.e2e.yml up --build -d
 #   E2E_LIVE_TEST=true dotnet test tests/AI.Web.E2ETests
 #   docker compose -f docker-compose.e2e.yml down
+#
+# Alternatively, run the frontend locally without Docker:
+#   cd src/AI.Web.AGUIChat && BACKEND_URL=http://localhost:8080/ npm run dev
 
 services:
-  backend:
-    build:
-      context: tests/AI.Web.E2ETests/stub
-      dockerfile: Dockerfile
-    image: ai-web-aguiserver-stub
-    ports:
-      - "8080:8080"
-    healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 3
-      start_period: 10s
-
   frontend:
     build:
       context: src/AI.Web.AGUIChat
@@ -30,10 +21,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - BACKEND_URL=http://backend:8080/
-    depends_on:
-      backend:
-        condition: service_healthy
+      # Point the frontend at the test-fixture-managed backend on the host machine.
+      - BACKEND_URL=http://host.docker.internal:8080/
+    extra_hosts:
+      # Resolve host.docker.internal on Linux (already available on macOS/Windows).
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/"]
       interval: 10s
