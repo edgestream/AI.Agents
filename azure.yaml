@@ -1,0 +1,24 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+
+name: ai-web
+
+infra:
+  provider: bicep
+  path: infra
+
+services:
+  backend:
+    host: containerapp
+    project: ./src/AI.Web.AGUIServer
+    language: csharp
+    docker:
+      path: ./src/AI.Web.AGUIServer/Dockerfile
+      context: .
+
+  frontend:
+    host: containerapp
+    project: ./src/AI.Web.AGUIChat
+    language: js
+    docker:
+      path: ./src/AI.Web.AGUIChat/Dockerfile
+      context: ./src/AI.Web.AGUIChat
