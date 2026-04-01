@@ -10,7 +10,4 @@ param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestr
 // Azure OpenAI configuration – set via: azd env set AZURE_OPENAI_ENDPOINT <value>
 param azureOpenAIEndpoint = readEnvironmentVariable('AZURE_OPENAI_ENDPOINT', '')
 param azureOpenAIDeploymentName = readEnvironmentVariable('AZURE_OPENAI_DEPLOYMENT_NAME', '')
-
-// GHCR pull credentials – set via: azd env set GHCR_USERNAME <value> && azd env set GHCR_TOKEN <pat>
-param ghcrUsername = readEnvironmentVariable('GHCR_USERNAME', '')
-param ghcrToken = readEnvironmentVariable('GHCR_TOKEN', '')
+param azureOpenAIApiKey = readEnvironmentVariable('AZURE_OPENAI_API_KEY', '')

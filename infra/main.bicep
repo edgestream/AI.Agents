@@ -21,12 +21,9 @@ param azureOpenAIEndpoint string = ''
 @description('Azure OpenAI deployment name.')
 param azureOpenAIDeploymentName string = ''
 
-@description('GHCR username for pulling container images.')
-param ghcrUsername string = ''
-
 @secure()
-@description('GHCR personal access token (read:packages scope) for pulling container images.')
-param ghcrToken string = ''
+@description('Azure OpenAI API key.')
+param azureOpenAIApiKey string = ''
 
 var tags = {
   'azd-env-name': environmentName
@@ -49,8 +46,7 @@ module resources './resources.bicep' = {
     frontendImage: frontendImage
     azureOpenAIEndpoint: azureOpenAIEndpoint
     azureOpenAIDeploymentName: azureOpenAIDeploymentName
-    ghcrUsername: ghcrUsername
-    ghcrToken: ghcrToken
+    azureOpenAIApiKey: azureOpenAIApiKey
     tags: tags
   }
 }

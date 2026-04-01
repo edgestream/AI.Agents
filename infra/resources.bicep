@@ -4,10 +4,9 @@ param backendImage string
 param frontendImage string
 param azureOpenAIEndpoint string
 param azureOpenAIDeploymentName string
-param ghcrUsername string
 
 @secure()
-param ghcrToken string
+param azureOpenAIApiKey string
 
 param tags object
 
@@ -56,17 +55,10 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 8080
         transport: 'http'
       }
-      registries: !empty(ghcrUsername) ? [
+      secrets: !empty(azureOpenAIApiKey) ? [
         {
-          server: 'ghcr.io'
-          username: ghcrUsername
-          passwordSecretRef: 'ghcr-token'
-        }
-      ] : []
-      secrets: !empty(ghcrToken) ? [
-        {
-          name: 'ghcr-token'
-          value: ghcrToken
+          name: 'azure-openai-api-key'
+          value: azureOpenAIApiKey
         }
       ] : []
     }
@@ -79,7 +71,7 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
             cpu: json('0.5')
             memory: '1Gi'
           }
-          env: [
+          env: concat([
             {
               name: 'AzureOpenAI__Endpoint'
               value: azureOpenAIEndpoint
@@ -92,12 +84,17 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'ASPNETCORE_ENVIRONMENT'
               value: 'Production'
             }
-          ]
+          ], !empty(azureOpenAIApiKey) ? [
+            {
+              name: 'AzureOpenAI__ApiKey'
+              secretRef: 'azure-openai-api-key'
+            }
+          ] : [])
         }
       ]
       scale: {
         minReplicas: 0
-        maxReplicas: 10
+        maxReplicas: 1
       }
     }
   }
@@ -119,19 +116,6 @@ resource frontendApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 3000
         transport: 'http'
       }
-      registries: !empty(ghcrUsername) ? [
-        {
-          server: 'ghcr.io'
-          username: ghcrUsername
-          passwordSecretRef: 'ghcr-token'
-        }
-      ] : []
-      secrets: !empty(ghcrToken) ? [
-        {
-          name: 'ghcr-token'
-          value: ghcrToken
-        }
-      ] : []
     }
     template: {
       containers: [
@@ -152,7 +136,7 @@ resource frontendApp 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       scale: {
         minReplicas: 0
-        maxReplicas: 10
+        maxReplicas: 1
       }
     }
   }
