@@ -16,7 +16,6 @@ var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
 var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
 if (string.IsNullOrWhiteSpace(endpoint)) throw new InvalidOperationException("Azure OpenAI endpoint is not configured.");
 if (string.IsNullOrWhiteSpace(deploymentName)) throw new InvalidOperationException("Azure OpenAI deployment name is not configured.");
-
 builder.Services.AddSingleton<IChatClient>(_ =>
 {
     var apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
@@ -26,53 +25,49 @@ builder.Services.AddSingleton<IChatClient>(_ =>
     return client.GetChatClient(deploymentName).AsIChatClient();
 });
 
-// MCP tooling: read server config, create clients, aggregate tools.
-var mcpServers = builder.Configuration
-    .GetSection("McpServers")
-    .Get<McpServerOptions[]>() ?? [];
-
-var mcpRegistry = new McpClientRegistry();
-var aiTools = new List<AITool>();
-
-foreach (var server in mcpServers)
-{
-    IClientTransport transport = server.Transport.ToLowerInvariant() switch
+builder.Services.AddSingleton<McpClientRegistry>();
+builder.Services.AddSingleton<IList<AITool>>(sp => {
+    var mcpServers = builder.Configuration.GetSection("McpServers").Get<McpServerOptions[]>() ?? [];
+    var mcpRegistry = sp.GetRequiredService<McpClientRegistry>();
+    List<AITool> tools = [];
+    foreach (var server in mcpServers)
     {
-        "stdio" => new StdioClientTransport(new StdioClientTransportOptions
+        IClientTransport transport = server.Transport.ToLowerInvariant() switch
         {
-            Name = server.Name,
-            Command = server.Command ?? throw new InvalidOperationException($"MCP server '{server.Name}' uses stdio transport but has no Command."),
-            Arguments = server.Arguments ?? [],
-        }),
-        "http" => new HttpClientTransport(new HttpClientTransportOptions
-        {
-            Name = server.Name,
-            Endpoint = new Uri(server.Url ?? throw new InvalidOperationException($"MCP server '{server.Name}' uses http transport but has no Url.")),
-        }),
-        _ => throw new InvalidOperationException($"Unsupported MCP transport '{server.Transport}' for server '{server.Name}'.")
-    };
-
-    var mcpClient = await McpClient.CreateAsync(transport);
-    mcpRegistry.Add(mcpClient);
-
-    var tools = await mcpClient.ListToolsAsync();
-    aiTools.AddRange(tools.Select(t => (AITool)t));
-}
-
-builder.Services.AddSingleton(mcpRegistry);
-builder.Services.AddSingleton<IList<AITool>>(aiTools);
+            "stdio" => new StdioClientTransport(new StdioClientTransportOptions
+            {
+                Name = server.Name,
+                Command = server.Command ?? throw new InvalidOperationException($"MCP server '{server.Name}' uses stdio transport but has no Command."),
+                Arguments = server.Arguments ?? [],
+            }),
+            "http" => new HttpClientTransport(new HttpClientTransportOptions
+            {
+                Name = server.Name,
+                Endpoint = new Uri(server.Url ?? throw new InvalidOperationException($"MCP server '{server.Name}' uses http transport but has no Url.")),
+            }),
+            _ => throw new InvalidOperationException($"Unsupported MCP transport '{server.Transport}' for server '{server.Name}'.")
+        };
+        var mcpClient = McpClient.CreateAsync(transport).GetAwaiter().GetResult();
+        mcpRegistry.Add(mcpClient);
+        var mcpTools = mcpClient.ListToolsAsync().GetAwaiter().GetResult();
+        tools.AddRange(mcpTools.Select(t => (AITool)t));
+    }
+    return tools;
+});
 
 builder.Services.AddSingleton<AIAgent>(sp =>
-    sp.GetRequiredService<IChatClient>().AsAIAgent(
+{
+    var chatClient = sp.GetRequiredService<IChatClient>();
+    var tools = sp.GetRequiredService<IList<AITool>>();
+    return chatClient.AsAIAgent(
         name: "AGUIAssistant",
         instructions: "You are a helpful assistant.",
-        tools: sp.GetRequiredService<IList<AITool>>()));
+        tools: tools);
+});
 
 WebApplication app = builder.Build();
 
-// Gracefully dispose MCP clients on shutdown.
-app.Lifetime.ApplicationStopping.Register(() =>
-    app.Services.GetRequiredService<McpClientRegistry>().DisposeAsync().AsTask().GetAwaiter().GetResult());
+app.Lifetime.ApplicationStopping.Register(() => app.Services.GetRequiredService<McpClientRegistry>().DisposeAsync().AsTask().GetAwaiter().GetResult());
 
 if (app.Environment.IsDevelopment())
 {
