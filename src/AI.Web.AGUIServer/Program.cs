@@ -29,7 +29,7 @@ builder.Services.AddMcpClientHosting();
 builder.Services.AddSingleton<AIAgent>(sp =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
-    var mcpProvider = sp.GetRequiredService<McpToolsContextProvider>();
+    var mcpProvider = sp.GetRequiredService<McpClientToolsAIContextProvider>();
     return new ChatClientAgent(
         chatClient,
         new ChatClientAgentOptions

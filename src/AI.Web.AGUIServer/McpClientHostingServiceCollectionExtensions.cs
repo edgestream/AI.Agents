@@ -7,13 +7,13 @@ internal static class McpClientHostingServiceCollectionExtensions
     /// <summary>
     /// Registers the MCP client hosting infrastructure:
     /// <see cref="McpClientRegistry"/>, <see cref="McpClientHostingService"/>,
-    /// and <see cref="McpToolsContextProvider"/>.
+    /// and <see cref="McpClientToolsAIContextProvider"/>.
     /// </summary>
     public static IServiceCollection AddMcpClientHosting(this IServiceCollection services)
     {
         services.AddSingleton<McpClientRegistry>();
         services.AddHostedService<McpClientHostingService>();
-        services.AddSingleton<McpToolsContextProvider>();
+        services.AddSingleton<McpClientToolsAIContextProvider>();
         return services;
     }
 }
