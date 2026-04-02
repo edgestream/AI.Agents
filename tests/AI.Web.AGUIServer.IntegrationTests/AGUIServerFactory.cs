@@ -7,7 +7,8 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 /// Custom <see cref="WebApplicationFactory{TEntryPoint}"/> that replaces
 /// <see cref="IChatClient"/> with <see cref="FakeChatClient"/> and injects
 /// dummy Azure OpenAI configuration so the server can start without real
-/// Azure credentials. Also overrides MCP tools with an empty list.
+/// Azure credentials. Also removes <see cref="McpHostedService"/> so no
+/// real MCP connections are attempted during tests.
 /// </summary>
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
@@ -17,24 +18,26 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
         builder.UseSetting("AzureOpenAI:Endpoint", "https://fake.openai.azure.com/");
         builder.UseSetting("AzureOpenAI:DeploymentName", "fake-deployment");
 
-        // Clear MCP servers so no live connections are attempted in tests.
-        builder.UseSetting("McpServers", "");
-
         builder.ConfigureServices(services =>
         {
             // Remove the real IChatClient registration and replace with fake.
-            var descriptor = services.SingleOrDefault(
+            var chatClientDescriptor = services.SingleOrDefault(
                 d => d.ServiceType == typeof(IChatClient));
-
-            if (descriptor is not null)
-            {
-                services.Remove(descriptor);
-            }
+            if (chatClientDescriptor is not null)
+                services.Remove(chatClientDescriptor);
 
             services.AddSingleton<IChatClient>(new FakeChatClient());
 
-            // Override MCP tools with empty list (no live MCP connections in tests).
-            ReplaceService<IList<AITool>>(services, Array.Empty<AITool>());
+            // Remove McpHostedService so no MCP connections are attempted in tests.
+            // UseSetting("McpServers", "") cannot clear array sub-keys from
+            // appsettings.json, so explicitly removing the hosted service is safer.
+            var mcpHostedDescriptor = services.SingleOrDefault(
+                d => d.ImplementationType == typeof(McpHostedService));
+            if (mcpHostedDescriptor is not null)
+                services.Remove(mcpHostedDescriptor);
+
+            // Override MCP tools with empty mutable list.
+            ReplaceService<IList<AITool>>(services, new List<AITool>());
         });
     }
 
@@ -42,9 +45,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
     {
         var descriptor = services.SingleOrDefault(d => d.ServiceType == typeof(T));
         if (descriptor is not null)
-        {
             services.Remove(descriptor);
-        }
         services.AddSingleton(implementation);
     }
 }
