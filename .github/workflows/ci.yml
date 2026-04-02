@@ -58,16 +58,20 @@ jobs:
       - name: Build
         run: npm run build
 
-  # ── Container build + integration & live tests (main only) ──────────────────
+  # ── Container build + integration & live tests + push (main only) ────────────
   # Triggered only on pushes to main (i.e. after a PR is merged).
-  # Builds the containers from source, starts the full stack, runs all tests
-  # that require external services, then gates the push on their success.
+  # Builds the containers once with Buildx (load: true → local Docker daemon),
+  # starts the full stack with --no-build, runs all tests that require external
+  # services, then pushes the already-built layers – no second build.
 
-  docker-build-and-test:
-    name: Build Containers & Integration Tests
+  docker-build-test-push:
+    name: Build, Test & Push Docker Images
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [test-backend, test-frontend]
+    permissions:
+      contents: read
+      packages: write
     env:
       # Passed to docker compose so the backend container can reach Azure OpenAI.
       AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
@@ -77,61 +81,6 @@ jobs:
       AzureOpenAI__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
       AzureOpenAI__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
       AzureOpenAI__ApiKey: ${{ secrets.AZURE_OPENAI_API_KEY }}
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Build containers
-        run: docker compose build
-
-      - name: Start stack
-        run: docker compose up -d
-
-      - name: Check startup logs
-        if: always()
-        run: docker compose logs
-
-      - name: Wait for backend
-        run: timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 2; done'
-
-      - name: Wait for frontend
-        run: timeout 90 bash -c 'until curl -sf http://localhost:3000; do sleep 2; done'
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: "10.0.x"
-
-      - name: Build tests (E2E)
-        run: dotnet build tests/AI.Web.E2ETests
-
-      - name: Install Playwright browsers
-        run: pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
-
-      - name: Integration tests (E2E)
-        run: dotnet test tests/AI.Web.E2ETests --no-build --verbosity normal --filter "TestCategory=Integration"
-        env:
-          E2E_BASE_URL: http://localhost:3000
-
-      - name: Build tests (backend)
-        run: dotnet build tests/AI.Web.AGUIServer.IntegrationTests
-
-      - name: Live tests (backend)
-        run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --no-build --verbosity normal --filter "TestCategory=Live"
-
-      - name: Stop stack
-        if: always()
-        run: docker compose down
-
-  # ── Push containers (main only, after integration tests pass) ────────────────
-
-  docker-push:
-    name: Push Docker Images
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: [docker-build-and-test]
-    permissions:
-      contents: read
-      packages: write
     steps:
       - uses: actions/checkout@v4
 
@@ -154,17 +103,6 @@ jobs:
             type=sha
             type=raw,value=latest
 
-      - name: Build and push backend image
-        uses: docker/build-push-action@v6
-        with:
-          context: .
-          file: src/AI.Web.AGUIServer/Dockerfile
-          push: true
-          tags: ${{ steps.meta-backend.outputs.tags }}
-          labels: ${{ steps.meta-backend.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-
       - name: Extract frontend metadata
         id: meta-frontend
         uses: docker/metadata-action@v5
@@ -174,13 +112,68 @@ jobs:
             type=sha
             type=raw,value=latest
 
-      - name: Build and push frontend image
+      - name: Build backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: src/AI.Web.AGUIServer/Dockerfile
+          load: true
+          tags: ${{ steps.meta-backend.outputs.tags }}
+          labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build frontend image
         uses: docker/build-push-action@v6
         with:
           context: src/AI.Web.AGUIChat
           file: src/AI.Web.AGUIChat/Dockerfile
-          push: true
+          load: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Start stack
+        run: docker compose up -d --no-build
+
+      - name: Check startup logs
+        if: always()
+        run: docker compose logs
+
+      - name: Wait for backend
+        run: timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 2; done'
+
+      - name: Wait for frontend
+        run: timeout 90 bash -c 'until curl -sf http://localhost:3000; do sleep 2; done'
+
+      - name: Build tests (E2E)
+        run: dotnet build tests/AI.Web.E2ETests
+
+      - name: Install Playwright browsers
+        run: pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Integration tests (E2E)
+        run: dotnet test tests/AI.Web.E2ETests --no-build --verbosity normal --filter "TestCategory=Integration"
+        env:
+          E2E_BASE_URL: http://localhost:3000
+
+      - name: Build tests (backend)
+        run: dotnet build tests/AI.Web.AGUIServer.IntegrationTests
+
+      - name: Live tests (backend)
+        run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --no-build --verbosity normal --filter "TestCategory=Live"
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down
+
+      - name: Push backend image
+        run: echo "$TAGS" | xargs -L1 docker push
+        env:
+          TAGS: ${{ steps.meta-backend.outputs.tags }}
+
+      - name: Push frontend image
+        run: echo "$TAGS" | xargs -L1 docker push
+        env:
+          TAGS: ${{ steps.meta-frontend.outputs.tags }}
