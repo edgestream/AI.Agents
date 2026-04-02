@@ -29,10 +29,10 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             services.AddSingleton<IChatClient>(new FakeChatClient());
 
             // Remove McpHostingService so no MCP connections are attempted in tests.
-            // UseSetting("McpServers", "") cannot clear array sub-keys from
-            // appsettings.json, so explicitly removing the hosted service is safer.
-            // A fresh McpClientRegistry (registered by Program.cs) starts with an
-            // empty tools list, which is the correct test behaviour.
+            // UseSetting("McpServers", "") cannot reliably clear nested configuration
+            // keys populated from appsettings.json, so explicitly removing the hosted
+            // service is safer. A fresh McpClientRegistry (registered by Program.cs)
+            // starts with an empty tools list, which is the correct test behaviour.
             var mcpHostedDescriptor = services.SingleOrDefault(
                 d => d.ImplementationType == typeof(McpClientHostingService));
             if (mcpHostedDescriptor is not null)

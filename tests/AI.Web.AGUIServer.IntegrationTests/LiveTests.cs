@@ -83,5 +83,6 @@ public sealed class LiveTests
 
         var body = await response.Content.ReadAsStringAsync(cts.Token);
         Assert.IsFalse(string.IsNullOrWhiteSpace(body), "SSE stream body should not be empty.");
+        Assert.IsTrue(body.Contains("learn__"), "SSE stream should contain a tool call for a 'learn__' prefixed tool.");
     }
 }

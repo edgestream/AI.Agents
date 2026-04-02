@@ -11,7 +11,7 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 internal sealed class FakeChatClient : IChatClient
 {
     /// <summary>
-    /// When true, the next non-streaming response will simulate a tool call.
+    /// When true, the next response will simulate a tool call and this flag will be reset to false.
     /// </summary>
     public bool SimulateToolCall { get; set; }
 
@@ -22,6 +22,7 @@ internal sealed class FakeChatClient : IChatClient
     {
         if (SimulateToolCall && options?.Tools is { Count: > 0 })
         {
+            SimulateToolCall = false;
             var toolName = options.Tools[0].Name;
             var callContent = new FunctionCallContent("call_1", toolName, new Dictionary<string, object?> { ["query"] = "test" });
             var message = new ChatMessage(ChatRole.Assistant, [callContent]);
@@ -39,6 +40,7 @@ internal sealed class FakeChatClient : IChatClient
     {
         if (SimulateToolCall && options?.Tools is { Count: > 0 })
         {
+            SimulateToolCall = false;
             var toolName = options.Tools[0].Name;
             var callContent = new FunctionCallContent("call_1", toolName, new Dictionary<string, object?> { ["query"] = "test" });
             yield return new ChatResponseUpdate(ChatRole.Assistant, [callContent]);

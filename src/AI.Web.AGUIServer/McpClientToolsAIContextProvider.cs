@@ -32,6 +32,6 @@ internal sealed class McpClientToolsAIContextProvider(McpClientRegistry registry
         var tools = registry.Tools;
         return tools.Count == 0
             ? new(new AIContext())
-            : new(new AIContext { Tools = tools.ToList<AITool>() });
+            : new(new AIContext { Tools = tools.Cast<AITool>().ToList() });
     }
 }

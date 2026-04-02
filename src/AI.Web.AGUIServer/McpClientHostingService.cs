@@ -7,17 +7,17 @@ namespace AI.Web.AGUIServer;
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="StartAsync"/> runs before Kestrel begins accepting connections
-/// (guaranteed by the ASP.NET Core host lifecycle). It connects to every MCP
-/// server listed in configuration, fetches their tool manifests, and registers
+/// <see cref="StartAsync"/> runs during application startup. It connects to every
+/// MCP server listed in configuration, fetches their tool manifests, and registers
 /// the resulting <see cref="McpClientTool"/> instances via
-/// <see cref="McpClientRegistry.AddTools"/>. Because <see cref="StartAsync"/>
-/// completes before the first request is served, the registry always holds a
-/// fully-populated tool list by the time any agent invocation occurs.
+/// <see cref="McpClientRegistry.AddTools"/>. This ensures the registry is typically
+/// populated with tools early in the application's lifetime, but callers should not
+/// assume that tool registration has fully completed by the time the first request
+/// is processed.
 /// </para>
 /// <para>
-/// <see cref="StopAsync"/> properly <c>await</c>s <see cref="McpClientRegistry.DisposeAsync"/>
-/// so MCP connections are closed gracefully without blocking the shutdown thread.
+/// MCP client connections are owned by <see cref="McpClientRegistry"/>, which is a
+/// singleton <see cref="IAsyncDisposable"/> disposed by the DI container on shutdown.
 /// </para>
 /// </remarks>
 public sealed class McpClientHostingService(
@@ -46,11 +46,15 @@ public sealed class McpClientHostingService(
         }
     }
 
-    public async Task StopAsync(CancellationToken cancellationToken)
-        => await registry.DisposeAsync();
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private static IClientTransport CreateTransport(string name, McpServerOptions server) =>
-        server.Type.ToLowerInvariant() switch
+    private static IClientTransport CreateTransport(string name, McpServerOptions server)
+    {
+        if (string.IsNullOrEmpty(server.Type))
+            throw new InvalidOperationException(
+                $"MCP server '{name}' is missing required 'type' configuration.");
+
+        return server.Type.ToLowerInvariant() switch
         {
             "stdio" => new StdioClientTransport(new StdioClientTransportOptions
             {
@@ -69,4 +73,5 @@ public sealed class McpClientHostingService(
             _ => throw new InvalidOperationException(
                 $"Unsupported MCP type '{server.Type}' for server '{name}'.")
         };
+    }
 }
