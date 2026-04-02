@@ -26,18 +26,31 @@ builder.Services.AddSingleton<IChatClient>(_ =>
 });
 
 // Register MCP infrastructure.
-// The list starts empty; McpHostedService.StartAsync populates it before the
+// The list starts empty; McpHostingService.StartAsync populates it before the
 // first request is processed (the ASP.NET Core host guarantees StartAsync
 // completes before Kestrel begins accepting connections).
 builder.Services.AddSingleton<IList<AITool>>(_ => []);
 builder.Services.AddSingleton<McpClientRegistry>();
 builder.Services.AddHostedService<McpHostingService>();
 
+// McpToolsContextProvider injects MCP tools at request time (not construction
+// time), which bypasses the ChatClientAgentOptions clone-at-construction issue.
+builder.Services.AddSingleton<McpToolsContextProvider>();
 builder.Services.AddSingleton<AIAgent>(sp =>
-    sp.GetRequiredService<IChatClient>().AsAIAgent(
-        name: "AGUIAssistant",
-        instructions: "You are a helpful assistant.",
-        tools: sp.GetRequiredService<IList<AITool>>()));
+{
+    var chatClient = sp.GetRequiredService<IChatClient>();
+    var mcpProvider = sp.GetRequiredService<McpToolsContextProvider>();
+    return new ChatClientAgent(
+        chatClient,
+        new ChatClientAgentOptions
+        {
+            Name = "AGUIAssistant",
+            ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
+            AIContextProviders = [mcpProvider],
+        },
+        sp.GetRequiredService<ILoggerFactory>(),
+        sp);
+});
 
 WebApplication app = builder.Build();
 
