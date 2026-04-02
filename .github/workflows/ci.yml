@@ -14,7 +14,7 @@ jobs:
   # Runs on every push and pull request. Integration and Live tests are excluded.
 
   test-backend:
-    name: Backend Unit Tests
+    name: Backend Build & Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -153,16 +153,13 @@ jobs:
       - name: Install Playwright browsers
         run: pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
 
-      - name: Integration tests (E2E)
+      - name: Run tests (E2E)
         run: dotnet test tests/AI.Web.E2ETests --no-build --verbosity normal --filter "TestCategory=Integration"
         env:
           E2E_BASE_URL: http://localhost:3000
 
-      - name: Build tests (backend)
-        run: dotnet build tests/AI.Web.AGUIServer.IntegrationTests
-
-      - name: Live tests (backend)
-        run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --no-build --verbosity normal --filter "TestCategory=Live"
+      - name: Run tests (Live)
+        run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --verbosity normal --filter "TestCategory=Live"
 
       - name: Stop stack
         if: always()
