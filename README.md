@@ -5,7 +5,7 @@
 
 ## Quickstart
 
-The backend requires Azure OpenAI credentials. Copy the provided template and fill in your values:
+The backend requires Azure OpenAI credentials. Copy the provided template `.env.example` into `.env` and fill in your values:
 
 ```.env
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
@@ -19,7 +19,7 @@ Start the services:
 docker compose up
 ```
 
-Open the frontend at: http://localhost:3000
+Open the frontend at http://localhost:3000.
 
 Stop the services:
 
@@ -27,9 +27,9 @@ Stop the services:
 docker compose down
 ```
 
-## Build
+## Development
 
-### Run locally (without docker)
+### Running local
 
 The backend requires Azure OpenAI credentials. Use the [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets)
 to store them outside the repository:
@@ -38,105 +38,57 @@ to store them outside the repository:
 cd src/AI.Web.AGUIServer
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://<your-resource>.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
+dotnet user-secrets set "AzureOpenAI:ApiKey" "<your-api-key>"
 ```
 
-Secrets are stored in your user profile and loaded automatically when
-`ASPNETCORE_ENVIRONMENT` is `Development` (the default for `dotnet run`).
+Now we can start the backend to listen on `http://localhost:8000/`:
 
 ```bash
-dotnet run
+dotnet run --project src/AI.Web.AGUIServer
 ```
 
-The backend listens on http://localhost:8000.
-
-The frontend reads `BACKEND_URL` from the environment. It defaults to
-`http://localhost:8000/`, which matches the backend's local address above.
+Open another console and start the frontend:
 
 ```bash
 cd src/AI.Web.AGUIChat
-npm ci
 npm run dev
-```
-
-To override it, create `src/AI.Web.AGUIChat/.env.local`:
-
-```bash
-BACKEND_URL=http://localhost:8000/
 ```
 
 ### Running tests
 
 Tests are grouped into categories to make it easy to run only what you need:
 
-| Category        | Description                                                              |
-|-----------------|--------------------------------------------------------------------------|
-| *(default)*     | Unit and fake-backed integration tests — no external services required.  |
-| `Integration`   | Tests that require a service container (e.g. running Next.js frontend).  |
-| `Live`          | Tests that require an internet connection or configured Azure credentials.|
+| Category        | Description                                                                |
+|-----------------|----------------------------------------------------------------------------|
+| *(default)*     | Unit and fake-backed integration tests — no external services required.    |
+| `Live`          | Tests that require an internet connection or configured Azure credentials. |
+| `Integration`   | Tests that require a service container (e.g. running Next.js frontend).    |
+
+Run tests which don't need an internet connection or external services:
 
 ```bash
-# Run all default tests (excludes Integration and Live):
+# Run all default tests:
 dotnet test --filter "TestCategory!=Integration&TestCategory!=Live"
-
-# Run only tests that require Azure OpenAI credentials:
-dotnet test tests/AI.Web.AGUIServer.IntegrationTests --filter "TestCategory=Live"
 ```
 
-Configure Azure OpenAI credentials for live tests using the [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets):
+End-to-end tests use [Playwright](https://playwright.dev/dotnet/). We have to install a headless browser first (once):
 
 ```bash
-cd src/AI.Web.AGUIServer
-dotnet user-secrets set "AzureOpenAI:Endpoint" "https://<your-resource>.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
+tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
 ```
 
-### Running E2E tests
-
-End-to-end tests use [Playwright](https://playwright.dev/dotnet/). The backend is started automatically by the test assembly setup via `WebApplicationFactory<Program>` with a `FakeChatClient` — no Azure credentials and no extra backend container are needed. Only the Next.js frontend must be running externally for tests tagged `Integration`.
-
-Build and install browsers once:
+This tests are **black-box** tests - no server is started or managed by the test project. The full stack (frontend + backend) must be running before executing the tests:
 
 ```bash
-dotnet build tests/AI.Web.E2ETests
-pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
-```
-
-Start the frontend:
-
-**Option A – Docker:**
-
-```bash
-docker compose -f docker-compose.e2e.yml up --build -d
-```
-
-**Option B – locally with npm:**
-
-```bash
-cd src/AI.Web.AGUIChat
-BACKEND_URL=http://localhost:8080/ npm run dev
-```
-
-Run the tests:
-
-```bash
-# Run non-integration E2E tests only (no frontend required):
-dotnet test tests/AI.Web.E2ETests --filter "TestCategory!=Integration"
-
-# Run only the E2E send-message test (requires running frontend):
-dotnet test tests/AI.Web.E2ETests --filter "TestCategory=Integration"
-
-# Run the full E2E suite:
+# Against the local stack:
 dotnet test tests/AI.Web.E2ETests
+
+# Against a remote environment:
+E2E_BASE_URL=https://staging.example.com dotnet test tests/AI.Web.E2ETests
 ```
 
-Tear down the frontend (if using Docker):
+When a test fails a trace zip is automatically saved next to the test assembly and you can open it in the Playwright Trace Viewer:
 
 ```bash
-docker compose -f docker-compose.e2e.yml down
+npx playwright show-trace tests/AI.Web.E2ETests/bin/Debug/net10.0/traces/ChatPage_CanSendMessage_ReceivesResponse.zip
 ```
-
-#### Configuration
-
-| Environment variable | Default                  | Description                             |
-|----------------------|--------------------------|-----------------------------------------|
-| `E2E_BASE_URL`       | `http://localhost:3000`  | Base URL of the running frontend.       |

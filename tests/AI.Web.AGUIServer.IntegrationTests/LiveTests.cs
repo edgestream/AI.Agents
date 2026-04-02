@@ -5,15 +5,6 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 
 /// <summary>
 /// Optional live integration tests that call a real Azure OpenAI-backed AG-UI server.
-/// These tests require valid Azure OpenAI credentials and are tagged
-/// <c>TestCategory("Live")</c> so they are excluded from the default test run.
-///
-/// Run live tests:
-///   dotnet test tests/AI.Web.AGUIServer.IntegrationTests --filter "TestCategory=Live"
-///
-/// Configure credentials (e.g. via .NET Secret Manager):
-///   dotnet user-secrets set "AzureOpenAI:Endpoint" "https://&lt;resource&gt;.openai.azure.com/"
-///   dotnet user-secrets set "AzureOpenAI:DeploymentName" "&lt;deployment&gt;"
 /// </summary>
 [TestClass]
 [TestCategory("Live")]

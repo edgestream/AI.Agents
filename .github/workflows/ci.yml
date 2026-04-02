@@ -10,8 +10,11 @@ env:
   FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-web-aguichat
 
 jobs:
+  # ── Unit tests ──────────────────────────────────────────────────────────────
+  # Runs on every push and pull request. Integration and Live tests are excluded.
+
   test-backend:
-    name: Backend Tests
+    name: Backend Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,14 +24,14 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Restore dependencies
+      - name: Restore
         run: dotnet restore
 
       - name: Build
         run: dotnet build --no-restore
 
-      - name: Run tests
-        run: dotnet test --no-build --verbosity normal
+      - name: Unit tests
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=Integration&TestCategory!=Live"
 
   test-frontend:
     name: Frontend Lint & Build
@@ -55,18 +58,80 @@ jobs:
       - name: Build
         run: npm run build
 
-  docker:
-    name: Build & Push Docker Images
+  # ── Container build + integration & live tests (main only) ──────────────────
+  # Triggered only on pushes to main (i.e. after a PR is merged).
+  # Builds the containers from source, starts the full stack, runs all tests
+  # that require external services, then gates the push on their success.
+
+  docker-build-and-test:
+    name: Build Containers & Integration Tests
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [test-backend, test-frontend]
+    env:
+      # Passed to docker compose so the backend container can reach Azure OpenAI.
+      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      # Double-underscore format used by ASP.NET Core for the live tests.
+      AzureOpenAI__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      AzureOpenAI__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
+      AzureOpenAI__ApiKey: ${{ secrets.AZURE_OPENAI_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build containers
+        run: docker compose build
+
+      - name: Start stack
+        run: docker compose up -d
+
+      - name: Wait for backend
+        run: timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 2; done'
+
+      - name: Wait for frontend
+        run: timeout 90 bash -c 'until curl -sf http://localhost:3000; do sleep 2; done'
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Build test projects
+        run: dotnet build tests/AI.Web.E2ETests tests/AI.Web.AGUIServer.IntegrationTests
+
+      - name: Install Playwright browsers
+        run: pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+
+      - name: Integration tests (E2E)
+        run: dotnet test tests/AI.Web.E2ETests --no-build --verbosity normal --filter "TestCategory=Integration"
+        env:
+          E2E_BASE_URL: http://localhost:3000
+
+      - name: Live tests (backend)
+        run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --no-build --verbosity normal --filter "TestCategory=Live"
+
+      - name: Stop stack
+        if: always()
+        run: docker compose down
+
+  # ── Push containers (main only, after integration tests pass) ────────────────
+
+  docker-push:
+    name: Push Docker Images
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [docker-build-and-test]
     permissions:
       contents: read
       packages: write
     steps:
       - uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
       - name: Log in to GHCR
-        if: github.event_name != 'pull_request'
         uses: docker/login-action@v3
         with:
           registry: ${{ env.REGISTRY }}
@@ -79,19 +144,19 @@ jobs:
         with:
           images: ${{ env.BACKEND_IMAGE }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
           context: .
           file: src/AI.Web.AGUIServer/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta-backend.outputs.tags }}
           labels: ${{ steps.meta-backend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Extract frontend metadata
         id: meta-frontend
@@ -99,16 +164,16 @@ jobs:
         with:
           images: ${{ env.FRONTEND_IMAGE }}
           tags: |
-            type=ref,event=branch
-            type=ref,event=pr
             type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=latest
 
       - name: Build and push frontend image
         uses: docker/build-push-action@v6
         with:
           context: src/AI.Web.AGUIChat
           file: src/AI.Web.AGUIChat/Dockerfile
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
           tags: ${{ steps.meta-frontend.outputs.tags }}
           labels: ${{ steps.meta-frontend.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
