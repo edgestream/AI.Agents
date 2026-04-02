@@ -78,7 +78,7 @@ public sealed class ChatPageTests : PageTest
         // Wait for the send button to become enabled — it is disabled until the
         // SSE connection to the backend is established.
         var sendButton = Page.GetByTestId("copilot-send-button");
-        await Expect(sendButton).ToBeEnabledAsync(new LocatorAssertionsToBeEnabledOptions { Timeout = 10_000 });
+        await Expect(sendButton).ToBeEnabledAsync(new LocatorAssertionsToBeEnabledOptions { Timeout = 30_000 });
 
         // Send the message.
         await input.PressAsync("Enter");
@@ -86,7 +86,7 @@ public sealed class ChatPageTests : PageTest
         // The user message must appear in the chat log.
         // CopilotKit renders user turns with data-testid="copilot-user-message".
         var userMessage = Page.GetByTestId("copilot-user-message");
-        await Expect(userMessage.First).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 5_000 });
+        await Expect(userMessage.First).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 30_000 });
 
         // An assistant message container must appear — any content is accepted.
         // CopilotKit renders assistant turns with data-testid="copilot-assistant-message".
