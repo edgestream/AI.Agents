@@ -12,6 +12,15 @@
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
             "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "npm install (AGUIChat)",
+            "type": "shell",
+            "command": "npm install",
+            "options": {
+                "cwd": "${workspaceFolder}/src/AI.Web.AGUIChat"
+            },
+            "problemMatcher": []
         }
     ]
 }

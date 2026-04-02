@@ -5,6 +5,7 @@
             "name": "Launch AGUIChat",
             "type": "node",
             "request": "launch",
+            "preLaunchTask": "npm install (AGUIChat)",
             "cwd": "${workspaceFolder}/src/AI.Web.AGUIChat",
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "dev"],

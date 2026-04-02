@@ -49,4 +49,40 @@ public sealed class LiveTests
         var body = await response.Content.ReadAsStringAsync(cts.Token);
         Assert.IsFalse(string.IsNullOrWhiteSpace(body), "SSE stream body should not be empty.");
     }
+
+    [TestMethod]
+    public async Task Live_McpLearnServer_ToolRoundTrip()
+    {
+        using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder =>
+            {
+                // Configure only the MS Learn MCP server for this test (dict format).
+                builder.UseSetting("McpServers:learn:Type", "http");
+                builder.UseSetting("McpServers:learn:Url", "https://learn.microsoft.com/api/mcp");
+            });
+        using var client = factory.CreateClient();
+
+        var payload = new
+        {
+            threadId = "live-mcp-test",
+            runId = "live-mcp-run",
+            messages = new[]
+            {
+                new { role = "user", content = "Search Microsoft Learn for 'Azure Functions overview' and summarize the first result." }
+            },
+            tools = Array.Empty<object>(),
+            context = Array.Empty<object>(),
+            forwardedProps = new { }
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
+        var response = await client.PostAsJsonAsync("/", payload, cts.Token);
+
+        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        Assert.AreEqual("text/event-stream", response.Content.Headers.ContentType?.MediaType);
+
+        var body = await response.Content.ReadAsStringAsync(cts.Token);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(body), "SSE stream body should not be empty.");
+        Assert.IsTrue(body.Contains("learn__"), "SSE stream should contain a tool call for a 'learn__' prefixed tool.");
+    }
 }
