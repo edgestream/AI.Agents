@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace AI.Web.AGUIServer;
 
-internal static class McpClientHostingServiceCollectionExtensions
+public static class McpClientHostingServiceCollectionExtensions
 {
     /// <summary>
     /// Registers the MCP client hosting infrastructure:
