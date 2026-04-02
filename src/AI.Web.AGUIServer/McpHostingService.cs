@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.AI;
-using ModelContextProtocol.Client;
+﻿using ModelContextProtocol.Client;
 
 namespace AI.Web.AGUIServer;
 
@@ -11,7 +10,7 @@ namespace AI.Web.AGUIServer;
 /// <see cref="StartAsync"/> runs before Kestrel begins accepting connections
 /// (guaranteed by the ASP.NET Core host lifecycle). It connects to every MCP
 /// server listed in configuration, fetches their tool manifests, and registers
-/// the resulting <see cref="AITool"/> instances via
+/// the resulting <see cref="McpClientTool"/> instances via
 /// <see cref="McpClientRegistry.AddTools"/>. Because <see cref="StartAsync"/>
 /// completes before the first request is served, the registry always holds a
 /// fully-populated tool list by the time any agent invocation occurs.
@@ -39,7 +38,7 @@ public sealed class McpHostingService(
             registry.Add(client);
 
             var serverTools = await client.ListToolsAsync(cancellationToken: cancellationToken);
-            registry.AddTools(serverTools.Select(t => t.WithName($"{name}__{t.Name}")));
+            registry.AddTools(name, serverTools);
 
             logger.LogInformation(
                 "Connected to MCP server '{Name}' ({Type}), loaded {Count} tool(s).",

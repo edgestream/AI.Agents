@@ -1,25 +1,28 @@
-using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 
 namespace AI.Web.AGUIServer;
 
 /// <summary>
 /// Manages the lifecycle of all live <see cref="McpClient"/> instances and the
-/// <see cref="AITool"/> instances discovered from them.
+/// <see cref="McpClientTool"/> instances discovered from them.
 /// Disposes clients gracefully on application shutdown.
 /// </summary>
 public sealed class McpClientRegistry : IAsyncDisposable
 {
     private readonly List<McpClient> _clients = [];
-    private readonly List<AITool> _tools = [];
+    private readonly List<McpClientTool> _tools = [];
 
     /// <summary>Gets all tools discovered across every registered MCP server.</summary>
-    public IReadOnlyList<AITool> Tools => _tools;
+    public IReadOnlyList<McpClientTool> Tools => _tools;
 
     public void Add(McpClient client) => _clients.Add(client);
 
-    /// <summary>Appends <paramref name="tools"/> to the shared tool list.</summary>
-    public void AddTools(IEnumerable<AITool> tools) => _tools.AddRange(tools);
+    /// <summary>
+    /// Prefixes each tool name with <paramref name="serverName"/> and appends the
+    /// renamed tools to the shared list.
+    /// </summary>
+    public void AddTools(string serverName, IEnumerable<McpClientTool> tools)
+        => _tools.AddRange(tools.Select(t => t.WithName($"{serverName}__{t.Name}")));
 
     public async ValueTask DisposeAsync()
     {

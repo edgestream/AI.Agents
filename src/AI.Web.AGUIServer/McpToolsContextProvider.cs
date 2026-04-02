@@ -16,8 +16,10 @@ namespace AI.Web.AGUIServer;
 /// <para>
 /// This provider reads from <see cref="McpClientRegistry.Tools"/> at request-invocation time
 /// (after all hosted services have fully started), so the registry always holds a
-/// fully-populated list by then. The returned <see cref="AIContext"/> is merged with the
-/// request's own context by the agent.
+/// fully-populated list by then. Each <see cref="ModelContextProtocol.Client.McpClientTool"/>
+/// is an <see cref="Microsoft.Extensions.AI.AIFunction"/> and therefore a valid
+/// <see cref="Microsoft.Extensions.AI.AITool"/> — the cast is type-safe.
+/// The returned <see cref="AIContext"/> is merged with the request's own context by the agent.
 /// </para>
 /// </remarks>
 internal sealed class McpToolsContextProvider(McpClientRegistry registry) : AIContextProvider
@@ -26,7 +28,10 @@ internal sealed class McpToolsContextProvider(McpClientRegistry registry) : AICo
     protected override ValueTask<AIContext> ProvideAIContextAsync(
         AIContextProvider.InvokingContext context, CancellationToken cancellationToken = default)
 #pragma warning restore MAAI001
-        => registry.Tools.Count == 0
+    {
+        var tools = registry.Tools;
+        return tools.Count == 0
             ? new(new AIContext())
-            : new(new AIContext { Tools = registry.Tools });
+            : new(new AIContext { Tools = tools.ToList<AITool>() });
+    }
 }
