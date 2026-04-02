@@ -86,9 +86,9 @@ jobs:
       - name: Start stack
         run: docker compose up -d
 
-      - name: Check backend logs
+      - name: Check startup logs
         if: always()
-        run: docker compose logs backend
+        run: docker compose logs
 
       - name: Wait for backend
         run: timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 2; done'
@@ -101,8 +101,8 @@ jobs:
         with:
           dotnet-version: "10.0.x"
 
-      - name: Build test projects
-        run: dotnet build tests/AI.Web.E2ETests tests/AI.Web.AGUIServer.IntegrationTests
+      - name: Build tests (E2E)
+        run: dotnet build tests/AI.Web.E2ETests
 
       - name: Install Playwright browsers
         run: pwsh tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
@@ -111,6 +111,9 @@ jobs:
         run: dotnet test tests/AI.Web.E2ETests --no-build --verbosity normal --filter "TestCategory=Integration"
         env:
           E2E_BASE_URL: http://localhost:3000
+
+      - name: Build tests (backend)
+        run: dotnet build tests/AI.Web.AGUIServer.IntegrationTests
 
       - name: Live tests (backend)
         run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --no-build --verbosity normal --filter "TestCategory=Live"
