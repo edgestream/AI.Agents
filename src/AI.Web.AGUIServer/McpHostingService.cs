@@ -10,11 +10,11 @@ namespace AI.Web.AGUIServer;
 /// <para>
 /// <see cref="StartAsync"/> runs before Kestrel begins accepting connections
 /// (guaranteed by the ASP.NET Core host lifecycle). It connects to every MCP
-/// server listed in configuration, fetches their tool manifests, and adds the
-/// resulting <see cref="AITool"/> instances to the shared <paramref name="tools"/>
-/// list that was injected into <see cref="Microsoft.Agents.AI.AIAgent"/> at DI
-/// registration time. Because <see cref="StartAsync"/> completes before the first
-/// request is served, the agent always sees a fully-populated tools list.
+/// server listed in configuration, fetches their tool manifests, and registers
+/// the resulting <see cref="AITool"/> instances via
+/// <see cref="McpClientRegistry.AddTools"/>. Because <see cref="StartAsync"/>
+/// completes before the first request is served, the registry always holds a
+/// fully-populated tool list by the time any agent invocation occurs.
 /// </para>
 /// <para>
 /// <see cref="StopAsync"/> properly <c>await</c>s <see cref="McpClientRegistry.DisposeAsync"/>
@@ -23,7 +23,6 @@ namespace AI.Web.AGUIServer;
 /// </remarks>
 public sealed class McpHostingService(
     McpClientRegistry registry,
-    IList<AITool> tools,
     IConfiguration configuration,
     ILogger<McpHostingService> logger) : IHostedService
 {
@@ -40,8 +39,7 @@ public sealed class McpHostingService(
             registry.Add(client);
 
             var serverTools = await client.ListToolsAsync(cancellationToken: cancellationToken);
-            foreach (var tool in serverTools)
-                tools.Add(tool.WithName($"{name}__{tool.Name}"));
+            registry.AddTools(serverTools.Select(t => t.WithName($"{name}__{t.Name}")));
 
             logger.LogInformation(
                 "Connected to MCP server '{Name}' ({Type}), loaded {Count} tool(s).",

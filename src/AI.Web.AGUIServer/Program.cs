@@ -15,7 +15,6 @@ var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
 var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
 if (string.IsNullOrWhiteSpace(endpoint)) throw new InvalidOperationException("Azure OpenAI endpoint is not configured.");
 if (string.IsNullOrWhiteSpace(deploymentName)) throw new InvalidOperationException("Azure OpenAI deployment name is not configured.");
-
 builder.Services.AddSingleton<IChatClient>(_ =>
 {
     var apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
@@ -25,17 +24,10 @@ builder.Services.AddSingleton<IChatClient>(_ =>
     return client.GetChatClient(deploymentName).AsIChatClient();
 });
 
-// Register MCP infrastructure.
-// The list starts empty; McpHostingService.StartAsync populates it before the
-// first request is processed (the ASP.NET Core host guarantees StartAsync
-// completes before Kestrel begins accepting connections).
-builder.Services.AddSingleton<IList<AITool>>(_ => []);
 builder.Services.AddSingleton<McpClientRegistry>();
 builder.Services.AddHostedService<McpHostingService>();
-
-// McpToolsContextProvider injects MCP tools at request time (not construction
-// time), which bypasses the ChatClientAgentOptions clone-at-construction issue.
 builder.Services.AddSingleton<McpToolsContextProvider>();
+
 builder.Services.AddSingleton<AIAgent>(sp =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
