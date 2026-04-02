@@ -20,10 +20,10 @@ namespace AI.Web.AGUIServer;
 /// so MCP connections are closed gracefully without blocking the shutdown thread.
 /// </para>
 /// </remarks>
-public sealed class McpHostingService(
+public sealed class McpClientHostingService(
     McpClientRegistry registry,
     IConfiguration configuration,
-    ILogger<McpHostingService> logger) : IHostedService
+    ILogger<McpClientHostingService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {

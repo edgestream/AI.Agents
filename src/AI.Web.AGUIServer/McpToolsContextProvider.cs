@@ -9,7 +9,7 @@ namespace AI.Web.AGUIServer;
 /// <remarks>
 /// <para>
 /// <see cref="ChatClientAgent"/> clones its <see cref="Microsoft.Extensions.AI.ChatOptions"/>
-/// (including any tools list) at construction time. Because <see cref="McpHostingService.StartAsync"/>
+/// (including any tools list) at construction time. Because <see cref="McpClientHostingService.StartAsync"/>
 /// populates tools only after the agent singleton is already resolved, the cloned list would
 /// always be empty if tools were supplied via the constructor.
 /// </para>
