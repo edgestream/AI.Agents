@@ -5,7 +5,7 @@
 
 ## Quickstart
 
-The backend requires Azure OpenAI credentials. Copy the provided template and fill in your values:
+The backend requires Azure OpenAI credentials. Copy the provided template `.env.example` into `.env` and fill in your values:
 
 ```.env
 AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
@@ -19,7 +19,7 @@ Start the services:
 docker compose up
 ```
 
-Open the frontend at: http://localhost:3000
+Open the frontend at http://localhost:3000.
 
 Stop the services:
 
@@ -27,32 +27,9 @@ Stop the services:
 docker compose down
 ```
 
-## Deployment
+## Development
 
-### Azure Container Apps
-
-The entire stack can be provisioned and deployed to Azure Container Apps using the [Azure Developer CLI (`azd`)](https://learn.microsoft.com/azure/developer/azure-developer-cli/overview):
-
-```bash
-azd auth login
-azd env new dev
-azd env set AZURE_OPENAI_ENDPOINT   "https://<your-resource>.openai.azure.com/"
-azd env set AZURE_OPENAI_DEPLOYMENT_NAME "<your-deployment>"
-azd env set AZURE_OPENAI_API_KEY "<your-api-key>"
-azd up
-```
-
-The frontend URL is printed at the end of `azd up`.
-
-Tear down:
-
-```bash
-azd down
-```
-
-## Build
-
-### Run locally (without docker)
+### Running local
 
 The backend requires Azure OpenAI credentials. Use the [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets)
 to store them outside the repository:
@@ -61,34 +38,57 @@ to store them outside the repository:
 cd src/AI.Web.AGUIServer
 dotnet user-secrets set "AzureOpenAI:Endpoint" "https://<your-resource>.openai.azure.com/"
 dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
+dotnet user-secrets set "AzureOpenAI:ApiKey" "<your-api-key>"
 ```
 
-Secrets are stored in your user profile and loaded automatically when
-`ASPNETCORE_ENVIRONMENT` is `Development` (the default for `dotnet run`).
+Now we can start the backend to listen on `http://localhost:8000/`:
 
 ```bash
-dotnet run
+dotnet run --project src/AI.Web.AGUIServer
 ```
 
-The backend listens on http://localhost:8000.
-
-The frontend reads `BACKEND_URL` from the environment. It defaults to
-`http://localhost:8000/`, which matches the backend's local address above.
+Open another console and start the frontend:
 
 ```bash
 cd src/AI.Web.AGUIChat
-npm ci
 npm run dev
-```
-
-To override it, create `src/AI.Web.AGUIChat/.env.local`:
-
-```bash
-BACKEND_URL=http://localhost:8000/
 ```
 
 ### Running tests
 
+Tests are grouped into categories to make it easy to run only what you need:
+
+| Category        | Description                                                                |
+|-----------------|----------------------------------------------------------------------------|
+| *(default)*     | Unit and fake-backed integration tests — no external services required.    |
+| `Live`          | Tests that require an internet connection or configured Azure credentials. |
+| `Integration`   | Tests that require a service container (e.g. running Next.js frontend).    |
+
+Run tests which don't need an internet connection or external services:
+
 ```bash
-dotnet test
+# Run all default tests:
+dotnet test --filter "TestCategory!=Integration&TestCategory!=Live"
+```
+
+End-to-end tests use [Playwright](https://playwright.dev/dotnet/). We have to install a headless browser first (once):
+
+```bash
+tests/AI.Web.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+```
+
+This tests are **black-box** tests - no server is started or managed by the test project. The full stack (frontend + backend) must be running before executing the tests:
+
+```bash
+# Against the local stack:
+dotnet test tests/AI.Web.E2ETests
+
+# Against a remote environment:
+E2E_BASE_URL=https://staging.example.com dotnet test tests/AI.Web.E2ETests
+```
+
+When a test fails a trace zip is automatically saved next to the test assembly and you can open it in the Playwright Trace Viewer:
+
+```bash
+npx playwright show-trace tests/AI.Web.E2ETests/bin/Debug/net10.0/traces/ChatPage_CanSendMessage_ReceivesResponse.zip
 ```

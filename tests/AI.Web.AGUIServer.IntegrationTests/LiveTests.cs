@@ -5,27 +5,14 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 
 /// <summary>
 /// Optional live integration tests that call a real Azure OpenAI-backed AG-UI server.
-/// These tests are gated by the <c>AGUI_LIVE_TEST</c> environment variable.
-/// Set <c>AGUI_LIVE_TEST=true</c> and configure valid Azure OpenAI settings to run.
 /// </summary>
 [TestClass]
+[TestCategory("Live")]
 public sealed class LiveTests
 {
-    private static bool IsLiveTestEnabled =>
-        string.Equals(
-            Environment.GetEnvironmentVariable("AGUI_LIVE_TEST"),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
-
     [TestMethod]
     public async Task Live_HealthEndpoint_ReturnsOk()
     {
-        if (!IsLiveTestEnabled)
-        {
-            Assert.Inconclusive("Live tests are disabled. Set AGUI_LIVE_TEST=true to enable.");
-            return;
-        }
-
         using var factory = new WebApplicationFactory<Program>();
         using var client = factory.CreateClient();
 
@@ -37,12 +24,6 @@ public sealed class LiveTests
     [TestMethod]
     public async Task Live_AGUIEndpoint_ReturnsSSEStream()
     {
-        if (!IsLiveTestEnabled)
-        {
-            Assert.Inconclusive("Live tests are disabled. Set AGUI_LIVE_TEST=true to enable.");
-            return;
-        }
-
         using var factory = new WebApplicationFactory<Program>();
         using var client = factory.CreateClient();
 
