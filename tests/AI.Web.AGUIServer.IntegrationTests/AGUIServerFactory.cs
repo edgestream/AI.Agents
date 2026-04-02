@@ -7,7 +7,7 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 /// Custom <see cref="WebApplicationFactory{TEntryPoint}"/> that replaces
 /// <see cref="IChatClient"/> with <see cref="FakeChatClient"/> and injects
 /// dummy Azure OpenAI configuration so the server can start without real
-/// Azure credentials. Also removes <see cref="McpHostedService"/> so no
+/// Azure credentials. Also removes <see cref="McpHostingService"/> so no
 /// real MCP connections are attempted during tests.
 /// </summary>
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
@@ -32,7 +32,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             // UseSetting("McpServers", "") cannot clear array sub-keys from
             // appsettings.json, so explicitly removing the hosted service is safer.
             var mcpHostedDescriptor = services.SingleOrDefault(
-                d => d.ImplementationType == typeof(McpHostedService));
+                d => d.ImplementationType == typeof(McpHostingService));
             if (mcpHostedDescriptor is not null)
                 services.Remove(mcpHostedDescriptor);
 

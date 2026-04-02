@@ -1,4 +1,4 @@
-using Microsoft.Extensions.AI;
+﻿using Microsoft.Extensions.AI;
 using ModelContextProtocol.Client;
 
 namespace AI.Web.AGUIServer;
@@ -21,54 +21,55 @@ namespace AI.Web.AGUIServer;
 /// so MCP connections are closed gracefully without blocking the shutdown thread.
 /// </para>
 /// </remarks>
-public sealed class McpHostedService(
+public sealed class McpHostingService(
     McpClientRegistry registry,
     IList<AITool> tools,
     IConfiguration configuration,
-    ILogger<McpHostedService> logger) : IHostedService
+    ILogger<McpHostingService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         var mcpServers = configuration
             .GetSection("McpServers")
-            .Get<McpServerOptions[]>() ?? [];
+            .Get<Dictionary<string, McpServerOptions>>() ?? [];
 
-        foreach (var server in mcpServers)
+        foreach (var (name, server) in mcpServers)
         {
-            var transport = CreateTransport(server);
+            var transport = CreateTransport(name, server);
             var client = await McpClient.CreateAsync(transport, cancellationToken: cancellationToken);
             registry.Add(client);
 
             var serverTools = await client.ListToolsAsync(cancellationToken: cancellationToken);
             foreach (var tool in serverTools)
-                tools.Add(tool);
+                tools.Add(tool.WithName($"{name}__{tool.Name}"));
 
             logger.LogInformation(
-                "Connected to MCP server '{Name}' ({Transport}), loaded {Count} tool(s).",
-                server.Name, server.Transport, serverTools.Count);
+                "Connected to MCP server '{Name}' ({Type}), loaded {Count} tool(s).",
+                name, server.Type, serverTools.Count);
         }
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
         => await registry.DisposeAsync();
 
-    private static IClientTransport CreateTransport(McpServerOptions server) =>
-        server.Transport.ToLowerInvariant() switch
+    private static IClientTransport CreateTransport(string name, McpServerOptions server) =>
+        server.Type.ToLowerInvariant() switch
         {
             "stdio" => new StdioClientTransport(new StdioClientTransportOptions
             {
-                Name = server.Name,
+                Name = name,
                 Command = server.Command ?? throw new InvalidOperationException(
-                    $"MCP server '{server.Name}' uses stdio transport but has no Command."),
-                Arguments = server.Arguments ?? [],
+                    $"MCP server '{name}' uses stdio type but has no command."),
+                Arguments = server.Args ?? [],
+                EnvironmentVariables = server.Env,
             }),
-            "http" => new HttpClientTransport(new HttpClientTransportOptions
+            "http" or "sse" => new HttpClientTransport(new HttpClientTransportOptions
             {
-                Name = server.Name,
+                Name = name,
                 Endpoint = new Uri(server.Url ?? throw new InvalidOperationException(
-                    $"MCP server '{server.Name}' uses http transport but has no Url.")),
+                    $"MCP server '{name}' uses http type but has no url.")),
             }),
             _ => throw new InvalidOperationException(
-                $"Unsupported MCP transport '{server.Transport}' for server '{server.Name}'.")
+                $"Unsupported MCP type '{server.Type}' for server '{name}'.")
         };
 }

@@ -56,10 +56,9 @@ public sealed class LiveTests
         using var factory = new WebApplicationFactory<Program>()
             .WithWebHostBuilder(builder =>
             {
-                // Configure only the MS Learn MCP server for this test.
-                builder.UseSetting("McpServers:0:Name", "learn");
-                builder.UseSetting("McpServers:0:Transport", "http");
-                builder.UseSetting("McpServers:0:Url", "https://learn.microsoft.com/api/mcp");
+                // Configure only the MS Learn MCP server for this test (dict format).
+                builder.UseSetting("McpServers:learn:Type", "http");
+                builder.UseSetting("McpServers:learn:Url", "https://learn.microsoft.com/api/mcp");
             });
         using var client = factory.CreateClient();
 

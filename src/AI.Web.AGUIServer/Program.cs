@@ -31,7 +31,7 @@ builder.Services.AddSingleton<IChatClient>(_ =>
 // completes before Kestrel begins accepting connections).
 builder.Services.AddSingleton<IList<AITool>>(_ => []);
 builder.Services.AddSingleton<McpClientRegistry>();
-builder.Services.AddHostedService<McpHostedService>();
+builder.Services.AddHostedService<McpHostingService>();
 
 builder.Services.AddSingleton<AIAgent>(sp =>
     sp.GetRequiredService<IChatClient>().AsAIAgent(
