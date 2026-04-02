@@ -86,6 +86,10 @@ jobs:
       - name: Start stack
         run: docker compose up -d
 
+      - name: Check backend logs
+        if: always()
+        run: docker compose logs backend
+
       - name: Wait for backend
         run: timeout 60 bash -c 'until curl -sf http://localhost:8080/health; do sleep 2; done'
 
