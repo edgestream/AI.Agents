@@ -24,9 +24,7 @@ builder.Services.AddSingleton<IChatClient>(_ =>
     return client.GetChatClient(deploymentName).AsIChatClient();
 });
 
-builder.Services.AddSingleton<McpClientRegistry>();
-builder.Services.AddHostedService<McpHostingService>();
-builder.Services.AddSingleton<McpToolsContextProvider>();
+builder.Services.AddMcpClientHosting();
 
 builder.Services.AddSingleton<AIAgent>(sp =>
 {
