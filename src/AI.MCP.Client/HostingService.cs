@@ -33,10 +33,33 @@ public sealed class HostingService(
             registry.AddClient(name, client);
             logger.LogInformation("Connected to MCP server '{Name}' ({Type}).", name, serverOptions.Type);
             var scope = serviceProvider.CreateScope();
-            _ = scope.ServiceProvider
-                     .GetRequiredService<ToolDiscoveryService>()
-                     .DiscoverAsync(name, client, cancellationToken)
-                     .ContinueWith(_ => scope.Dispose(), TaskScheduler.Default);
+            var discoveryTask = scope.ServiceProvider
+                                     .GetRequiredService<ToolDiscoveryService>()
+                                     .DiscoverAsync(name, client, cancellationToken);
+
+            _ = discoveryTask.ContinueWith(t =>
+            {
+                try
+                {
+                    if (t.IsFaulted)
+                    {
+                        logger.LogError(
+                            t.Exception,
+                            "Tool discovery failed for MCP server '{Name}'.",
+                            name);
+                    }
+                    else if (t.IsCanceled)
+                    {
+                        logger.LogDebug(
+                            "Tool discovery canceled for MCP server '{Name}'.",
+                            name);
+                    }
+                }
+                finally
+                {
+                    scope.Dispose();
+                }
+            }, TaskScheduler.Default);
         }
 
         _optionsChangeListener = options.OnChange(_ =>
