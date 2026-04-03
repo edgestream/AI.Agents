@@ -25,6 +25,10 @@ param azureOpenAIDeploymentName string = ''
 @description('Azure OpenAI API key.')
 param azureOpenAIApiKey string = ''
 
+@secure()
+@description('Full JSON content of appsettings.Production.json for MCP server configuration. Set via: azd env set APPSETTINGS_JSON \'{"McpServers": {...}}\'')
+param appSettingsJson string = ''
+
 var tags = {
   'azd-env-name': environmentName
 }
@@ -47,6 +51,7 @@ module resources './resources.bicep' = {
     azureOpenAIEndpoint: azureOpenAIEndpoint
     azureOpenAIDeploymentName: azureOpenAIDeploymentName
     azureOpenAIApiKey: azureOpenAIApiKey
+    appSettingsJson: appSettingsJson
     tags: tags
   }
 }

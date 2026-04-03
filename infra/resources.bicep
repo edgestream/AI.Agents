@@ -8,6 +8,10 @@ param azureOpenAIDeploymentName string
 @secure()
 param azureOpenAIApiKey string
 
+@secure()
+@description('Full JSON content of appsettings.Production.json. When provided, mounted as a read-only file at /run/secrets/appsettings.Production.json inside the backend container.')
+param appSettingsJson string = ''
+
 param tags object
 
 // Log Analytics Workspace (shared by both Container Apps)
@@ -55,12 +59,20 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 8080
         transport: 'http'
       }
-      secrets: !empty(azureOpenAIApiKey) ? [
-        {
-          name: 'azure-openai-api-key'
-          value: azureOpenAIApiKey
-        }
-      ] : []
+      secrets: concat(
+        !empty(azureOpenAIApiKey) ? [
+          {
+            name: 'azure-openai-api-key'
+            value: azureOpenAIApiKey
+          }
+        ] : [],
+        !empty(appSettingsJson) ? [
+          {
+            name: 'appsettings-production-json'
+            value: appSettingsJson
+          }
+        ] : []
+      )
     }
     template: {
       containers: [
@@ -90,8 +102,26 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
               secretRef: 'azure-openai-api-key'
             }
           ] : [])
+          volumeMounts: !empty(appSettingsJson) ? [
+            {
+              volumeName: 'appsettings-vol'
+              mountPath: '/run/secrets'
+            }
+          ] : []
         }
       ]
+      volumes: !empty(appSettingsJson) ? [
+        {
+          name: 'appsettings-vol'
+          storageType: 'Secret'
+          secrets: [
+            {
+              secretRef: 'appsettings-production-json'
+              path: 'appsettings.Production.json'
+            }
+          ]
+        }
+      ] : []
       scale: {
         minReplicas: 0
         maxReplicas: 1
