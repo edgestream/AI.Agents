@@ -7,6 +7,12 @@ param location = readEnvironmentVariable('AZURE_LOCATION', 'eastus2')
 param backendImage = readEnvironmentVariable('BACKEND_IMAGE', 'ghcr.io/edgestream/ai-web-aguiserver:latest')
 param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestream/ai-web-aguichat:latest')
 
+// Azure OpenAI configuration – CD override via: azd env set AZURE_OPENAI_ENDPOINT <value>
+// When set, these values override the corresponding keys from the mounted appsettings file.
+param azureOpenAIEndpoint = readEnvironmentVariable('AZURE_OPENAI_ENDPOINT', '')
+param azureOpenAIDeploymentName = readEnvironmentVariable('AZURE_OPENAI_DEPLOYMENT_NAME', '')
+param azureOpenAIApiKey = readEnvironmentVariable('AZURE_OPENAI_API_KEY', '')
+
 // Appsettings for this environment – auto-loaded from appsettings.{AZURE_ENV_NAME}.json by the preprovision hook.
 // e.g. 'azd env new Development' reads appsettings.Development.json; 'azd env new Production' reads appsettings.Production.json.
 param appSettingsJson = readEnvironmentVariable('APPSETTINGS_JSON', '')

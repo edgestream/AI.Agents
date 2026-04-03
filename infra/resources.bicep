@@ -3,6 +3,16 @@ param location string
 param backendImage string
 param frontendImage string
 
+@description('Azure OpenAI endpoint URL. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIEndpoint string = ''
+
+@description('Azure OpenAI deployment name. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIDeploymentName string = ''
+
+@secure()
+@description('Azure OpenAI API key. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIApiKey string = ''
+
 @secure()
 @description('Full JSON content of appsettings.{environmentName}.json. When provided, mounted read-only at /run/secrets/appsettings.{environmentName}.json inside the backend container.')
 param appSettingsJson string = ''
@@ -54,12 +64,20 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 8080
         transport: 'http'
       }
-      secrets: !empty(appSettingsJson) ? [
-        {
-          name: 'appsettings-env-json'
-          value: appSettingsJson
-        }
-      ] : []
+      secrets: concat(
+        !empty(azureOpenAIApiKey) ? [
+          {
+            name: 'azure-openai-api-key'
+            value: azureOpenAIApiKey
+          }
+        ] : [],
+        !empty(appSettingsJson) ? [
+          {
+            name: 'appsettings-env-json'
+            value: appSettingsJson
+          }
+        ] : []
+      )
     }
     template: {
       containers: [
@@ -70,14 +88,32 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
             cpu: json('0.5')
             memory: '1Gi'
           }
-          env: [
+          env: concat([
             {
               // Mirrors the azd environment name so Program.cs loads
               // /run/secrets/appsettings.{environmentName}.json
               name: 'ASPNETCORE_ENVIRONMENT'
               value: environmentName
             }
-          ]
+          ], !empty(azureOpenAIEndpoint) ? [
+            {
+              // CD override: azd env set AZURE_OPENAI_ENDPOINT <value>
+              name: 'AzureOpenAI__Endpoint'
+              value: azureOpenAIEndpoint
+            }
+          ] : [], !empty(azureOpenAIDeploymentName) ? [
+            {
+              // CD override: azd env set AZURE_OPENAI_DEPLOYMENT_NAME <value>
+              name: 'AzureOpenAI__DeploymentName'
+              value: azureOpenAIDeploymentName
+            }
+          ] : [], !empty(azureOpenAIApiKey) ? [
+            {
+              // CD override: azd env set AZURE_OPENAI_API_KEY <value>
+              name: 'AzureOpenAI__ApiKey'
+              secretRef: 'azure-openai-api-key'
+            }
+          ] : [])
           volumeMounts: !empty(appSettingsJson) ? [
             {
               volumeName: 'appsettings-vol'
