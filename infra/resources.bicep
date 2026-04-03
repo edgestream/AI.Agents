@@ -190,11 +190,11 @@ resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if
         registration: {
           clientId: entraClientId
           clientSecretSettingName: 'entra-client-secret'
-          openIdIssuer: 'https://sts.windows.net/${entraTenantId}/v2.0'
+          openIdIssuer: '${environment().authentication.loginEndpoint}${entraTenantId}/v2.0'
         }
         validation: {
           allowedAudiences: [
-            'api://${entraClientId}'
+            entraClientId
           ]
         }
       }
