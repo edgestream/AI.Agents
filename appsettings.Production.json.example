@@ -1,8 +1,8 @@
 {
   "McpServers": {
-    "my-mcp-server": {
-      "Type": "sse",
-      "Url": "https://my-mcp-server.example.com/sse"
+    "learn": {
+      "type": "http",
+      "url": "https://learn.microsoft.com/api/mcp"
     }
   }
 }
