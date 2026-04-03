@@ -1,3 +1,4 @@
+using AI.MCP.Client;
 using AI.Web.AGUIServer;
 using Azure.AI.OpenAI;
 using Azure.Identity;
@@ -10,6 +11,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient().AddLogging();
 builder.Services.AddOpenApi();
 builder.Services.AddAGUI();
+builder.Services.AddMCPClient();
 
 var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
 var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
@@ -24,22 +26,19 @@ builder.Services.AddSingleton<IChatClient>(_ =>
     return client.GetChatClient(deploymentName).AsIChatClient();
 });
 
-builder.Services.AddMcpClientHosting();
-
 builder.Services.AddSingleton<AIAgent>(sp =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
-    var mcpProvider = sp.GetRequiredService<McpClientToolsAIContextProvider>();
-    return new ChatClientAgent(
-        chatClient,
-        new ChatClientAgentOptions
-        {
-            Name = "AGUIAssistant",
-            ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
-            AIContextProviders = [mcpProvider],
-        },
-        sp.GetRequiredService<ILoggerFactory>(),
-        sp);
+    var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
+    var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
+    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+    var agentOptions = new ChatClientAgentOptions
+    {
+        Name = "AGUIAssistant",
+        ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
+        AIContextProviders = [toolsContext],
+    };
+    return new ChatClientAgent(chatClient, agentOptions, loggerFactory, services: sp);
 });
 
 WebApplication app = builder.Build();
