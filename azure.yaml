@@ -11,23 +11,27 @@ hooks:
     posix:
       shell: sh
       run: |
-        # Picks up appsettings.{AZURE_ENV_NAME}.json from the repo root.
-        # e.g. 'azd env new Development' → reads appsettings.Development.json
+        # Loads appsettings.{AZURE_ENV_NAME}.json into APPSETTINGS_JSON for Bicep.
+        # Fails fast so a missing file causes a clear error before any resources are provisioned.
         FILE="appsettings.${AZURE_ENV_NAME}.json"
-        if [ -f "$FILE" ]; then
-          echo "Found $FILE - loading into APPSETTINGS_JSON"
-          azd env set APPSETTINGS_JSON "$(cat "$FILE")"
+        if [ ! -f "$FILE" ]; then
+          echo "ERROR: $FILE not found. Create it from appsettings.json.example before deploying." >&2
+          exit 1
         fi
+        echo "Loading $FILE into APPSETTINGS_JSON"
+        azd env set APPSETTINGS_JSON "$(cat "$FILE")"
     windows:
       shell: pwsh
       run: |
-        # Picks up appsettings.{AZURE_ENV_NAME}.json from the repo root.
-        # e.g. 'azd env new Development' -> reads appsettings.Development.json
+        # Loads appsettings.{AZURE_ENV_NAME}.json into APPSETTINGS_JSON for Bicep.
+        # Fails fast so a missing file causes a clear error before any resources are provisioned.
         $file = "appsettings.$($env:AZURE_ENV_NAME).json"
-        if (Test-Path $file) {
-          Write-Host "Found $file - loading into APPSETTINGS_JSON"
-          azd env set APPSETTINGS_JSON (Get-Content $file -Raw)
+        if (-not (Test-Path $file)) {
+          Write-Error "ERROR: $file not found. Create it from appsettings.json.example before deploying."
+          exit 1
         }
+        Write-Host "Loading $file into APPSETTINGS_JSON"
+        azd env set APPSETTINGS_JSON (Get-Content $file -Raw)
 
 services:
   backend:

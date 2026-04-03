@@ -2,11 +2,6 @@ param environmentName string
 param location string
 param backendImage string
 param frontendImage string
-param azureOpenAIEndpoint string
-param azureOpenAIDeploymentName string
-
-@secure()
-param azureOpenAIApiKey string
 
 @secure()
 @description('Full JSON content of appsettings.{environmentName}.json. When provided, mounted read-only at /run/secrets/appsettings.{environmentName}.json inside the backend container.')
@@ -59,20 +54,12 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         targetPort: 8080
         transport: 'http'
       }
-      secrets: concat(
-        !empty(azureOpenAIApiKey) ? [
-          {
-            name: 'azure-openai-api-key'
-            value: azureOpenAIApiKey
-          }
-        ] : [],
-        !empty(appSettingsJson) ? [
-          {
-            name: 'appsettings-env-json'
-            value: appSettingsJson
-          }
-        ] : []
-      )
+      secrets: !empty(appSettingsJson) ? [
+        {
+          name: 'appsettings-env-json'
+          value: appSettingsJson
+        }
+      ] : []
     }
     template: {
       containers: [
@@ -83,27 +70,14 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
             cpu: json('0.5')
             memory: '1Gi'
           }
-          env: concat([
-            {
-              name: 'AzureOpenAI__Endpoint'
-              value: azureOpenAIEndpoint
-            }
-            {
-              name: 'AzureOpenAI__DeploymentName'
-              value: azureOpenAIDeploymentName
-            }
+          env: [
             {
               // Mirrors the azd environment name so Program.cs loads
               // /run/secrets/appsettings.{environmentName}.json
               name: 'ASPNETCORE_ENVIRONMENT'
               value: environmentName
             }
-          ], !empty(azureOpenAIApiKey) ? [
-            {
-              name: 'AzureOpenAI__ApiKey'
-              secretRef: 'azure-openai-api-key'
-            }
-          ] : [])
+          ]
           volumeMounts: !empty(appSettingsJson) ? [
             {
               volumeName: 'appsettings-vol'

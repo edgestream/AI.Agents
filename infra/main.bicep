@@ -15,16 +15,6 @@ param backendImage string = 'ghcr.io/edgestream/ai-web-aguiserver:latest'
 @description('Container image for the frontend service (e.g. ghcr.io/org/ai-web-aguichat:sha-abc1234).')
 param frontendImage string = 'ghcr.io/edgestream/ai-web-aguichat:latest'
 
-@description('Azure OpenAI endpoint URL.')
-param azureOpenAIEndpoint string = ''
-
-@description('Azure OpenAI deployment name.')
-param azureOpenAIDeploymentName string = ''
-
-@secure()
-@description('Azure OpenAI API key.')
-param azureOpenAIApiKey string = ''
-
 @secure()
 @description('Full JSON content of appsettings.{environmentName}.json. Loaded automatically from the repo root by the preprovision hook when the file exists.')
 param appSettingsJson string = ''
@@ -48,9 +38,6 @@ module resources './resources.bicep' = {
     location: location
     backendImage: backendImage
     frontendImage: frontendImage
-    azureOpenAIEndpoint: azureOpenAIEndpoint
-    azureOpenAIDeploymentName: azureOpenAIDeploymentName
-    azureOpenAIApiKey: azureOpenAIApiKey
     appSettingsJson: appSettingsJson
     tags: tags
   }
