@@ -54,6 +54,37 @@ cd src/AI.Web.AGUIChat
 npm run dev
 ```
 
+### Supplying MCP server configuration for production deployments
+
+MCP server configuration (and any associated credentials) is kept out of source control by storing it as a secret in the Azure Container App. At deploy time the JSON content of `appsettings.Production.json` is passed as a secure parameter and mounted read-only at `/run/secrets/appsettings.Production.json` inside the backend container.
+
+1. Create your production appsettings file locally (do **not** commit it):
+
+   ```json
+   {
+     "McpServers": {
+       "my-mcp-server": {
+         "Type": "sse",
+         "Url": "https://my-mcp-server.example.com/sse"
+       }
+     }
+   }
+   ```
+
+2. Store the JSON as an `azd` environment variable (treats the value as a secret):
+
+   ```bash
+   azd env set APPSETTINGS_JSON "$(cat appsettings.Production.json)"
+   ```
+
+3. Deploy:
+
+   ```bash
+   azd up
+   ```
+
+The backend mounts the file automatically and ASP.NET Core's configuration system merges it with the other configuration sources. The file is **optional** — omitting `APPSETTINGS_JSON` simply results in no MCP servers being configured, and the backend still starts correctly.
+
 ### Running tests
 
 Tests are grouped into categories to make it easy to run only what you need:

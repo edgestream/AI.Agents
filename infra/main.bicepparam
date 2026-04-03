@@ -11,3 +11,6 @@ param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestr
 param azureOpenAIEndpoint = readEnvironmentVariable('AZURE_OPENAI_ENDPOINT', '')
 param azureOpenAIDeploymentName = readEnvironmentVariable('AZURE_OPENAI_DEPLOYMENT_NAME', '')
 param azureOpenAIApiKey = readEnvironmentVariable('AZURE_OPENAI_API_KEY', '')
+
+// Production appsettings (McpServers config) – set via: azd env set APPSETTINGS_JSON '{"McpServers": {...}}'
+param appSettingsJson = readEnvironmentVariable('APPSETTINGS_JSON', '')
