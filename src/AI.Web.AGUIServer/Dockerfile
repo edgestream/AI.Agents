@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /repo
 COPY src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj src/AI.Web.AGUIServer/
+COPY src/AI.MCP.Client/AI.MCP.Client.csproj src/AI.MCP.Client/
 RUN dotnet restore src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj
 COPY . .
 RUN dotnet publish src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj \
