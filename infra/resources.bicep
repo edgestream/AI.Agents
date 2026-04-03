@@ -2,21 +2,26 @@ param environmentName string
 param location string
 param backendImage string
 param frontendImage string
-param azureOpenAIEndpoint string
-param azureOpenAIDeploymentName string
+
+@description('Azure OpenAI endpoint URL. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIEndpoint string = ''
+
+@description('Azure OpenAI deployment name. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIDeploymentName string = ''
 
 @secure()
-param azureOpenAIApiKey string
+@description('Azure OpenAI API key. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIApiKey string = ''
 
 @secure()
-@description('Full JSON content of appsettings.Production.json. When provided, mounted as a read-only file at /run/secrets/appsettings.Production.json inside the backend container.')
+@description('Full JSON content of appsettings.{environmentName}.json. When provided, mounted read-only at /run/secrets/appsettings.{environmentName}.json inside the backend container.')
 param appSettingsJson string = ''
 
 param tags object
 
 // Log Analytics Workspace (shared by both Container Apps)
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'log-ai-web-${environmentName}'
+  name: 'log-ai-web-${toLower(environmentName)}'
   location: location
   tags: tags
   properties: {
@@ -29,7 +34,7 @@ resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
 
 // Container Apps Environment (Consumption tier)
 resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
-  name: 'cae-ai-web-${environmentName}'
+  name: 'cae-ai-web-${toLower(environmentName)}'
   location: location
   tags: tags
   properties: {
@@ -68,7 +73,7 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         ] : [],
         !empty(appSettingsJson) ? [
           {
-            name: 'appsettings-production-json'
+            name: 'appsettings-env-json'
             value: appSettingsJson
           }
         ] : []
@@ -85,19 +90,26 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
           }
           env: concat([
             {
+              // Mirrors the azd environment name so Program.cs loads
+              // /run/secrets/appsettings.{environmentName}.json
+              name: 'ASPNETCORE_ENVIRONMENT'
+              value: environmentName
+            }
+          ], !empty(azureOpenAIEndpoint) ? [
+            {
+              // CD override: azd env set AZURE_OPENAI_ENDPOINT <value>
               name: 'AzureOpenAI__Endpoint'
               value: azureOpenAIEndpoint
             }
+          ] : [], !empty(azureOpenAIDeploymentName) ? [
             {
+              // CD override: azd env set AZURE_OPENAI_DEPLOYMENT_NAME <value>
               name: 'AzureOpenAI__DeploymentName'
               value: azureOpenAIDeploymentName
             }
+          ] : [], !empty(azureOpenAIApiKey) ? [
             {
-              name: 'ASPNETCORE_ENVIRONMENT'
-              value: 'Production'
-            }
-          ], !empty(azureOpenAIApiKey) ? [
-            {
+              // CD override: azd env set AZURE_OPENAI_API_KEY <value>
               name: 'AzureOpenAI__ApiKey'
               secretRef: 'azure-openai-api-key'
             }
@@ -116,8 +128,8 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
           storageType: 'Secret'
           secrets: [
             {
-              secretRef: 'appsettings-production-json'
-              path: 'appsettings.Production.json'
+              secretRef: 'appsettings-env-json'
+              path: 'appsettings.${environmentName}.json'
             }
           ]
         }
