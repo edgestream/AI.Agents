@@ -17,6 +17,16 @@ param azureOpenAIApiKey string = ''
 @description('Full JSON content of appsettings.{environmentName}.json. When provided, mounted read-only at /run/secrets/appsettings.{environmentName}.json inside the backend container.')
 param appSettingsJson string = ''
 
+@description('Microsoft Entra app registration client ID. When set, enables Easy Auth on the Container App ingress.')
+param entraClientId string = ''
+
+@secure()
+@description('Microsoft Entra app registration client secret. Required when entraClientId is set.')
+param entraClientSecret string = ''
+
+@description('Microsoft Entra tenant ID. Required when entraClientId is set.')
+param entraTenantId string = ''
+
 param tags object
 
 // Log Analytics Workspace
@@ -77,6 +87,12 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
           {
             name: 'appsettings-env-json'
             value: appSettingsJson
+          }
+        ] : [],
+        !empty(entraClientSecret) ? [
+          {
+            name: 'entra-client-secret'
+            value: entraClientSecret
           }
         ] : []
       )
@@ -154,6 +170,33 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
       scale: {
         minReplicas: 0
         maxReplicas: 1
+      }
+    }
+  }
+}
+
+resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if (!empty(entraClientId)) {
+  parent: app
+  name: 'current'
+  properties: {
+    platform: {
+      enabled: true
+    }
+    globalValidation: {
+      unauthenticatedClientAction: 'RedirectToLoginPage'
+    }
+    identityProviders: {
+      azureActiveDirectory: {
+        registration: {
+          clientId: entraClientId
+          clientSecretSettingName: 'entra-client-secret'
+          openIdIssuer: 'https://sts.windows.net/${entraTenantId}/v2.0'
+        }
+        validation: {
+          allowedAudiences: [
+            'api://${entraClientId}'
+          ]
+        }
       }
     }
   }

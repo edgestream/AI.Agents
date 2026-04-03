@@ -16,3 +16,11 @@ param azureOpenAIApiKey = readEnvironmentVariable('AZURE_OPENAI_API_KEY', '')
 // Appsettings for this environment – auto-loaded from appsettings.{AZURE_ENV_NAME}.json by the preprovision hook.
 // e.g. 'azd env new Development' reads appsettings.Development.json; 'azd env new Production' reads appsettings.Production.json.
 param appSettingsJson = readEnvironmentVariable('APPSETTINGS_JSON', '')
+
+// Microsoft Entra authentication – set these to enable Easy Auth on the Container App ingress.
+// azd env set ENTRA_CLIENT_ID <app-registration-client-id>
+// azd env set ENTRA_CLIENT_SECRET <client-secret-value>
+// azd env set ENTRA_TENANT_ID <tenant-id>
+param entraClientId = readEnvironmentVariable('ENTRA_CLIENT_ID', '')
+param entraClientSecret = readEnvironmentVariable('ENTRA_CLIENT_SECRET', '')
+param entraTenantId = readEnvironmentVariable('ENTRA_TENANT_ID', '')

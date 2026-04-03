@@ -29,6 +29,16 @@ param azureOpenAIApiKey string = ''
 @description('Full JSON content of appsettings.{environmentName}.json. Loaded automatically from the repo root by the preprovision hook when the file exists.')
 param appSettingsJson string = ''
 
+@description('Microsoft Entra app registration client ID. When set, enables Easy Auth on the Container App ingress.')
+param entraClientId string = ''
+
+@secure()
+@description('Microsoft Entra app registration client secret. Required when entraClientId is set.')
+param entraClientSecret string = ''
+
+@description('Microsoft Entra tenant ID. Required when entraClientId is set.')
+param entraTenantId string = ''
+
 var tags = {
   'azd-env-name': environmentName
 }
@@ -52,6 +62,9 @@ module resources './resources.bicep' = {
     azureOpenAIDeploymentName: azureOpenAIDeploymentName
     azureOpenAIApiKey: azureOpenAIApiKey
     appSettingsJson: appSettingsJson
+    entraClientId: entraClientId
+    entraClientSecret: entraClientSecret
+    entraTenantId: entraTenantId
     tags: tags
   }
 }
