@@ -16,7 +16,7 @@ param tags object
 
 // Log Analytics Workspace (shared by both Container Apps)
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'log-ai-web-${environmentName}'
+  name: 'log-ai-web-${toLower(environmentName)}'
   location: location
   tags: tags
   properties: {
@@ -29,7 +29,7 @@ resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
 
 // Container Apps Environment (Consumption tier)
 resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
-  name: 'cae-ai-web-${environmentName}'
+  name: 'cae-ai-web-${toLower(environmentName)}'
   location: location
   tags: tags
   properties: {
