@@ -56,6 +56,5 @@ module resources './resources.bicep' = {
   }
 }
 
-output BACKEND_URI string = resources.outputs.BACKEND_URI
-output FRONTEND_URI string = resources.outputs.FRONTEND_URI
+output APP_URI string = resources.outputs.APP_URI
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = resources.outputs.AZURE_CONTAINER_APPS_ENVIRONMENT_NAME

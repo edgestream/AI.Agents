@@ -19,7 +19,7 @@ param appSettingsJson string = ''
 
 param tags object
 
-// Log Analytics Workspace (shared by both Container Apps)
+// Log Analytics Workspace
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
   name: 'log-ai-web-${toLower(environmentName)}'
   location: location
@@ -48,9 +48,11 @@ resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
   }
 }
 
-// Backend Container App
-resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
-  name: 'ca-ai-web-backend'
+// Combined Container App: frontend (ingress on 3000) + backend sidecar (localhost:8080).
+// Mirrors the docker-compose single-host layout. Halves ACA billing for personal deployments
+// where independent scaling of the two containers is not required.
+resource app 'Microsoft.App/containerApps@2023-05-01' = {
+  name: 'ca-ai-web'
   location: location
   tags: union(tags, { 'azd-service-name': 'backend' })
   identity: {
@@ -61,7 +63,7 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
     configuration: {
       ingress: {
         external: true
-        targetPort: 8080
+        targetPort: 3000
         transport: 'http'
       }
       secrets: concat(
@@ -121,6 +123,21 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
             }
           ] : []
         }
+        {
+          name: 'frontend'
+          image: frontendImage
+          resources: {
+            cpu: json('0.5')
+            memory: '1Gi'
+          }
+          env: [
+            {
+              // Backend is co-located in the same replica; communicate over localhost.
+              name: 'BACKEND_URL'
+              value: 'http://localhost:8080'
+            }
+          ]
+        }
       ]
       volumes: !empty(appSettingsJson) ? [
         {
@@ -142,48 +159,5 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
   }
 }
 
-// Frontend Container App
-resource frontendApp 'Microsoft.App/containerApps@2023-05-01' = {
-  name: 'ca-ai-web-frontend'
-  location: location
-  tags: union(tags, { 'azd-service-name': 'frontend' })
-  identity: {
-    type: 'SystemAssigned'
-  }
-  properties: {
-    managedEnvironmentId: cae.id
-    configuration: {
-      ingress: {
-        external: true
-        targetPort: 3000
-        transport: 'http'
-      }
-    }
-    template: {
-      containers: [
-        {
-          name: 'frontend'
-          image: frontendImage
-          resources: {
-            cpu: json('0.5')
-            memory: '1Gi'
-          }
-          env: [
-            {
-              name: 'BACKEND_URL'
-              value: 'https://${backendApp.properties.configuration.ingress.fqdn}'
-            }
-          ]
-        }
-      ]
-      scale: {
-        minReplicas: 0
-        maxReplicas: 1
-      }
-    }
-  }
-}
-
-output BACKEND_URI string = 'https://${backendApp.properties.configuration.ingress.fqdn}'
-output FRONTEND_URI string = 'https://${frontendApp.properties.configuration.ingress.fqdn}'
+output APP_URI string = 'https://${app.properties.configuration.ingress.fqdn}'
 output AZURE_CONTAINER_APPS_ENVIRONMENT_NAME string = cae.name
