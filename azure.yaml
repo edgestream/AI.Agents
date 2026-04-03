@@ -37,7 +37,3 @@ services:
   backend:
     host: containerapp
     image: ghcr.io/edgestream/ai-web-aguiserver:latest
-
-  frontend:
-    host: containerapp
-    image: ghcr.io/edgestream/ai-web-aguichat:latest
