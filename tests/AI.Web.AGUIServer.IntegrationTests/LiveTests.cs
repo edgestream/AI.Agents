@@ -61,6 +61,9 @@ public sealed class LiveTests
                 builder.UseSetting("McpServers:learn:Url", "https://learn.microsoft.com/api/mcp");
             });
         using var client = factory.CreateClient();
+        
+        // Wait a moment for the server to start and register the MCP server
+        await Task.Delay(5000); 
 
         var payload = new
         {
