@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 @minLength(1)
 @maxLength(64)
-@description('Name of the environment (e.g. dev, prod). Used to name all resources.')
+@description('Name of the environment (e.g. Development, Production). Used to name all resources.')
 param environmentName string
 
 @minLength(1)

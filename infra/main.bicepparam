@@ -1,7 +1,7 @@
 using './main.bicep'
 
-param environmentName = readEnvironmentVariable('AZURE_ENV_NAME', 'dev')
-param location = readEnvironmentVariable('AZURE_LOCATION', 'eastus')
+param environmentName = readEnvironmentVariable('AZURE_ENV_NAME', 'Development')
+param location = readEnvironmentVariable('AZURE_LOCATION', 'eastus2')
 
 // Override image tags for CD: azd env set BACKEND_IMAGE ghcr.io/edgestream/ai-web-aguiserver:sha-<7-char-SHA>
 param backendImage = readEnvironmentVariable('BACKEND_IMAGE', 'ghcr.io/edgestream/ai-web-aguiserver:latest')
