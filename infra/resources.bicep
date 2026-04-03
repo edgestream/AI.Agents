@@ -17,6 +17,16 @@ param azureOpenAIApiKey string = ''
 @description('Full JSON content of appsettings.{environmentName}.json. When provided, mounted read-only at /run/secrets/appsettings.{environmentName}.json inside the backend container.')
 param appSettingsJson string = ''
 
+@description('Microsoft Entra app registration client ID. When set, enables Easy Auth on the Container App ingress.')
+param entraClientId string = ''
+
+@secure()
+@description('Microsoft Entra app registration client secret. Required when entraClientId is set.')
+param entraClientSecret string = ''
+
+@description('Microsoft Entra tenant ID. Required when entraClientId is set.')
+param entraTenantId string = ''
+
 param tags object
 
 // Log Analytics Workspace
@@ -78,6 +88,12 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
             name: 'appsettings-env-json'
             value: appSettingsJson
           }
+        ] : [],
+        !empty(entraClientSecret) ? [
+          {
+            name: 'entra-client-secret'
+            value: entraClientSecret
+          }
         ] : []
       )
     }
@@ -136,6 +152,30 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'BACKEND_URL'
               value: 'http://localhost:8080'
             }
+            {
+              // Next.js standalone server binds to the HOSTNAME env var. In Container Apps the
+              // runtime sets HOSTNAME to the replica name, so Next.js would only listen on that
+              // DNS name — not on 127.0.0.1. Easy Auth forwards to 127.0.0.1:3000, so we must
+              // override HOSTNAME to 0.0.0.0 to make Next.js listen on all interfaces.
+              name: 'HOSTNAME'
+              value: '0.0.0.0'
+            }
+          ]
+          // Readiness probe ensures the pod is not marked ready until Next.js is listening.
+          // Without this, Easy Auth receives traffic before port 3000 is open on cold starts,
+          // causing 500 "Connection refused" immediately after the Entra login callback.
+          probes: [
+            {
+              type: 'readiness'
+              httpGet: {
+                path: '/'
+                port: 3000
+                scheme: 'HTTP'
+              }
+              initialDelaySeconds: 2
+              periodSeconds: 3
+              failureThreshold: 10
+            }
           ]
         }
       ]
@@ -152,8 +192,40 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
         }
       ] : []
       scale: {
+        // Keep 1 replica warm when Easy Auth is enabled: Easy Auth's http-auth sidecar starts
+        // The readiness probe on the frontend container gates the Container Apps ingress:
+        // traffic is only routed to a replica once Next.js passes its probe on port 3000.
+        // HOSTNAME=0.0.0.0 ensures Next.js binds to all interfaces so Easy Auth's proxy
+        // to 127.0.0.1:3000 succeeds. Scale-to-zero is therefore safe with Easy Auth.
         minReplicas: 0
         maxReplicas: 1
+      }
+    }
+  }
+}
+
+resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if (!empty(entraClientId)) {
+  parent: app
+  name: 'current'
+  properties: {
+    platform: {
+      enabled: true
+    }
+    globalValidation: {
+      unauthenticatedClientAction: 'RedirectToLoginPage'
+    }
+    identityProviders: {
+      azureActiveDirectory: {
+        registration: {
+          clientId: entraClientId
+          clientSecretSettingName: 'entra-client-secret'
+          openIdIssuer: '${environment().authentication.loginEndpoint}${entraTenantId}/v2.0'
+        }
+        validation: {
+          allowedAudiences: [
+            entraClientId
+          ]
+        }
       }
     }
   }
