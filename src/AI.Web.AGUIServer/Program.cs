@@ -8,9 +8,9 @@ using Microsoft.Extensions.AI;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Load optional production appsettings from the secret volume mount (ACA deployment).
-// The file is mounted at /run/secrets/appsettings.Production.json when APPSETTINGS_JSON is set.
-builder.Configuration.AddJsonFile("/run/secrets/appsettings.Production.json", optional: true, reloadOnChange: false);
+// Load environment-specific appsettings from the secret volume mount (ACA / Docker Compose deployment).
+// Optional so configuration-free providers (e.g. managed identity) still work.
+builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
 builder.Services.AddHttpClient().AddLogging();
 builder.Services.AddOpenApi();

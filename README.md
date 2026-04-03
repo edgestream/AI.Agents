@@ -5,12 +5,16 @@
 
 ## Quickstart
 
-The backend requires Azure OpenAI credentials. Copy the provided template `.env.example` into `.env` and fill in your values:
+Copy the application settings example into `appsettings.Development.json` in the repository root and fill in your Azure OpenAI credentials:
 
-```.env
-AZURE_OPENAI_ENDPOINT=https://<your-resource>.openai.azure.com/
-AZURE_OPENAI_DEPLOYMENT_NAME=<your-deployment>
-AZURE_OPENAI_API_KEY=<your-api-key>
+```appsettings.Development.json
+{
+  "AzureOpenAI": {
+    "Endpoint": "https://<your-resource>.openai.azure.com/",
+    "DeploymentName": "<your-deployment-name>",
+    "ApiKey": "<your-api-key>"
+  }
+}
 ```
 
 Start the services:
@@ -31,17 +35,7 @@ docker compose down
 
 ### Running local
 
-The backend requires Azure OpenAI credentials. Use the [.NET Secret Manager](https://learn.microsoft.com/aspnet/core/security/app-secrets)
-to store them outside the repository:
-
-```bash
-cd src/AI.Web.AGUIServer
-dotnet user-secrets set "AzureOpenAI:Endpoint" "https://<your-resource>.openai.azure.com/"
-dotnet user-secrets set "AzureOpenAI:DeploymentName" "<your-deployment>"
-dotnet user-secrets set "AzureOpenAI:ApiKey" "<your-api-key>"
-```
-
-Now we can start the backend to listen on `http://localhost:8000/`:
+Copy `appsettings.Development.json` from the repository root into `src/AI.Web.AGUIServer/` then start the backend:
 
 ```bash
 dotnet run --project src/AI.Web.AGUIServer

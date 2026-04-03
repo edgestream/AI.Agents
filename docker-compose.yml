@@ -7,9 +7,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - AzureOpenAI__Endpoint=${AZURE_OPENAI_ENDPOINT}
-      - AzureOpenAI__DeploymentName=${AZURE_OPENAI_DEPLOYMENT_NAME}
-      - AzureOpenAI__ApiKey=${AZURE_OPENAI_API_KEY:-}
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+    secrets:
+      - source: appsettings_env
+        target: appsettings.${ASPNETCORE_ENVIRONMENT:-Development}.json
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
       interval: 10s
@@ -35,3 +36,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+secrets:
+  appsettings_env:
+    file: ./appsettings.${ASPNETCORE_ENVIRONMENT:-Development}.json
