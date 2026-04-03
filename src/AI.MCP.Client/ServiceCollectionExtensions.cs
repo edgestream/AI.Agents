@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
                     .GetSection("McpServers")
                     .Get<Dictionary<string, McpServerOptions>>() ?? []);
         services.AddSingleton<McpClientRegistry>();
+        services.AddTransient<ToolDiscoveryService>();
         services.AddHostedService<HostingService>();
         return services;
     }
