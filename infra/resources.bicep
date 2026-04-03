@@ -152,6 +152,14 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'BACKEND_URL'
               value: 'http://localhost:8080'
             }
+            {
+              // Next.js standalone server binds to the HOSTNAME env var. In Container Apps the
+              // runtime sets HOSTNAME to the replica name, so Next.js would only listen on that
+              // DNS name — not on 127.0.0.1. Easy Auth forwards to 127.0.0.1:3000, so we must
+              // override HOSTNAME to 0.0.0.0 to make Next.js listen on all interfaces.
+              name: 'HOSTNAME'
+              value: '0.0.0.0'
+            }
           ]
           // Readiness probe ensures the pod is not marked ready until Next.js is listening.
           // Without this, Easy Auth receives traffic before port 3000 is open on cold starts,
