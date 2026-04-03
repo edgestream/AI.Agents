@@ -73,15 +73,6 @@ jobs:
     permissions:
       contents: read
       packages: write
-    env:
-      # Passed to docker compose so the backend container can reach Azure OpenAI.
-      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-      AZURE_OPENAI_DEPLOYMENT_NAME: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
-      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
-      # Double-underscore format used by ASP.NET Core for the live tests.
-      AzureOpenAI__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-      AzureOpenAI__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
-      AzureOpenAI__ApiKey: ${{ secrets.AZURE_OPENAI_API_KEY }}
     steps:
       - uses: actions/checkout@v4
 
@@ -135,6 +126,18 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
+      - name: Create appsettings.Development.json
+        run: |
+          cat > appsettings.Development.json <<EOF
+          {
+            "AzureOpenAI": {
+              "Endpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
+              "DeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}",
+              "ApiKey": "${{ secrets.AZURE_OPENAI_API_KEY }}"
+            }
+          }
+          EOF
+
       - name: Start stack
         run: docker compose up -d --no-build
 
@@ -161,6 +164,11 @@ jobs:
 
       - name: Run tests (Live)
         run: dotnet test tests/AI.Web.AGUIServer.IntegrationTests --verbosity normal --filter "TestCategory=Live"
+        env:
+          # Live tests use a bare WebApplicationFactory — config must come from env vars.
+          AzureOpenAI__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AzureOpenAI__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
+          AzureOpenAI__ApiKey: ${{ secrets.AZURE_OPENAI_API_KEY }}
 
       - name: Stop stack
         if: always()
