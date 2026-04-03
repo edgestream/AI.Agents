@@ -38,16 +38,6 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Set Azure OpenAI API key secret on backend Container App
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az containerapp secret set \
-              --name "${{ env.BACKEND_APP }}" \
-              --resource-group "${{ env.RESOURCE_GROUP }}" \
-              --secrets "azure-openai-api-key=${{ secrets.AZURE_OPENAI_API_KEY }}"
-
       - name: Update backend Container App image
         uses: azure/cli@v2
         with:
