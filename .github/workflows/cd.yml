@@ -21,8 +21,7 @@ jobs:
       BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-web-aguiserver
       FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-web-aguichat
       RESOURCE_GROUP: rg-ai-web-production
-      BACKEND_APP: ca-ai-web-backend
-      FRONTEND_APP: ca-ai-web-frontend
+      APP: ca-ai-web
 
     steps:
       - name: Compute image tag from triggering commit SHA
@@ -38,22 +37,24 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Update backend Container App image
+      - name: Update backend container image
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
             az containerapp update \
-              --name "${{ env.BACKEND_APP }}" \
+              --name "${{ env.APP }}" \
               --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --container-name backend \
               --image "${{ env.BACKEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}"
 
-      - name: Update frontend Container App image
+      - name: Update frontend container image
         uses: azure/cli@v2
         with:
           azcliversion: latest
           inlineScript: |
             az containerapp update \
-              --name "${{ env.FRONTEND_APP }}" \
+              --name "${{ env.APP }}" \
               --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --container-name frontend \
               --image "${{ env.FRONTEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}"
