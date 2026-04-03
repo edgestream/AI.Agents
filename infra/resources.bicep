@@ -184,7 +184,12 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
         }
       ] : []
       scale: {
-        minReplicas: 0
+        // Keep 1 replica warm when Easy Auth is enabled: Easy Auth's http-auth sidecar starts
+        // independently of user containers and cannot wait for the frontend readiness probe.
+        // On scale-from-zero it immediately tries to forward to port 3000, causing 500s.
+        // Additionally, session encryption keys are ephemeral, so a pod restart invalidates
+        // all existing session cookies and forces every user to log in again.
+        minReplicas: empty(entraClientId) ? 0 : 1
         maxReplicas: 1
       }
     }
