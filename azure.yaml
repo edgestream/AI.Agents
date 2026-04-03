@@ -11,7 +11,7 @@ hooks:
     posix:
       shell: sh
       run: |
-        FILE="src/AI.Web.AGUIServer/appsettings.Production.json"
+        FILE="appsettings.Production.json"
         if [ -f "$FILE" ]; then
           echo "Found $FILE - loading into APPSETTINGS_JSON"
           azd env set APPSETTINGS_JSON "$(cat "$FILE")"
@@ -19,7 +19,7 @@ hooks:
     windows:
       shell: pwsh
       run: |
-        $file = "src/AI.Web.AGUIServer/appsettings.Production.json"
+        $file = "appsettings.Production.json"
         if (Test-Path $file) {
           Write-Host "Found $file - loading into APPSETTINGS_JSON"
           azd env set APPSETTINGS_JSON (Get-Content $file -Raw)
