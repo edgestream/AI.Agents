@@ -9,7 +9,7 @@ param azureOpenAIDeploymentName string
 param azureOpenAIApiKey string
 
 @secure()
-@description('Full JSON content of appsettings.Production.json. When provided, mounted as a read-only file at /run/secrets/appsettings.Production.json inside the backend container.')
+@description('Full JSON content of appsettings.{environmentName}.json. When provided, mounted read-only at /run/secrets/appsettings.{environmentName}.json inside the backend container.')
 param appSettingsJson string = ''
 
 param tags object
@@ -68,7 +68,7 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
         ] : [],
         !empty(appSettingsJson) ? [
           {
-            name: 'appsettings-production-json'
+            name: 'appsettings-env-json'
             value: appSettingsJson
           }
         ] : []
@@ -93,8 +93,10 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
               value: azureOpenAIDeploymentName
             }
             {
+              // Mirrors the azd environment name so Program.cs loads
+              // /run/secrets/appsettings.{environmentName}.json
               name: 'ASPNETCORE_ENVIRONMENT'
-              value: 'Production'
+              value: environmentName
             }
           ], !empty(azureOpenAIApiKey) ? [
             {
@@ -116,8 +118,8 @@ resource backendApp 'Microsoft.App/containerApps@2023-05-01' = {
           storageType: 'Secret'
           secrets: [
             {
-              secretRef: 'appsettings-production-json'
-              path: 'appsettings.Production.json'
+              secretRef: 'appsettings-env-json'
+              path: 'appsettings.${environmentName}.json'
             }
           ]
         }

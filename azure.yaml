@@ -11,7 +11,9 @@ hooks:
     posix:
       shell: sh
       run: |
-        FILE="appsettings.Production.json"
+        # Picks up appsettings.{AZURE_ENV_NAME}.json from the repo root.
+        # e.g. 'azd env new Development' → reads appsettings.Development.json
+        FILE="appsettings.${AZURE_ENV_NAME}.json"
         if [ -f "$FILE" ]; then
           echo "Found $FILE - loading into APPSETTINGS_JSON"
           azd env set APPSETTINGS_JSON "$(cat "$FILE")"
@@ -19,7 +21,9 @@ hooks:
     windows:
       shell: pwsh
       run: |
-        $file = "appsettings.Production.json"
+        # Picks up appsettings.{AZURE_ENV_NAME}.json from the repo root.
+        # e.g. 'azd env new Development' -> reads appsettings.Development.json
+        $file = "appsettings.$($env:AZURE_ENV_NAME).json"
         if (Test-Path $file) {
           Write-Host "Found $file - loading into APPSETTINGS_JSON"
           azd env set APPSETTINGS_JSON (Get-Content $file -Raw)

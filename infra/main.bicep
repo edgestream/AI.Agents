@@ -26,7 +26,7 @@ param azureOpenAIDeploymentName string = ''
 param azureOpenAIApiKey string = ''
 
 @secure()
-@description('Full JSON content of appsettings.Production.json for MCP server configuration. Set via: azd env set APPSETTINGS_JSON \'{"McpServers": {...}}\'')
+@description('Full JSON content of appsettings.{environmentName}.json. Loaded automatically from the repo root by the preprovision hook when the file exists.')
 param appSettingsJson string = ''
 
 var tags = {

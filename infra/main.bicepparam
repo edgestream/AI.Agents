@@ -12,5 +12,6 @@ param azureOpenAIEndpoint = readEnvironmentVariable('AZURE_OPENAI_ENDPOINT', '')
 param azureOpenAIDeploymentName = readEnvironmentVariable('AZURE_OPENAI_DEPLOYMENT_NAME', '')
 param azureOpenAIApiKey = readEnvironmentVariable('AZURE_OPENAI_API_KEY', '')
 
-// Production appsettings (McpServers config) – set via: azd env set APPSETTINGS_JSON '{"McpServers": {...}}'
+// Appsettings for this environment – auto-loaded from appsettings.{AZURE_ENV_NAME}.json by the preprovision hook.
+// e.g. 'azd env new Development' reads appsettings.Development.json; 'azd env new Production' reads appsettings.Production.json.
 param appSettingsJson = readEnvironmentVariable('APPSETTINGS_JSON', '')
