@@ -153,6 +153,22 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               value: 'http://localhost:8080'
             }
           ]
+          // Readiness probe ensures the pod is not marked ready until Next.js is listening.
+          // Without this, Easy Auth receives traffic before port 3000 is open on cold starts,
+          // causing 500 "Connection refused" immediately after the Entra login callback.
+          probes: [
+            {
+              type: 'readiness'
+              httpGet: {
+                path: '/'
+                port: 3000
+                scheme: 'HTTP'
+              }
+              initialDelaySeconds: 2
+              periodSeconds: 3
+              failureThreshold: 10
+            }
+          ]
         }
       ]
       volumes: !empty(appSettingsJson) ? [
