@@ -32,8 +32,8 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             // Remove the MCP hosted service so no connections are attempted in tests.
             // A fresh McpClientRegistry (registered by Program.cs) starts with an empty
             // clients and tools list, which is the correct test behaviour.
-            // ToolDiscoveryService is internal and only driven by McpClientHostingService,
-            // so removing the hosted service is sufficient.
+            // ToolDiscoveryService is internal and driven by AI.MCP.Client.HostingService,
+            // so removing HostingService is sufficient.
             var mcpDescriptor = services.SingleOrDefault(
                 d => d.ImplementationType == typeof(HostingService));
             if (mcpDescriptor is not null) services.Remove(mcpDescriptor);
