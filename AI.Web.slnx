@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/src/">
+    <Project Path="src/AI.MCP.Client/AI.MCP.Client.csproj" />
     <Project Path="src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj" />
   </Folder>
   <Folder Name="/tests/">

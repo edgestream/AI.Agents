@@ -1,3 +1,4 @@
+using AI.MCP.Client;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -7,8 +8,8 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 /// Custom <see cref="WebApplicationFactory{TEntryPoint}"/> that replaces
 /// <see cref="IChatClient"/> with <see cref="FakeChatClient"/> and injects
 /// dummy Azure OpenAI configuration so the server can start without real
-/// Azure credentials. Also removes <see cref="McpClientHostingService"/> so no
-/// real MCP connections are attempted during tests.
+/// Azure credentials. Also removes <see cref="HostingService"/> so
+/// no real MCP connections are attempted during tests.
 /// </summary>
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
@@ -28,15 +29,14 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 
             services.AddSingleton<IChatClient>(new FakeChatClient());
 
-            // Remove McpHostingService so no MCP connections are attempted in tests.
-            // UseSetting("McpServers", "") cannot reliably clear nested configuration
-            // keys populated from appsettings.json, so explicitly removing the hosted
-            // service is safer. A fresh McpClientRegistry (registered by Program.cs)
-            // starts with an empty tools list, which is the correct test behaviour.
-            var mcpHostedDescriptor = services.SingleOrDefault(
-                d => d.ImplementationType == typeof(McpClientHostingService));
-            if (mcpHostedDescriptor is not null)
-                services.Remove(mcpHostedDescriptor);
+            // Remove the MCP hosted service so no connections are attempted in tests.
+            // A fresh McpClientRegistry (registered by Program.cs) starts with an empty
+            // clients and tools list, which is the correct test behaviour.
+            // ToolDiscoveryService is internal and only driven by McpClientHostingService,
+            // so removing the hosted service is sufficient.
+            var mcpDescriptor = services.SingleOrDefault(
+                d => d.ImplementationType == typeof(HostingService));
+            if (mcpDescriptor is not null) services.Remove(mcpDescriptor);
         });
     }
 }
