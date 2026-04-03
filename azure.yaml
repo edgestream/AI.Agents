@@ -6,6 +6,25 @@ infra:
   provider: bicep
   path: infra
 
+hooks:
+  preprovision:
+    posix:
+      shell: sh
+      run: |
+        FILE="src/AI.Web.AGUIServer/appsettings.Production.json"
+        if [ -f "$FILE" ]; then
+          echo "Found $FILE - loading into APPSETTINGS_JSON"
+          azd env set APPSETTINGS_JSON "$(cat "$FILE")"
+        fi
+    windows:
+      shell: pwsh
+      run: |
+        $file = "src/AI.Web.AGUIServer/appsettings.Production.json"
+        if (Test-Path $file) {
+          Write-Host "Found $file - loading into APPSETTINGS_JSON"
+          azd env set APPSETTINGS_JSON (Get-Content $file -Raw)
+        }
+
 services:
   backend:
     host: containerapp
