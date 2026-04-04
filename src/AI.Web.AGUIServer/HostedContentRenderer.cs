@@ -89,7 +89,7 @@ internal sealed class HostedContentRenderer(IChatClient innerClient) : Delegatin
             yield break;
 
         var sb = new StringBuilder();
-        sb.AppendLine("\ud83c\udf10 **Search Results**:\n");
+        sb.AppendLine("\ud83c\udf10 **Search Results**:");
         foreach (var result in webResult.Results)
         {
             switch (result)
@@ -134,7 +134,8 @@ internal sealed class HostedContentRenderer(IChatClient innerClient) : Delegatin
             yield break;
 
         var sb = new StringBuilder();
-        sb.AppendLine("\ud83d\udcca **Execution Output**:\n```");
+        sb.AppendLine("\ud83d\udcca **Execution Output**:");
+        sb.AppendLine("```");
         foreach (var output in codeResult.Outputs)
         {
             switch (output)
@@ -193,7 +194,8 @@ internal sealed class HostedContentRenderer(IChatClient innerClient) : Delegatin
             yield break;
 
         var sb = new StringBuilder();
-        sb.AppendLine("\ud83d\udd27 **MCP Tool Result**:\n```");
+        sb.AppendLine("\ud83d\udd27 **MCP Tool Result**:");
+        sb.AppendLine("```");
         foreach (var output in mcpResult.Outputs)
         {
             switch (output)
