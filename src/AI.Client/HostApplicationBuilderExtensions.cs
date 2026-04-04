@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using Azure;
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.OpenAI;
@@ -7,8 +6,6 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-
-#pragma warning disable MAAI001 
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -43,23 +40,19 @@ public static class HostApplicationBuilderExtensions
         var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
         if (string.IsNullOrWhiteSpace(endpoint))
             throw new InvalidOperationException("Azure OpenAI endpoint is not configured.");
-
         var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
         if (string.IsNullOrWhiteSpace(deploymentName))
             throw new InvalidOperationException("Azure OpenAI deployment name is not configured.");
-
         var apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
 
-        var openAIClient = string.IsNullOrEmpty(apiKey)
-            ? new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
-            : new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
-        builder.Services.AddSingleton(openAIClient);
+        builder.Services.AddSingleton<IChatClient>(_ =>
+        {
+            AzureOpenAIClient client = string.IsNullOrWhiteSpace(apiKey)
+                ? new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
+                : new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+            return client.GetChatClient(deploymentName).AsIChatClient();
+        });
 
-        var chatClient = openAIClient.GetChatClient(deploymentName);
-        builder.Services.AddSingleton(chatClient);
-
-        builder.Services.AddSingleton<IChatClient>(chatClient.AsIChatClient());
-        
         return builder;
     }
 
@@ -81,21 +74,16 @@ public static class HostApplicationBuilderExtensions
         if (string.IsNullOrWhiteSpace(model))
             throw new InvalidOperationException("Foundry:Model is not configured.");
 
-        var tokenCredential = new DefaultAzureCredential();
+        builder.Services.AddSingleton<IChatClient>(_ =>
+        {
+#pragma warning disable MAAI001 // AsIChatClientWithStoredOutputDisabled is experimental but stable for this use case
+            return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
+                .GetProjectOpenAIClient()
+                .GetProjectResponsesClientForModel(model)
+                .AsIChatClientWithStoredOutputDisabled();
+#pragma warning restore MAAI001
+        });
 
-        var projectClient = new AIProjectClient(new Uri(endpoint), tokenCredential);
-
-        builder.Services.AddSingleton<AIProjectClient>(projectClient);
-
-        var openAIClient = projectClient.GetProjectOpenAIClient();
-        builder.Services.AddSingleton(openAIClient);
-
-        var responsesClient = openAIClient.GetProjectResponsesClientForModel(model);
-        builder.Services.AddSingleton(responsesClient);
-
-        var chatClient = responsesClient.AsIChatClientWithStoredOutputDisabled(model);
-        builder.Services.AddSingleton(chatClient);
-        
         return builder;
     }
 }
