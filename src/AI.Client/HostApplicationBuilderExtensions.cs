@@ -2,7 +2,6 @@ using Azure;
 using Azure.AI.OpenAI;
 using Azure.AI.Projects;
 using Azure.Identity;
-using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,24 +65,9 @@ public static class HostApplicationBuilderExtensions
 
         var endpoint = builder.Configuration["Foundry:ProjectEndpoint"]
             ?? throw new InvalidOperationException("Foundry:ProjectEndpoint is not configured.");
-        var model = builder.Configuration["Foundry:Model"]
-            ?? throw new InvalidOperationException("Foundry:Model is not configured.");
 
         builder.Services.AddSingleton<AIProjectClient>(_ =>
             new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential()));
-
-        builder.Services.AddSingleton<IChatClient>(sp =>
-        {
-            var projectClient = sp.GetRequiredService<AIProjectClient>();
-            var agentOptions = new ChatClientAgentOptions
-            {
-                ChatOptions = new() { ModelId = model },
-            };
-            // AsAIAgent creates a server-side Responses Agent backed by the Foundry project
-            // endpoint. ChatClientAgent.ChatClient exposes this as a plain IChatClient so that
-            // the consuming host can wrap it with its own ChatClientAgentOptions (e.g. MCP tools).
-            return projectClient.AsAIAgent(agentOptions, clientFactory: null, loggerFactory: null, services: sp).ChatClient;
-        });
 
         return builder;
     }

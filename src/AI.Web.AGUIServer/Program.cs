@@ -20,13 +20,24 @@ builder.AddAIAgent("AGUIAgent", (sp, key) =>
     var agentOptions = new ChatClientAgentOptions { ChatOptions = chatOptions, AIContextProviders = [toolsContext] };
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
-    // Foundry Responses Agent: AIProjectClient is registered when AI:Provider = "Foundry".
-    // AsAIAgent creates a server-side Responses Agent on the Foundry project endpoint;
-    // the IChatClient stored in ChatClientAgent.ChatClient carries the Foundry inference
-    // channel, and this outer ChatClientAgent layer adds MCP context providers on top.
+    // Foundry Responses Agent: AIProjectClient is registered when Foundry:ProjectEndpoint is set.
+    // AsAIAgent requires ChatOptions.ModelId — read it from config here.
     var projectClient = sp.GetService<AIProjectClient>();
     if (projectClient is not null)
-        return projectClient.AsAIAgent(agentOptions, clientFactory: null, loggerFactory: loggerFactory, services: sp);
+    {
+        var config = sp.GetRequiredService<IConfiguration>();
+        var foundryOptions = new ChatClientAgentOptions
+        {
+            ChatOptions = new ChatOptions
+            {
+                ModelId = config["Foundry:Model"]
+                    ?? throw new InvalidOperationException("Foundry:Model is not configured."),
+                Instructions = "You are a helpful assistant.",
+            },
+            AIContextProviders = [toolsContext],
+        };
+        return projectClient.AsAIAgent(foundryOptions, clientFactory: null, loggerFactory: loggerFactory, services: sp);
+    }
 
     // Azure OpenAI (default): IChatClient is registered directly.
     var chatClient = sp.GetRequiredService<IChatClient>();
