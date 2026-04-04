@@ -37,7 +37,7 @@ builder.Services.AddAGUI();
 WebApplication app = builder.Build();
 
 app.MapGet("/health", () => "OK");
-app.MapAGUI("/", app.Services.GetRequiredService<AIAgent>());
+app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("AGUIAgent"));
 
 await app.RunAsync();
 
