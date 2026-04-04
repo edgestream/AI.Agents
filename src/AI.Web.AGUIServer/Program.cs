@@ -16,8 +16,6 @@ builder.AddAIAgent("AGUIAgent", (sp, key) =>
 {
     var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
     var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
-    var chatOptions = new ChatOptions { Instructions = "You are a helpful assistant." };
-    var agentOptions = new ChatClientAgentOptions { ChatOptions = chatOptions, AIContextProviders = [toolsContext] };
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
 
     // Foundry Responses Agent: AIProjectClient is registered when Foundry:ProjectEndpoint is set.
@@ -28,6 +26,7 @@ builder.AddAIAgent("AGUIAgent", (sp, key) =>
         var config = sp.GetRequiredService<IConfiguration>();
         var foundryOptions = new ChatClientAgentOptions
         {
+            Name = key,
             ChatOptions = new ChatOptions
             {
                 ModelId = config["Foundry:Model"]
@@ -40,6 +39,8 @@ builder.AddAIAgent("AGUIAgent", (sp, key) =>
     }
 
     // Azure OpenAI (default): IChatClient is registered directly.
+    var chatOptions = new ChatOptions { Instructions = "You are a helpful assistant." };
+    var agentOptions = new ChatClientAgentOptions { Name = key, ChatOptions = chatOptions, AIContextProviders = [toolsContext] };
     var chatClient = sp.GetRequiredService<IChatClient>();
     return new ChatClientAgent(chatClient, agentOptions, loggerFactory, services: sp);
 });
