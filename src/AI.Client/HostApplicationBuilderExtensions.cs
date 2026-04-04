@@ -36,10 +36,12 @@ public static class HostApplicationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var endpoint = builder.Configuration["AzureOpenAI:Endpoint"]
-            ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is not configured.");
-        var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"]
-            ?? throw new InvalidOperationException("AzureOpenAI:DeploymentName is not configured.");
+        var endpoint = builder.Configuration["AzureOpenAI:Endpoint"];
+        if (string.IsNullOrWhiteSpace(endpoint))
+            throw new InvalidOperationException("Azure OpenAI endpoint is not configured.");
+        var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
+        if (string.IsNullOrWhiteSpace(deploymentName))
+            throw new InvalidOperationException("Azure OpenAI deployment name is not configured.");
         var apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
 
         builder.Services.AddSingleton<IChatClient>(_ =>
