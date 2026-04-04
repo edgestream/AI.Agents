@@ -1,4 +1,3 @@
-using AI.MCP.Client;
 using AI.Web.AGUIServer;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -10,19 +9,20 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
 builder.AddAIClient();
-builder.AddMCPClient();
 builder.AddAIAgent("AGUIAgent", (sp, key) =>
 {
-    var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
-    var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
-    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-    var agentOptions = new ChatClientAgentOptions
+    IChatClient inner = sp.GetRequiredService<IChatClient>();
+    IChatClient pipeline = new CitationMiddleware(inner);
+    ChatClientAgentOptions agentOptions = new()
     {
         Name = key,
-        ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
-        AIContextProviders = [toolsContext],
+        ChatOptions = new ChatOptions
+        {
+            Instructions = "You are a helpful assistant.",
+            Tools = [new HostedWebSearchTool()]
+        }
     };
-    return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
+    return new ChatClientAgent(pipeline, agentOptions, sp.GetRequiredService<ILoggerFactory>(), services: sp);
 });
 builder.Services.AddAGUI();
 
