@@ -1,4 +1,5 @@
 using Azure;
+using Azure.AI.Extensions.OpenAI;
 using Azure.AI.OpenAI;
 using Azure.AI.Projects;
 using Azure.Identity;
@@ -57,22 +58,31 @@ public static class HostApplicationBuilderExtensions
 
     /// <summary>
     /// Registers an <see cref="IChatClient"/> backed by a Microsoft Foundry project endpoint
-    /// using the Responses Agent (direct inference) pattern. Reads <c>Foundry:ProjectEndpoint</c>
-    /// and <c>Foundry:Model</c> from configuration. Authentication uses
-    /// <see cref="DefaultAzureCredential"/> (managed identity / Entra ID).
+    /// using the Responses API (stateless, no server-side conversation storage).
+    /// Reads <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> from configuration.
+    /// Authentication uses <see cref="DefaultAzureCredential"/> (managed identity / Entra ID).
     /// </summary>
     public static IHostApplicationBuilder AddFoundryResponsesAgentClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        var endpoint = builder.Configuration["Foundry:ProjectEndpoint"]
-            ?? throw new InvalidOperationException("Foundry:ProjectEndpoint is not configured.");
+        var endpoint = builder.Configuration["Foundry:ProjectEndpoint"];
+        if (string.IsNullOrWhiteSpace(endpoint))
+            throw new InvalidOperationException("Foundry:ProjectEndpoint is not configured.");
 
-        if (string.IsNullOrWhiteSpace(builder.Configuration["Foundry:Model"]))
+        var model = builder.Configuration["Foundry:Model"];
+        if (string.IsNullOrWhiteSpace(model))
             throw new InvalidOperationException("Foundry:Model is not configured.");
 
-        builder.Services.AddSingleton<AIProjectClient>(_ =>
-            new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential()));
+        builder.Services.AddSingleton<IChatClient>(_ =>
+        {
+#pragma warning disable MAAI001 // AsIChatClientWithStoredOutputDisabled is experimental but stable for this use case
+            return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
+                .GetProjectOpenAIClient()
+                .GetProjectResponsesClientForModel(model)
+                .AsIChatClientWithStoredOutputDisabled();
+#pragma warning restore MAAI001
+        });
 
         return builder;
     }
