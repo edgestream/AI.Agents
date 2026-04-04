@@ -62,4 +62,38 @@ public sealed class AGUIEndpointTests
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(body), "SSE stream body should not be empty.");
     }
+
+    /// <summary>
+    /// Verifies that <see cref="WebSearchToolCallContent"/> and
+    /// <see cref="WebSearchToolResultContent"/> returned by the LLM are converted
+    /// to readable Markdown text by <see cref="HostedContentRenderer"/> and appear
+    /// in the SSE stream sent to the CopilotKit frontend.
+    /// </summary>
+    [TestMethod]
+    public async Task AGUIEndpoint_WebSearchContent_IsRenderedAsText()
+    {
+        _factory.FakeChatClient.SimulateWebSearch = true;
+
+        var payload = new
+        {
+            threadId = "test-thread-ws",
+            runId = "test-run-ws",
+            messages = Array.Empty<object>(),
+            tools = Array.Empty<object>(),
+            context = Array.Empty<object>(),
+            forwardedProps = new { }
+        };
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+        var response = await _client.PostAsJsonAsync("/", payload, cts.Token);
+        var body = await response.Content.ReadAsStringAsync(cts.Token);
+
+        // The HostedContentRenderer should have converted the WebSearchToolCallContent
+        // into a text chunk mentioning the query, and the WebSearchToolResultContent
+        // into a text chunk containing the result URL.
+        StringAssert.Contains(body, "dotnet extensions ai",
+            "The web-search query should appear in the SSE stream.");
+        StringAssert.Contains(body, "learn.microsoft.com",
+            "The web-search result URL should appear in the SSE stream.");
+    }
 }

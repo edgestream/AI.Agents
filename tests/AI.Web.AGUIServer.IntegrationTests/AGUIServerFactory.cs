@@ -13,6 +13,12 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 /// </summary>
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
+    /// <summary>
+    /// Gets the <see cref="FakeChatClient"/> injected into the server.
+    /// Tests may configure flags on this instance before sending requests.
+    /// </summary>
+    public FakeChatClient FakeChatClient { get; } = new FakeChatClient();
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Force AzureOpenAI provider: clear any Foundry endpoint from appsettings so
@@ -29,7 +35,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             if (chatClientDescriptor is not null)
                 services.Remove(chatClientDescriptor);
 
-            services.AddSingleton<IChatClient>(new FakeChatClient());
+            services.AddSingleton<IChatClient>(FakeChatClient);
 
             // Remove the MCP hosted service so no connections are attempted in tests.
             // A fresh McpClientRegistry (registered by Program.cs) starts with an empty

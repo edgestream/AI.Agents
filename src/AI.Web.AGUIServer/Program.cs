@@ -22,7 +22,8 @@ builder.AddAIAgent("AGUIAgent", (sp, key) =>
         ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
         AIContextProviders = [toolsContext],
     };
-    return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
+    var chatClient = new HostedContentRenderer(sp.GetRequiredService<IChatClient>());
+    return new ChatClientAgent(chatClient, agentOptions, loggerFactory, services: sp);
 });
 builder.Services.AddAGUI();
 

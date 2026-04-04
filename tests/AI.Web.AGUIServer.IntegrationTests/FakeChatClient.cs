@@ -1,6 +1,9 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
+// These hosted-content types are experimental in Microsoft.Extensions.AI.
+#pragma warning disable MEAI001
+
 namespace AI.Web.AGUIServer.IntegrationTests;
 
 /// <summary>
@@ -15,6 +18,13 @@ internal sealed class FakeChatClient : IChatClient
     /// </summary>
     public bool SimulateToolCall { get; set; }
 
+    /// <summary>
+    /// When true, the next response will simulate a web search (returning
+    /// <see cref="WebSearchToolCallContent"/> followed by <see cref="WebSearchToolResultContent"/>)
+    /// and this flag will be reset to false.
+    /// </summary>
+    public bool SimulateWebSearch { get; set; }
+
     public Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> chatMessages,
         ChatOptions? options = null,
@@ -26,6 +36,21 @@ internal sealed class FakeChatClient : IChatClient
             var toolName = options.Tools[0].Name;
             var callContent = new FunctionCallContent("call_1", toolName, new Dictionary<string, object?> { ["query"] = "test" });
             var message = new ChatMessage(ChatRole.Assistant, [callContent]);
+            return Task.FromResult(new ChatResponse(message));
+        }
+
+        if (SimulateWebSearch)
+        {
+            SimulateWebSearch = false;
+            var searchCall = new WebSearchToolCallContent("ws_1") { Queries = ["dotnet extensions ai"] };
+            var searchResult = new WebSearchToolResultContent("ws_1")
+            {
+                Results =
+                [
+                    new UriContent("https://learn.microsoft.com/dotnet/ai/", "text/html"),
+                ],
+            };
+            var message = new ChatMessage(ChatRole.Assistant, [searchCall, searchResult]);
             return Task.FromResult(new ChatResponse(message));
         }
 
@@ -44,6 +69,23 @@ internal sealed class FakeChatClient : IChatClient
             var toolName = options.Tools[0].Name;
             var callContent = new FunctionCallContent("call_1", toolName, new Dictionary<string, object?> { ["query"] = "test" });
             yield return new ChatResponseUpdate(ChatRole.Assistant, [callContent]);
+            yield break;
+        }
+
+        if (SimulateWebSearch)
+        {
+            SimulateWebSearch = false;
+            var searchCall = new WebSearchToolCallContent("ws_1") { Queries = ["dotnet extensions ai"] };
+            yield return new ChatResponseUpdate(ChatRole.Assistant, [searchCall]);
+
+            var searchResult = new WebSearchToolResultContent("ws_1")
+            {
+                Results =
+                [
+                    new UriContent("https://learn.microsoft.com/dotnet/ai/", "text/html"),
+                ],
+            };
+            yield return new ChatResponseUpdate(ChatRole.Assistant, [searchResult]);
             yield break;
         }
 
