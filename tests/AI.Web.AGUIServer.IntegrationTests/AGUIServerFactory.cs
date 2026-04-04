@@ -15,7 +15,9 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Provide dummy AzureOpenAI config so the startup validation passes.
+        // Force AzureOpenAI provider: clear any Foundry endpoint from appsettings so
+        // auto-detection in AddAIClient() selects the Azure OpenAI path.
+        builder.UseSetting("Foundry:ProjectEndpoint", "");
         builder.UseSetting("AzureOpenAI:Endpoint", "https://fake.openai.azure.com/");
         builder.UseSetting("AzureOpenAI:DeploymentName", "fake-deployment");
 

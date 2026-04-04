@@ -11,6 +11,8 @@ public sealed class StartupTests
             using var factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
+                    // Clear Foundry endpoint so auto-detection picks the Azure OpenAI path.
+                    builder.UseSetting("Foundry:ProjectEndpoint", "");
                     // Provide deployment name but omit endpoint to trigger validation.
                     builder.UseSetting("AzureOpenAI:Endpoint", "");
                     builder.UseSetting("AzureOpenAI:DeploymentName", "some-deployment");
@@ -31,6 +33,8 @@ public sealed class StartupTests
             using var factory = new WebApplicationFactory<Program>()
                 .WithWebHostBuilder(builder =>
                 {
+                    // Clear Foundry endpoint so auto-detection picks the Azure OpenAI path.
+                    builder.UseSetting("Foundry:ProjectEndpoint", "");
                     // Provide endpoint but omit deployment name to trigger validation.
                     builder.UseSetting("AzureOpenAI:Endpoint", "https://fake.openai.azure.com/");
                     builder.UseSetting("AzureOpenAI:DeploymentName", "");
@@ -40,5 +44,25 @@ public sealed class StartupTests
         });
 
         StringAssert.Contains(ex.Message, "deployment name");
+    }
+
+    [TestMethod]
+    public void FoundryMissingModel_ThrowsInvalidOperationException()
+    {
+        var ex = Assert.ThrowsException<InvalidOperationException>(() =>
+        {
+            using var factory = new WebApplicationFactory<Program>()
+                .WithWebHostBuilder(builder =>
+                {
+                    // Set a Foundry endpoint so auto-detection picks the Foundry path.
+                    builder.UseSetting("Foundry:ProjectEndpoint", "https://fake.foundry.endpoint/");
+                    // Omit Model to trigger validation.
+                    builder.UseSetting("Foundry:Model", "");
+                });
+
+            _ = factory.Server;
+        });
+
+        StringAssert.Contains(ex.Message, "Foundry:Model");
     }
 }
