@@ -65,7 +65,7 @@ public sealed class AGUIEndpointTests
     }
 
     [TestMethod]
-    public async Task AGUIEndpoint_WhenSourcesAreRequested_EmitsCitationToolEvents()
+    public async Task AGUIEndpoint_WhenSourcesAreRequested_EmitsFootnotesInTextStream()
     {
         var payload = new
         {
@@ -90,16 +90,22 @@ public sealed class AGUIEndpointTests
         var body = await response.Content.ReadAsStringAsync(cts.Token);
         var events = ParseSseEvents(body);
 
-        var toolStart = events.Single(evt => evt.GetProperty("type").GetString() == "TOOL_CALL_START");
-        var toolResult = events.Single(evt => evt.GetProperty("type").GetString() == "TOOL_CALL_RESULT");
+        // All text content events concatenated should include the footnotes section.
+        string fullText = string.Concat(events
+            .Where(e => e.GetProperty("type").GetString() == "TEXT_MESSAGE_CONTENT")
+            .Select(e => e.GetProperty("delta").GetString()));
 
-        Assert.AreEqual("DisplaySources", toolStart.GetProperty("toolCallName").GetString());
-        Assert.AreEqual("call_sources_1", toolResult.GetProperty("toolCallId").GetString());
-        StringAssert.Contains(toolResult.GetProperty("content").GetString(), "https://docs.ag-ui.com/concepts/messages");
+        StringAssert.Contains(fullText, "**Sources:**");
+        StringAssert.Contains(fullText, "https://docs.ag-ui.com/concepts/messages");
+        StringAssert.Contains(fullText, "https://docs.copilotkit.ai/reference/v2/hooks/useRenderTool");
+
+        // No tool events should be emitted for citations.
+        Assert.IsFalse(events.Any(e => e.GetProperty("type").GetString() == "TOOL_CALL_START"),
+            "Citations should appear as markdown footnotes, not tool events.");
     }
 
     [TestMethod]
-    public async Task AGUIEndpoint_WhenAssistantReturnsAnnotations_TranslatesThemToCitationToolEvents()
+    public async Task AGUIEndpoint_WhenAssistantReturnsAnnotations_AppendsMarkdownFootnotes()
     {
         var payload = new
         {
@@ -124,18 +130,17 @@ public sealed class AGUIEndpointTests
         var body = await response.Content.ReadAsStringAsync(cts.Token);
         var events = ParseSseEvents(body);
 
-        var toolStart = events.Single(evt => evt.GetProperty("type").GetString() == "TOOL_CALL_START" &&
-                                             evt.GetProperty("toolCallName").GetString() == "DisplaySources");
-        var toolResult = events.Single(evt => evt.GetProperty("type").GetString() == "TOOL_CALL_RESULT" &&
-                                              evt.GetProperty("toolCallId").GetString() == toolStart.GetProperty("toolCallId").GetString());
-        var resultContent = toolResult.GetProperty("content").GetString();
-        Assert.IsFalse(string.IsNullOrWhiteSpace(resultContent));
-        using var resultPayload = JsonDocument.Parse(resultContent!);
-        var sources = resultPayload.RootElement.GetProperty("sources");
+        string fullText = string.Concat(events
+            .Where(e => e.GetProperty("type").GetString() == "TEXT_MESSAGE_CONTENT")
+            .Select(e => e.GetProperty("delta").GetString()));
 
-        StringAssert.Contains(body, "Today in Guangzhou it is warm and humid");
-        Assert.AreEqual("https://weather.com/weather/today/l/Guangzhou+China", sources[0].GetProperty("Url").GetString());
-        Assert.AreEqual("https://www.timeanddate.com/weather/china/guangzhou", sources[1].GetProperty("Url").GetString());
+        // The original assistant text should be present.
+        StringAssert.Contains(fullText, "Today in Guangzhou it is warm and humid");
+
+        // The footnotes section should follow with the annotated sources.
+        StringAssert.Contains(fullText, "**Sources:**");
+        StringAssert.Contains(fullText, "Weather.com Guangzhou Forecast");
+        StringAssert.Contains(fullText, "https://www.timeanddate.com/weather/china/guangzhou");
     }
 
     private static List<JsonElement> ParseSseEvents(string responseBody)

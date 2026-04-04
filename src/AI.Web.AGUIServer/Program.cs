@@ -11,30 +11,18 @@ builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environmen
 builder.AddAIClient();
 builder.AddAIAgent("AGUIAgent", (sp, key) =>
 {
-    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-    var displaySourcesTool = AIFunctionFactory.Create(CitationTool.DisplaySources);
+    IChatClient inner = sp.GetRequiredService<IChatClient>();
+    IChatClient pipeline = new CitationMiddleware(inner);
     ChatClientAgentOptions agentOptions = new()
     {
         Name = key,
         ChatOptions = new ChatOptions
         {
-            Instructions = """
-                You are a helpful assistant.
-
-                When the user asks for sources, references, or citations and you can provide concrete supporting links,
-                call the DisplaySources tool before your final answer.
-
-                Each source must include Title, Url, and Snippet.
-                Only include sources you actually relied on.
-                Do not invent URLs.
-                Do not mention tool names in the final answer.
-                """,
-            Tools = [displaySourcesTool, new HostedWebSearchTool()]
+            Instructions = "You are a helpful assistant.",
+            Tools = [new HostedWebSearchTool()]
         }
     };
-
-    AIAgent agent = new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
-    return new AnnotationCitationAgent(agent, loggerFactory.CreateLogger<AnnotationCitationAgent>());
+    return new ChatClientAgent(pipeline, agentOptions, sp.GetRequiredService<ILoggerFactory>(), services: sp);
 });
 builder.Services.AddAGUI();
 

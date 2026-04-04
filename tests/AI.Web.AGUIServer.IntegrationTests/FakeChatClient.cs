@@ -6,31 +6,13 @@ namespace AI.Web.AGUIServer.IntegrationTests;
 /// <summary>
 /// A minimal hand-written fake for <see cref="IChatClient"/> that returns
 /// deterministic responses without requiring Azure credentials.
-/// It can simulate both model-driven tool calls and annotated assistant output.
+/// It can simulate annotated assistant output with citation metadata.
 /// </summary>
 internal sealed class FakeChatClient : IChatClient
 {
-    private const string CitationToolName = "DisplaySources";
-
     private const string AnnotatedWeatherResponse = "Today in Guangzhou it is warm and humid with scattered clouds.";
 
-    private static readonly IReadOnlyList<Dictionary<string, object?>> s_sampleSources =
-    [
-        new Dictionary<string, object?>
-        {
-            ["title"] = "AG-UI Messages",
-            ["url"] = "https://docs.ag-ui.com/concepts/messages",
-            ["snippet"] = "AG-UI assistant messages include tool calls, while tool results are emitted as tool messages."
-        },
-        new Dictionary<string, object?>
-        {
-            ["title"] = "CopilotKit useRenderTool",
-            ["url"] = "https://docs.copilotkit.ai/reference/v2/hooks/useRenderTool",
-            ["snippet"] = "CopilotKit can register a named tool renderer and render structured tool results inside the chat."
-        }
-    ];
-
-    private static readonly IReadOnlyList<FakeCitationAnnotation> s_annotationPayload =
+    private static readonly IReadOnlyList<FakeCitationAnnotation> s_weatherAnnotations =
     [
         new(
             "Weather.com Guangzhou Forecast",
@@ -46,6 +28,22 @@ internal sealed class FakeChatClient : IChatClient
             55)
     ];
 
+    private static readonly IReadOnlyList<FakeCitationAnnotation> s_sourceAnnotations =
+    [
+        new(
+            "AG-UI Messages",
+            "https://docs.ag-ui.com/concepts/messages",
+            "AG-UI assistant messages include tool calls, while tool results are emitted as tool messages.",
+            0,
+            20),
+        new(
+            "CopilotKit useRenderTool",
+            "https://docs.copilotkit.ai/reference/v2/hooks/useRenderTool",
+            "CopilotKit can register a named tool renderer and render structured tool results inside the chat.",
+            21,
+            50)
+    ];
+
     public Task<ChatResponse> GetResponseAsync(
         IEnumerable<ChatMessage> chatMessages,
         ChatOptions? options = null,
@@ -53,21 +51,15 @@ internal sealed class FakeChatClient : IChatClient
     {
         if (ShouldEmitAnnotatedWeatherAnswer(chatMessages))
         {
-            var message = new ChatMessage(ChatRole.Assistant, [CreateAnnotatedWeatherContent()]);
+            var message = new ChatMessage(ChatRole.Assistant, [CreateAnnotatedContent(AnnotatedWeatherResponse, s_weatherAnnotations)]);
             return Task.FromResult(new ChatResponse(message));
         }
 
-        if (ShouldEmitCitationTool(chatMessages, options, out var toolName))
+        if (ShouldEmitAnnotatedSourceAnswer(chatMessages))
         {
-            var callContent = CreateCitationToolCall(toolName);
-            var message = new ChatMessage(ChatRole.Assistant, [callContent]);
+            const string text = "Here are the key AG-UI and CopilotKit concepts you should know about.";
+            var message = new ChatMessage(ChatRole.Assistant, [CreateAnnotatedContent(text, s_sourceAnnotations)]);
             return Task.FromResult(new ChatResponse(message));
-        }
-
-        if (HasCitationToolResult(chatMessages))
-        {
-            var sourcedResponse = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Here is a sourced answer from FakeChatClient."));
-            return Task.FromResult(sourcedResponse);
         }
 
         var response = new ChatResponse(new ChatMessage(ChatRole.Assistant, "Hello from FakeChatClient"));
@@ -81,7 +73,7 @@ internal sealed class FakeChatClient : IChatClient
     {
         if (ShouldEmitAnnotatedWeatherAnswer(chatMessages))
         {
-            yield return new ChatResponseUpdate(ChatRole.Assistant, [CreateAnnotatedWeatherContent()])
+            yield return new ChatResponseUpdate(ChatRole.Assistant, [CreateAnnotatedContent(AnnotatedWeatherResponse, s_weatherAnnotations)])
             {
                 MessageId = "assistant-weather-1",
                 ResponseId = "response-weather-1"
@@ -89,17 +81,14 @@ internal sealed class FakeChatClient : IChatClient
             yield break;
         }
 
-        if (ShouldEmitCitationTool(chatMessages, options, out var toolName))
+        if (ShouldEmitAnnotatedSourceAnswer(chatMessages))
         {
-            var callContent = CreateCitationToolCall(toolName);
-            yield return new ChatResponseUpdate(ChatRole.Assistant, [callContent]);
-            yield break;
-        }
-
-        if (HasCitationToolResult(chatMessages))
-        {
-            yield return new ChatResponseUpdate(ChatRole.Assistant, "Here is ");
-            yield return new ChatResponseUpdate(ChatRole.Assistant, "a sourced answer from FakeChatClient.");
+            const string text = "Here are the key AG-UI and CopilotKit concepts you should know about.";
+            yield return new ChatResponseUpdate(ChatRole.Assistant, [CreateAnnotatedContent(text, s_sourceAnnotations)])
+            {
+                MessageId = "assistant-sources-1",
+                ResponseId = "response-sources-1"
+            };
             yield break;
         }
 
@@ -107,65 +96,29 @@ internal sealed class FakeChatClient : IChatClient
         yield return new ChatResponseUpdate(ChatRole.Assistant, "from FakeChatClient");
     }
 
-    private static bool HasCitationToolResult(IEnumerable<ChatMessage> chatMessages)
-    {
-        return chatMessages.Any(static message =>
-            message.Role == ChatRole.Tool &&
-            message.Contents.OfType<FunctionResultContent>().Any());
-    }
-
     private static bool ShouldEmitAnnotatedWeatherAnswer(IEnumerable<ChatMessage> chatMessages)
     {
-        var latestUserMessage = chatMessages.LastOrDefault(static message => message.Role == ChatRole.User)?.Text;
-        if (string.IsNullOrWhiteSpace(latestUserMessage))
+        var text = chatMessages.LastOrDefault(static m => m.Role == ChatRole.User)?.Text;
+        return text is not null
+            && text.Contains("weather", StringComparison.OrdinalIgnoreCase)
+            && text.Contains("guangzhou", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool ShouldEmitAnnotatedSourceAnswer(IEnumerable<ChatMessage> chatMessages)
+    {
+        var text = chatMessages.LastOrDefault(static m => m.Role == ChatRole.User)?.Text;
+        return text is not null
+            && (text.Contains("source", StringComparison.OrdinalIgnoreCase)
+                || text.Contains("citation", StringComparison.OrdinalIgnoreCase)
+                || text.Contains("reference", StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static TextContent CreateAnnotatedContent(string text, IReadOnlyList<FakeCitationAnnotation> annotations)
+    {
+        return new TextContent(text)
         {
-            return false;
-        }
-
-        return latestUserMessage.Contains("weather", StringComparison.OrdinalIgnoreCase) &&
-               latestUserMessage.Contains("guangzhou", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static bool ShouldEmitCitationTool(
-        IEnumerable<ChatMessage> chatMessages,
-        ChatOptions? options,
-        out string toolName)
-    {
-        toolName = options?.Tools?.FirstOrDefault(static tool =>
-                string.Equals(tool.Name, CitationToolName, StringComparison.OrdinalIgnoreCase))?.Name
-            ?? CitationToolName;
-
-        if (HasCitationToolResult(chatMessages))
-            return false;
-
-        var latestUserMessage = chatMessages.LastOrDefault(static message => message.Role == ChatRole.User)?.Text;
-        if (string.IsNullOrWhiteSpace(latestUserMessage))
-            return false;
-
-        return latestUserMessage.Contains("source", StringComparison.OrdinalIgnoreCase) ||
-               latestUserMessage.Contains("citation", StringComparison.OrdinalIgnoreCase) ||
-               latestUserMessage.Contains("reference", StringComparison.OrdinalIgnoreCase);
-    }
-
-    private static FunctionCallContent CreateCitationToolCall(string toolName)
-    {
-        return new FunctionCallContent(
-            "call_sources_1",
-            toolName,
-            new Dictionary<string, object?>
-            {
-                ["sources"] = s_sampleSources
-            });
-    }
-
-    private static TextContent CreateAnnotatedWeatherContent()
-    {
-        var content = new TextContent(AnnotatedWeatherResponse)
-        {
-            Annotations = s_annotationPayload.Select(CreateAnnotation).Cast<AIAnnotation>().ToList()
+            Annotations = annotations.Select(CreateAnnotation).Cast<AIAnnotation>().ToList()
         };
-
-        return content;
     }
 
     private static AIAnnotation CreateAnnotation(FakeCitationAnnotation citation)
