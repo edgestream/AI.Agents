@@ -15,18 +15,16 @@ namespace Microsoft.Extensions.Hosting;
 public static class HostApplicationBuilderExtensions
 {
     /// <summary>
-    /// Registers an <see cref="IChatClient"/> for the provider selected by the <c>AI:Provider</c>
-    /// configuration key. Supported values: <c>AzureOpenAI</c> (default), <c>Foundry</c>.
+    /// Registers an <see cref="IChatClient"/> by auto-detecting the provider from configuration:
+    /// uses Foundry when <c>Foundry:ProjectEndpoint</c> is present, otherwise Azure OpenAI.
     /// </summary>
     public static IHostApplicationBuilder AddAIClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return (builder.Configuration["AI:Provider"] ?? "AzureOpenAI") switch
-        {
-            "Foundry" => builder.AddFoundryResponsesAgentClient(),
-            _ => builder.AddAzureOpenAIClient(),
-        };
+        return !string.IsNullOrWhiteSpace(builder.Configuration["Foundry:ProjectEndpoint"])
+            ? builder.AddFoundryResponsesAgentClient()
+            : builder.AddAzureOpenAIClient();
     }
 
     /// <summary>
