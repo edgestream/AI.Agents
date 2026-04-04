@@ -68,6 +68,9 @@ public static class HostApplicationBuilderExtensions
         var endpoint = builder.Configuration["Foundry:ProjectEndpoint"]
             ?? throw new InvalidOperationException("Foundry:ProjectEndpoint is not configured.");
 
+        if (string.IsNullOrWhiteSpace(builder.Configuration["Foundry:Model"]))
+            throw new InvalidOperationException("Foundry:Model is not configured.");
+
         builder.Services.AddSingleton<AIProjectClient>(_ =>
             new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential()));
 
