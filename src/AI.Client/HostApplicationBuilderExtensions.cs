@@ -58,10 +58,18 @@ public static class HostApplicationBuilderExtensions
 
     /// <summary>
     /// Registers an <see cref="IChatClient"/> backed by a Microsoft Foundry project endpoint
-    /// using the Responses API (stateless, no server-side conversation storage).
+    /// using the Chat Completions API.
     /// Reads <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> from configuration.
     /// Authentication uses <see cref="DefaultAzureCredential"/> (managed identity / Entra ID).
     /// </summary>
+    /// <remarks>
+    /// Uses Chat Completions (not the Responses API) because the stateless Responses API adapter
+    /// in Microsoft.Agents.AI.Foundry does not correctly translate tool-result messages into the
+    /// Responses API <c>function_call_output</c> schema, causing HTTP 400 invalid_payload errors
+    /// after tool calls. Chat Completions handles tool-result messages correctly and
+    /// <see cref="Microsoft.Agents.AI.ChatClientAgent"/> manages conversation history statelessly
+    /// by re-sending the full message list on every request.
+    /// </remarks>
     public static IHostApplicationBuilder AddFoundryResponsesAgentClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -76,12 +84,10 @@ public static class HostApplicationBuilderExtensions
 
         builder.Services.AddSingleton<IChatClient>(_ =>
         {
-#pragma warning disable MAAI001 // AsIChatClientWithStoredOutputDisabled is experimental but stable for this use case
             return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
                 .GetProjectOpenAIClient()
-                .GetProjectResponsesClientForModel(model)
-                .AsIChatClientWithStoredOutputDisabled();
-#pragma warning restore MAAI001
+                .GetChatClient(model)
+                .AsIChatClient();
         });
 
         return builder;
