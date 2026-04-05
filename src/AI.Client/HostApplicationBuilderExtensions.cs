@@ -60,7 +60,8 @@ public static class HostApplicationBuilderExtensions
     /// Registers an <see cref="IChatClient"/> backed by a Microsoft Foundry project endpoint
     /// using the Chat Completions API.
     /// Reads <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> from configuration.
-    /// Authentication uses <see cref="DefaultAzureCredential"/> (managed identity / Entra ID).
+    /// Authentication uses <c>Foundry:ApiKey</c> when present (suitable for local containers),
+    /// otherwise falls back to <see cref="DefaultAzureCredential"/> (managed identity / Entra ID).
     /// </summary>
     /// <remarks>
     /// Uses Chat Completions (not the Responses API) because the stateless Responses API adapter
@@ -82,9 +83,14 @@ public static class HostApplicationBuilderExtensions
         if (string.IsNullOrWhiteSpace(model))
             throw new InvalidOperationException("Foundry:Model is not configured.");
 
+        var apiKey = builder.Configuration["Foundry:ApiKey"];
+
         builder.Services.AddSingleton<IChatClient>(_ =>
         {
-            return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
+            AIProjectClient projectClient = string.IsNullOrWhiteSpace(apiKey)
+                ? new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
+                : new AIProjectClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+            return projectClient
                 .GetProjectOpenAIClient()
                 .GetChatClient(model)
                 .AsIChatClient();

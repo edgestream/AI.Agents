@@ -4,6 +4,11 @@
     "DeploymentName": "",
     "ApiKey": ""
   },
+  "Foundry": {
+    "ProjectEndpoint": "",
+    "Model": "",
+    "ApiKey": ""
+  },
   "McpServers": {
     "learn": {
       "type": "http",
