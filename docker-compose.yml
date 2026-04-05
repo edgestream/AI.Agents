@@ -11,6 +11,8 @@ services:
     secrets:
       - source: appsettings_env
         target: appsettings.${ASPNETCORE_ENVIRONMENT:-Development}.json
+    volumes:
+      - azure-credentials:/root/.azure
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost:8080/health"]
       interval: 10s
@@ -40,3 +42,6 @@ services:
 secrets:
   appsettings_env:
     file: ./appsettings.${ASPNETCORE_ENVIRONMENT:-Development}.json
+
+volumes:
+  azure-credentials:

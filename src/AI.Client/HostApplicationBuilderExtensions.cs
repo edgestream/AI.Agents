@@ -43,15 +43,19 @@ public static class HostApplicationBuilderExtensions
         var deploymentName = builder.Configuration["AzureOpenAI:DeploymentName"];
         if (string.IsNullOrWhiteSpace(deploymentName))
             throw new InvalidOperationException("Azure OpenAI deployment name is not configured.");
+        
         var apiKey = builder.Configuration["AzureOpenAI:ApiKey"];
 
-        builder.Services.AddSingleton<IChatClient>(_ =>
-        {
-            AzureOpenAIClient client = string.IsNullOrWhiteSpace(apiKey)
-                ? new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
-                : new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
-            return client.GetChatClient(deploymentName).AsIChatClient();
-        });
+        var openAIClient = string.IsNullOrWhiteSpace(apiKey)
+            ? new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential())
+            : new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+        builder.Services.AddSingleton(openAIClient);
+
+        var openAIChatClient = openAIClient.GetChatClient(deploymentName);
+        builder.Services.AddSingleton(openAIChatClient);
+
+        var chatClient = openAIChatClient.AsIChatClient();
+        builder.Services.AddSingleton(chatClient);
 
         return builder;
     }
@@ -60,8 +64,8 @@ public static class HostApplicationBuilderExtensions
     /// Registers an <see cref="IChatClient"/> backed by a Microsoft Foundry project endpoint
     /// using the Chat Completions API.
     /// Reads <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> from configuration.
-    /// Authentication uses <c>Foundry:ApiKey</c> when present (suitable for local containers),
-    /// otherwise falls back to <see cref="DefaultAzureCredential"/> (managed identity / Entra ID).
+    /// Authentication uses <see cref="DefaultAzureCredential"/> (managed identity in production;
+    /// <see cref="Azure.Identity.AzureCliCredential"/> locally when <c>~/.azure</c> is bind-mounted).
     /// </summary>
     /// <remarks>
     /// Uses Chat Completions (not the Responses API) because the stateless Responses API adapter
@@ -83,18 +87,17 @@ public static class HostApplicationBuilderExtensions
         if (string.IsNullOrWhiteSpace(model))
             throw new InvalidOperationException("Foundry:Model is not configured.");
 
-        var apiKey = builder.Configuration["Foundry:ApiKey"];
+        AIProjectClient projectClient = new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential());
+        builder.Services.AddSingleton(projectClient);
 
-        builder.Services.AddSingleton<IChatClient>(_ =>
-        {
-            AIProjectClient projectClient = string.IsNullOrWhiteSpace(apiKey)
-                ? new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential())
-                : new AIProjectClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
-            return projectClient
-                .GetProjectOpenAIClient()
-                .GetChatClient(model)
-                .AsIChatClient();
-        });
+        var openAIClient = projectClient.GetProjectOpenAIClient();
+        builder.Services.AddSingleton(openAIClient);
+
+        var openAIChatClient = openAIClient.GetChatClient(model);
+        builder.Services.AddSingleton(openAIChatClient);
+
+        var chatClient = openAIChatClient.AsIChatClient();
+        builder.Services.AddSingleton(chatClient);
 
         return builder;
     }
