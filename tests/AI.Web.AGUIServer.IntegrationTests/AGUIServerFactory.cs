@@ -58,8 +58,8 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
                 int baseline = tempBuilder.Services.Count;
                 _module.Register(tempBuilder);
 
-                for (int i = baseline; i < tempBuilder.Services.Count; i++)
-                    services.Add(tempBuilder.Services[i]);
+                foreach (var descriptor in tempBuilder.Services.Skip(baseline))
+                    services.Add(descriptor);
             }
             else
             {

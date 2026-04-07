@@ -21,9 +21,9 @@ internal sealed class SequentialPipelineTestModule : IAgentModule
 
     public void Register(IHostApplicationBuilder builder)
     {
-        // Register one of the clients as IChatClient for any code that resolves
-        // the generic IChatClient (e.g. the default agent in Program.cs, which is
-        // later removed by the factory).
+        // Register a placeholder IChatClient so that the production AddAIClient()
+        // call in Program.cs succeeds. The factory removes the production IChatClient
+        // and AIAgent registrations before adding the module's own services.
         builder.Services.AddSingleton<IChatClient>(ClerkChatClient);
 
         builder.AddAIAgent("AGUIAgent", (sp, key) =>
