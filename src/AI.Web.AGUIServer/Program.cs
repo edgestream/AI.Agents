@@ -11,19 +11,25 @@ builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environmen
 
 builder.AddAIClient();
 builder.AddMCPClient();
-builder.AddAIAgent("AGUIAgent", (sp, key) =>
+builder.LoadAgentModule();
+
+if (string.IsNullOrEmpty(builder.Configuration["AgentModule"]))
 {
-    var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
-    var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
-    var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-    var agentOptions = new ChatClientAgentOptions
+    builder.AddAIAgent("AGUIAgent", (sp, key) =>
     {
-        Name = key,
-        ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
-        AIContextProviders = [toolsContext],
-    };
-    return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
-});
+        var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
+        var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
+        var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+        var agentOptions = new ChatClientAgentOptions
+        {
+            Name = key,
+            ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
+            AIContextProviders = [toolsContext],
+        };
+        return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
+    });
+}
+
 builder.Services.AddAGUI();
 
 WebApplication app = builder.Build();
