@@ -49,8 +49,19 @@ internal static class AgentModuleLoader
                 ". Exactly one implementation is required.");
         }
 
-        var module = (IAgentModule)Activator.CreateInstance(implementations[0])!;
-        module.Register(builder);
+        var implementationType = implementations[0];
+        object? instance;
+        try
+        {
+            instance = Activator.CreateInstance(implementationType);
+        }
+        catch (MissingMethodException ex)
+        {
+            throw new InvalidOperationException(
+                $"IAgentModule implementation '{implementationType.FullName}' must have a public parameterless constructor.", ex);
+        }
+
+        ((IAgentModule)instance!).Register(builder);
 
         return builder;
     }
