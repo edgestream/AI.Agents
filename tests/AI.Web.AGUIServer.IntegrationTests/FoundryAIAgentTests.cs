@@ -4,15 +4,16 @@ using System.Net.Http.Json;
 namespace AI.Web.AGUIServer.IntegrationTests;
 
 [TestClass]
+[TestCategory("Eval")]
 public sealed class FoundryAIAgentTests
 {
-    private static FoundryAGUIServerFactory _factory = null!;
+    private static AGUIServerFactory _factory = null!;
     private static HttpClient _client = null!;
 
     [ClassInitialize]
     public static void ClassInit(TestContext _)
     {
-        _factory = new FoundryAGUIServerFactory();
+        _factory = new AGUIServerFactory(new FoundryEvalModule());
         _client = _factory.CreateClient();
     }
 

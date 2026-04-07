@@ -1,4 +1,5 @@
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AI.Web.AGUIServer;
 
@@ -8,14 +9,26 @@ namespace AI.Web.AGUIServer;
 internal static class AgentModuleLoader
 {
     /// <summary>
-    /// Reads <c>config["AgentModule"]</c>.  When a value is present the named
+    /// Checks for a pre-registered <see cref="IAgentModule"/> in the service collection
+    /// first; when found its <see cref="IAgentModule.Register"/> method is invoked and
+    /// the config-driven path is skipped.
+    /// Otherwise reads <c>config["AgentModule"]</c>.  When a value is present the named
     /// assembly is scanned for exactly one concrete <see cref="IAgentModule"/>
     /// implementation, which is then instantiated and its
     /// <see cref="IAgentModule.Register"/> method invoked.
-    /// When the key is null or empty the call is a no-op (single-agent fallback).
+    /// When neither source provides a module the call is a no-op (single-agent fallback).
     /// </summary>
     public static IHostApplicationBuilder LoadAgentModule(this IHostApplicationBuilder builder)
     {
+        // Check for a pre-registered IAgentModule (e.g. injected by a test factory).
+        var moduleDescriptor = builder.Services.LastOrDefault(
+            d => d.ServiceType == typeof(IAgentModule));
+        if (moduleDescriptor?.ImplementationInstance is IAgentModule preRegistered)
+        {
+            preRegistered.Register(builder);
+            return builder;
+        }
+
         var moduleName = builder.Configuration["AgentModule"];
 
         if (string.IsNullOrEmpty(moduleName))

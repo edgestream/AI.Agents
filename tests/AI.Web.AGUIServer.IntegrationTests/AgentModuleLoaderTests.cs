@@ -1,6 +1,7 @@
 using System.Reflection;
 using System.Reflection.Emit;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace AI.Web.AGUIServer.IntegrationTests;
@@ -49,14 +50,44 @@ public sealed class AgentModuleLoaderTests
     [TestMethod]
     public void LoadAgentModule_ValidAssembly_CallsRegister()
     {
-        // This test assembly contains exactly one non-abstract IAgentModule: StubAgentModule.
-        var thisAssemblyName = typeof(StubAgentModule).Assembly.GetName().Name!;
-        var builder = CreateBuilder(agentModule: thisAssemblyName);
+        // Build a dynamic assembly with exactly one IAgentModule implementation
+        // (the test assembly now contains multiple modules, so it can't be used).
+        const string asmName = "SingleModuleTestAssembly";
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(
+            new AssemblyName(asmName), AssemblyBuilderAccess.Run);
+        var moduleBuilder = assemblyBuilder.DefineDynamicModule("Main");
+        DefineAgentModuleType(moduleBuilder, "OnlyModule");
+
+        var builder = CreateBuilder(agentModule: asmName);
+
+        // Should not throw — the single implementation is discovered and invoked.
+        builder.LoadAgentModule();
+    }
+
+    [TestMethod]
+    public void LoadAgentModule_PreRegisteredModule_CallsRegister()
+    {
+        var builder = CreateBuilder(agentModule: null);
+        builder.Services.AddSingleton<IAgentModule>(new StubAgentModule());
 
         builder.LoadAgentModule();
 
         Assert.IsTrue(StubAgentModule.RegisterCalled,
-            "Register should have been invoked on the discovered module.");
+            "Register should have been invoked on the pre-registered module.");
+    }
+
+    [TestMethod]
+    public void LoadAgentModule_PreRegisteredModule_SkipsConfigScanning()
+    {
+        // Even when AgentModule config points to a non-existent assembly,
+        // a pre-registered IAgentModule should take precedence.
+        var builder = CreateBuilder(agentModule: "NonExistent.Assembly.Name");
+        builder.Services.AddSingleton<IAgentModule>(new StubAgentModule());
+
+        // Should not throw — pre-registered module takes precedence over config.
+        builder.LoadAgentModule();
+
+        Assert.IsTrue(StubAgentModule.RegisterCalled);
     }
 
     [TestMethod]
