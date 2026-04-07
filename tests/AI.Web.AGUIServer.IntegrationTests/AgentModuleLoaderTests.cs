@@ -104,8 +104,14 @@ public sealed class AgentModuleLoaderTests
     [TestMethod]
     public void LoadAgentModule_ZeroImplementations_ThrowsInvalidOperationException()
     {
-        // The main AGUIServer assembly has zero IAgentModule implementations.
-        var builder = CreateBuilder(agentModule: "AI.Web.AGUIServer");
+        // Build a dynamic assembly that intentionally contains no IAgentModule implementation.
+        const string asmName = "EmptyModuleTestAssembly";
+        var assemblyBuilder = AssemblyBuilder.DefineDynamicAssembly(
+            new AssemblyName(asmName), AssemblyBuilderAccess.Run);
+        assemblyBuilder.DefineDynamicModule("Main");
+        // No IAgentModule type defined.
+
+        var builder = CreateBuilder(agentModule: asmName);
 
         var ex = Assert.ThrowsException<InvalidOperationException>(
             () => builder.LoadAgentModule());

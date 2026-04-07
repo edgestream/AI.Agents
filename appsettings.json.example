@@ -4,6 +4,18 @@
     "DeploymentName": "",
     "ApiKey": ""
   },
+  "Foundry": {
+    "ProjectEndpoint": "",
+    "Model": "",
+    "NewsDigestAgent": ""
+  },
+  "TagesschauAgent": {
+    "BaseUrl": "https://www.tagesschau.de/api2u/news"
+  },
+  "HeiseNewsAgent": {
+    "BaseUrl": "https://www.heise.de/rss/heise-atom.xml"
+  },
+  "AgentModule": "AI.Web.AGUIServer",
   "McpServers": {
     "learn": {
       "type": "http",
