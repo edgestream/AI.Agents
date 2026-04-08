@@ -19,8 +19,8 @@ public sealed class SearchRecipesFunction
     )
     {
         // Stub data — demonstrates the A2UI rendering pipeline without a live API.
-        var q = query.ToLowerInvariant();
-        var recipe = q.Contains("pasta") || q.Contains("carbonara") || q.Contains("spaghetti")
+        var normalizedQuery = query.ToLowerInvariant();
+        var recipe = normalizedQuery.Contains("pasta") || normalizedQuery.Contains("carbonara") || normalizedQuery.Contains("spaghetti")
             ? new RecipeResult(
                 Title: "Spaghetti Carbonara",
                 PrepTimeMinutes: 20,

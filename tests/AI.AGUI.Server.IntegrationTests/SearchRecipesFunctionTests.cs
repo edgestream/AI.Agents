@@ -25,9 +25,9 @@ public sealed class SearchRecipesFunctionTests
     [TestMethod]
     public async Task AGUIEndpoint_WithSearchRecipesTool_ReturnsSuccessStream()
     {
-        // Arrange: factory uses FakeChatClient; SimulateToolCall triggers the
-        // first registered tool (fetch). We verify the endpoint still returns
-        // a valid SSE stream when both tools are registered.
+        // Arrange: factory uses FakeChatClient which returns a plain text response
+        // without invoking any tools. This verifies that both tools (fetch and
+        // search_recipes) are registered without error and the endpoint remains healthy.
         using var factory = new AGUIServerFactory();
         using var client = factory.CreateClient();
 
