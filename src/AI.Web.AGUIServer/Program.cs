@@ -1,3 +1,4 @@
+using AI.MAF.Tools;
 using AI.MCP.Client;
 using AI.Web.AGUIServer;
 using Microsoft.Agents.AI;
@@ -8,28 +9,25 @@ using Microsoft.Extensions.AI;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
-
 builder.AddAIClient();
 builder.AddMCPClient();
-builder.LoadAgentModule();
-
-if (string.IsNullOrEmpty(builder.Configuration["AgentModule"]))
+builder.AddAIAgent("AGUIAgent", (sp, key) =>
 {
-    builder.AddAIAgent("AGUIAgent", (sp, key) =>
-    {
-        var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
-        var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
-        var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-        var agentOptions = new ChatClientAgentOptions
+    return new ChatClientAgent(
+        sp.GetRequiredService<IChatClient>(),
+        options: new()
         {
             Name = key,
-            ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
-            AIContextProviders = [toolsContext],
-        };
-        return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
-    });
-}
-
+            ChatOptions = new ChatOptions {
+                Instructions = "You are a helpful assistant.",
+                Tools = [FetchAIFunctionFactory.CreateAIFunction(sp)]
+            },
+            AIContextProviders = [new McpClientToolsAIContextProvider(sp.GetRequiredService<McpClientRegistry>())],
+        },
+        loggerFactory: sp.GetRequiredService<ILoggerFactory>(),
+        services: sp
+    );
+});
 builder.Services.AddAGUI();
 
 WebApplication app = builder.Build();
