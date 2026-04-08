@@ -70,6 +70,7 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     needs: [test-backend, test-frontend]
+    environment: integration
     permissions:
       contents: read
       packages: write
@@ -132,11 +133,16 @@ jobs:
           {
             "AzureOpenAI": {
               "Endpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
-              "DeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}",
-              "ApiKey": "${{ secrets.AZURE_OPENAI_API_KEY }}"
+              "DeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}"
             }
           }
           EOF
+
+      - name: Export SP credentials for Docker Compose
+        run: |
+          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" >> $GITHUB_ENV
 
       - name: Start stack
         run: docker compose up -d --no-build
@@ -166,9 +172,12 @@ jobs:
         run: dotnet test tests/AI.AGUI.Server.IntegrationTests --verbosity normal --filter "TestCategory=Live"
         env:
           # Live tests use a bare WebApplicationFactory — config must come from env vars.
+          # DefaultAzureCredential resolves via EnvironmentCredential when all three SP vars are set.
           AzureOpenAI__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
           AzureOpenAI__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
-          AzureOpenAI__ApiKey: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
 
       - name: Stop stack
         if: always()
