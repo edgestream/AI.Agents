@@ -1,6 +1,6 @@
 using AI.MAF.Tools;
 using AI.MCP.Client;
-using AI.Web.AGUIServer;
+using AI.AGUI.Server;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;

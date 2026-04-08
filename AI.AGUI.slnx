@@ -4,10 +4,10 @@
     <Project Path="src/AI.MAF.Client/AI.MAF.Client.csproj" />
     <Project Path="src/AI.MAF.Tools/AI.MAF.Tools.csproj" />
     <Project Path="src/AI.MCP.Client/AI.MCP.Client.csproj" />
-    <Project Path="src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj" />
+    <Project Path="src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
   </Folder>
   <Folder Name="/tests/">
-    <Project Path="tests/AI.Web.AGUIServer.IntegrationTests/AI.Web.AGUIServer.IntegrationTests.csproj" />
-    <Project Path="tests/AI.Web.E2ETests/AI.Web.E2ETests.csproj" />
+    <Project Path="tests/AI.AGUI.Server.IntegrationTests/AI.AGUI.Server.IntegrationTests.csproj" />
+    <Project Path="tests/AI.AGUI.E2ETests/AI.AGUI.E2ETests.csproj" />
   </Folder>
 </Solution>

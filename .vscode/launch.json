@@ -6,7 +6,7 @@
             "type": "node",
             "request": "launch",
             "preLaunchTask": "npm install (AGUIChat)",
-            "cwd": "${workspaceFolder}/src/AI.Web.AGUIChat",
+            "cwd": "${workspaceFolder}/src/AI.AGUI.Web",
             "runtimeExecutable": "npm",
             "runtimeArgs": ["run", "dev"],
             "console": "integratedTerminal",
@@ -25,7 +25,7 @@
             "name": "Launch AGUIServer",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj",
+            "projectPath": "${workspaceFolder}/src/AI.AGUI.Server/AI.AGUI.Server.csproj",
             "preLaunchTask": "build"
         }
     ],

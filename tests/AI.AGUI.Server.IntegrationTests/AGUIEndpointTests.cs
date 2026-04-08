@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 
-namespace AI.Web.AGUIServer.IntegrationTests;
+namespace AI.AGUI.Server.IntegrationTests;
 
 [TestClass]
 public sealed class AGUIEndpointTests

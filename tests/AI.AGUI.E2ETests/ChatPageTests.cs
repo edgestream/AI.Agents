@@ -1,4 +1,4 @@
-namespace AI.Web.E2ETests;
+namespace AI.AGUI.E2ETests;
 
 /// <summary>
 /// End-to-end tests for the AGUIChat frontend using Playwright.

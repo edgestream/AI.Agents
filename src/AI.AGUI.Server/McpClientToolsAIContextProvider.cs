@@ -2,7 +2,7 @@ using AI.MCP.Client;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace AI.Web.AGUIServer;
+namespace AI.AGUI.Server;
 
 #pragma warning disable MAAI001
 

@@ -4,7 +4,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AI.Web.AGUIServer.IntegrationTests;
+namespace AI.AGUI.Server.IntegrationTests;
 
 /// <summary>
 /// Custom <see cref="WebApplicationFactory{TEntryPoint}"/> that replaces

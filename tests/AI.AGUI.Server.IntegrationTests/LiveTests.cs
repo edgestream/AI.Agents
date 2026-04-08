@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 
-namespace AI.Web.AGUIServer.IntegrationTests;
+namespace AI.AGUI.Server.IntegrationTests;
 
 /// <summary>
 /// Optional live integration tests that boot the real application against real cloud credentials.

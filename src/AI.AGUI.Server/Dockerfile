@@ -5,10 +5,10 @@ COPY src/AI.AGUI.Abstractions/AI.AGUI.Abstractions.csproj src/AI.AGUI.Abstractio
 COPY src/AI.MAF.Client/AI.MAF.Client.csproj src/AI.MAF.Client/
 COPY src/AI.MAF.Tools/AI.MAF.Tools.csproj src/AI.MAF.Tools/
 COPY src/AI.MCP.Client/AI.MCP.Client.csproj src/AI.MCP.Client/
-COPY src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj src/AI.Web.AGUIServer/
-RUN dotnet restore src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj
+COPY src/AI.AGUI.Server/AI.AGUI.Server.csproj src/AI.AGUI.Server/
+RUN dotnet restore src/AI.AGUI.Server/AI.AGUI.Server.csproj
 COPY . .
-RUN dotnet publish src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj \
+RUN dotnet publish src/AI.AGUI.Server/AI.AGUI.Server.csproj \
     -c Release \
     --no-restore \
     -o /app/publish
@@ -30,4 +30,4 @@ RUN apt-get update \
 WORKDIR /app
 COPY --from=build /app/publish .
 EXPOSE 8080
-ENTRYPOINT ["dotnet", "AI.Web.AGUIServer.dll"]
+ENTRYPOINT ["dotnet", "AI.AGUI.Server.dll"]
