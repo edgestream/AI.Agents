@@ -1,4 +1,3 @@
-using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Extensions.AI;
 
@@ -13,16 +12,28 @@ internal sealed class FetchHeiseNewsFunction
     internal const string DefaultBaseUrl = "https://www.heise.de/rss/heise-atom.xml";
 
     /// <summary>
-    /// Maps topic keywords to Heise section feed paths.
-    /// The fallback (empty key) is the general top-news feed.
+    /// Maps topic keywords to official Heise section feed URLs.
+    /// Source: https://www.heise.de/news-extern/news.html
+    /// The fallback is the general heise online News feed.
     /// </summary>
     private static readonly Dictionary<string, string> SectionFeeds = new(StringComparer.OrdinalIgnoreCase)
     {
-        { "developer", "https://www.heise.de/rss/heise-developer-atom.xml" },
-        { "developer-news", "https://www.heise.de/rss/heise-developer-atom.xml" },
-        { "security", "https://www.heise.de/rss/heise-security-atom.xml" },
-        { "open", "https://www.heise.de/rss/heise-open-atom.xml" },
-        { "ct", "https://www.heise.de/rss/ct-atom.xml" },
+        // heise online sections
+        { "it",             "https://www.heise.de/rss/heise-Rubrik-IT-atom.xml" },
+        { "wissen",         "https://www.heise.de/rss/heise-Rubrik-Wissen-atom.xml" },
+        { "mobiles",        "https://www.heise.de/rss/heise-Rubrik-Mobiles-atom.xml" },
+        { "entertainment",  "https://www.heise.de/rss/heise-Rubrik-Entertainment-atom.xml" },
+        { "netzpolitik",    "https://www.heise.de/rss/heise-Rubrik-Netzpolitik-atom.xml" },
+        { "wirtschaft",     "https://www.heise.de/rss/heise-Rubrik-Wirtschaft-atom.xml" },
+        { "journal",        "https://www.heise.de/rss/heise-Rubrik-Journal-atom.xml" },
+        { "top",            "https://www.heise.de/rss/heise-top-atom.xml" },
+        { "top-news",       "https://www.heise.de/rss/heise-top-atom.xml" },
+        // sub-brands
+        { "developer",      "https://www.heise.de/developer/feed.xml" },
+        { "developer-news", "https://www.heise.de/developer/feed.xml" },
+        { "security",       "https://www.heise.de/security/feed.xml" },
+        { "ct",             "https://www.heise.de/ct/feed.xml" },
+        { "plus",           "https://www.heise.de/rss/heiseplus-atom.xml" },
     };
 
     private static readonly XNamespace AtomNs = "http://www.w3.org/2005/Atom";
@@ -44,8 +55,8 @@ internal sealed class FetchHeiseNewsFunction
             FetchAsync,
             "FetchHeiseNews",
             "Fetches the latest tech/IT headlines from Heise News. " +
-            "Pass an optional topic filter to select a section feed " +
-            "(e.g. 'developer', 'security', 'open', 'ct'). " +
+            "Pass an optional topic filter to select a section feed. " +
+            "Valid topics: it, wissen, mobiles, entertainment, netzpolitik, wirtschaft, journal, top, developer, security, ct, plus. " +
             "Returns a JSON array of news articles with source, headline, topline, teaser and date.");
 
     /// <summary>
