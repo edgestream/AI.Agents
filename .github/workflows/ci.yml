@@ -131,12 +131,12 @@ jobs:
         run: |
           cat > appsettings.Development.json <<EOF
           {
-            "AzureOpenAI": {
-              "Endpoint": "${{ secrets.AZURE_OPENAI_ENDPOINT }}",
-              "DeploymentName": "${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}"
+          {
+            "Foundry": {
+              "ProjectEndpoint": "${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}",
+              "Model": "${{ secrets.FOUNDRY_MODEL }}"
             }
           }
-          EOF
 
       - name: Export SP credentials for Docker Compose
         run: |
@@ -173,11 +173,10 @@ jobs:
         env:
           # Live tests use a bare WebApplicationFactory — config must come from env vars.
           # DefaultAzureCredential resolves via EnvironmentCredential when all three SP vars are set.
-          AzureOpenAI__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
-          AzureOpenAI__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT_NAME }}
-          AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-          AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-          AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+          # Live tests use a bare WebApplicationFactory — config must come from env vars.
+          # Foundry path: DefaultAzureCredential resolves via EnvironmentCredential (SP vars).
+          Foundry__ProjectEndpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
+          Foundry__Model: ${{ secrets.FOUNDRY_MODEL }}
 
       - name: Stop stack
         if: always()

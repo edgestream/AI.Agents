@@ -12,7 +12,8 @@ services:
       - AZURE_CLIENT_ID
       - AZURE_CLIENT_SECRET
     env_file:
-      - .env
+      - path: .env
+        required: false
     secrets:
       - source: appsettings_env
         target: appsettings.${ASPNETCORE_ENVIRONMENT:-Development}.json
