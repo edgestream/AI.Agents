@@ -45,7 +45,7 @@ var tags = {
 
 // Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: 'rg-ai-web-${toLower(environmentName)}'
+  name: 'rg-ai-agui-${toLower(environmentName)}'
   location: location
   tags: tags
 }

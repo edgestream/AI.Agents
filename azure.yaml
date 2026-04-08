@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: ai-web
+name: ai-agui
 
 infra:
   provider: bicep
@@ -36,4 +36,4 @@ hooks:
 services:
   backend:
     host: containerapp
-    image: ghcr.io/edgestream/ai-web-aguiserver:latest
+    image: ghcr.io/edgestream/ai-agui-server:latest
