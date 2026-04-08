@@ -12,8 +12,7 @@ builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environmen
 builder.AddAIClient();
 builder.AddMCPClient();
 builder.LoadAgentModule();
-
-if (string.IsNullOrEmpty(builder.Configuration["AgentModule"]))
+if (!builder.Services.Any(static d => d.IsKeyedService && d.ServiceType == typeof(AIAgent)))
 {
     builder.AddAIAgent("AGUIAgent", (sp, key) =>
     {
