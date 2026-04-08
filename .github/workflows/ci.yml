@@ -129,14 +129,7 @@ jobs:
 
       - name: Create appsettings.Development.json
         run: |
-          cat > appsettings.Development.json <<EOF
-          {
-          {
-            "Foundry": {
-              "ProjectEndpoint": "${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}",
-              "Model": "${{ secrets.FOUNDRY_MODEL }}"
-            }
-          }
+          echo '{"Foundry":{"ProjectEndpoint":"${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}","Model":"${{ secrets.FOUNDRY_MODEL }}"}}' > appsettings.Development.json
 
       - name: Export SP credentials for Docker Compose
         run: |
