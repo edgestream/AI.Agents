@@ -3,9 +3,9 @@ using './main.bicep'
 param environmentName = readEnvironmentVariable('AZURE_ENV_NAME', 'Development')
 param location = readEnvironmentVariable('AZURE_LOCATION', 'eastus2')
 
-// Override image tags for CD: azd env set BACKEND_IMAGE ghcr.io/edgestream/ai-web-aguiserver:sha-<7-char-SHA>
-param backendImage = readEnvironmentVariable('BACKEND_IMAGE', 'ghcr.io/edgestream/ai-web-aguiserver:latest')
-param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestream/ai-web-aguichat:latest')
+// Override image tags for CD: azd env set BACKEND_IMAGE ghcr.io/edgestream/ai-agui-server:sha-<7-char-SHA>
+param backendImage = readEnvironmentVariable('BACKEND_IMAGE', 'ghcr.io/edgestream/ai-agui-server:latest')
+param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestream/ai-agui-web:latest')
 
 // Azure OpenAI configuration – CD override via: azd env set AZURE_OPENAI_ENDPOINT <value>
 // When set, these values override the corresponding keys from the mounted appsettings file.
