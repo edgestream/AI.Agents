@@ -10,7 +10,7 @@
     "NewsDigestAgent": ""
   },
   "TagesschauAgent": {
-    "BaseUrl": "https://www.tagesschau.de/api2u/news"
+    "BaseUrl": "https://www.tagesschau.de"
   },
   "HeiseNewsAgent": {
     "BaseUrl": "https://www.heise.de/rss/heise-atom.xml"

@@ -19,16 +19,17 @@ public sealed class FetchNewsFunctionTests
     [TestMethod]
     public async Task FetchTagesschauNews_SuccessfulResponse_ReturnsArticles()
     {
-        var json = """
-            {
-              "news": [
-                { "title": "Headline 1", "topline": "Top 1", "firstSentence": "Teaser 1", "date": "2026-04-07" },
-                { "title": "Headline 2", "topline": "Top 2", "firstSentence": "Teaser 2", "date": "2026-04-07" },
-                { "title": "Headline 3", "topline": "Top 3", "firstSentence": "Teaser 3", "date": "2026-04-07" }
-              ]
-            }
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rss version="2.0">
+              <channel>
+                <item><title>Headline 1</title><description>Teaser 1</description><pubDate>Mon, 07 Apr 2026 10:00:00 +0200</pubDate></item>
+                <item><title>Headline 2</title><description>Teaser 2</description><pubDate>Mon, 07 Apr 2026 11:00:00 +0200</pubDate></item>
+                <item><title>Headline 3</title><description>Teaser 3</description><pubDate>Mon, 07 Apr 2026 12:00:00 +0200</pubDate></item>
+              </channel>
+            </rss>
             """;
-        var factory = CreateHttpClientFactory("tagesschau", HttpStatusCode.OK, json);
+        var factory = CreateHttpClientFactory("tagesschau", HttpStatusCode.OK, xml);
         var fn = new FetchTagesschauNewsFunction(factory);
 
         var articles = await fn.FetchAsync();
@@ -36,15 +37,18 @@ public sealed class FetchNewsFunctionTests
         Assert.AreEqual(3, articles.Count);
         Assert.AreEqual("tagesschau", articles[0].Source);
         Assert.AreEqual("Headline 1", articles[0].Headline);
-        Assert.AreEqual("Top 1", articles[0].Topline);
+        Assert.AreEqual("", articles[0].Topline);
         Assert.AreEqual("Teaser 1", articles[0].Teaser);
     }
 
     [TestMethod]
     public async Task FetchTagesschauNews_EmptyFeed_ReturnsEmptyList()
     {
-        var json = """{ "news": [] }""";
-        var factory = CreateHttpClientFactory("tagesschau", HttpStatusCode.OK, json);
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rss version="2.0"><channel></channel></rss>
+            """;
+        var factory = CreateHttpClientFactory("tagesschau", HttpStatusCode.OK, xml);
         var fn = new FetchTagesschauNewsFunction(factory);
 
         var articles = await fn.FetchAsync();
@@ -66,8 +70,15 @@ public sealed class FetchNewsFunctionTests
     [TestMethod]
     public async Task FetchTagesschauNews_WithTopic_ReturnsArticles()
     {
-        var json = """{ "news": [{ "title": "Sport News", "topline": "", "firstSentence": "...", "date": "2026-04-07" }] }""";
-        var factory = CreateHttpClientFactory("tagesschau", HttpStatusCode.OK, json);
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <rss version="2.0">
+              <channel>
+                <item><title>Sport News</title><description>...</description><pubDate>Mon, 07 Apr 2026 10:00:00 +0200</pubDate></item>
+              </channel>
+            </rss>
+            """;
+        var factory = CreateHttpClientFactory("tagesschau", HttpStatusCode.OK, xml);
         var fn = new FetchTagesschauNewsFunction(factory);
 
         var articles = await fn.FetchAsync(topic: "sport");

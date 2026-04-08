@@ -1,16 +1,20 @@
-using System.Text.Json;
+using System.Xml.Linq;
 using Microsoft.Extensions.AI;
 
 namespace AI.Web.AGUIServer;
 
 /// <summary>
 /// Provides an <see cref="AIFunction"/> that fetches the latest headlines from the
-/// Tagesschau REST API (<c>https://www.tagesschau.de/api2u/news</c>) and returns
-/// a structured <see cref="NewsArticle"/> list.
+/// Tagesschau RSS feed (<c>https://www.tagesschau.de/infoservices/alle-meldungen-100~rss2.xml</c>)
+/// and returns a structured <see cref="NewsArticle"/> list.
 /// </summary>
 internal sealed class FetchTagesschauNewsFunction
 {
-    internal const string DefaultBaseUrl = "https://www.tagesschau.de/api2u/news";
+    /// <summary>
+    /// Base URL of the Tagesschau website. Configurable via <c>TagesschauAgent:BaseUrl</c>.
+    /// All feed URLs are derived from this root.
+    /// </summary>
+    internal const string DefaultBaseUrl = "https://www.tagesschau.de";
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly string _baseUrl;
@@ -29,30 +33,32 @@ internal sealed class FetchTagesschauNewsFunction
             FetchAsync,
             "FetchTagesschauNews",
             "Fetches the latest headlines from Tagesschau. " +
-            "Pass an optional topic/section filter (e.g. 'inland', 'wirtschaft', 'sport'). " +
+            "Pass an optional section filter to select a topic feed " +
+            "(e.g. 'inland', 'ausland', 'wirtschaft', 'wissen'). " +
             "Returns a JSON array of news articles with source, headline, topline, teaser and date.");
 
     /// <summary>
-    /// Fetches news articles from the Tagesschau API.
+    /// Fetches news articles from the Tagesschau RSS feed.
     /// Returns an empty list on HTTP error or when the feed is empty.
     /// </summary>
     /// <param name="topic">
-    /// Optional Tagesschau section filter (value of the <c>ressort</c> query parameter).
-    /// When <see langword="null"/> the general top-news feed is returned.
+    /// Optional Tagesschau section name (e.g. <c>inland</c>, <c>ausland</c>, <c>wirtschaft</c>).
+    /// When provided the section feed <c>{base}/{topic}/index~rss2.xml</c> is used;
+    /// otherwise the general all-news feed is returned.
     /// </param>
     public async Task<List<NewsArticle>> FetchAsync(string? topic = null)
     {
         var url = string.IsNullOrWhiteSpace(topic)
-            ? _baseUrl
-            : $"{_baseUrl}?ressort={Uri.EscapeDataString(topic)}";
+            ? $"{_baseUrl}/infoservices/alle-meldungen-100~rss2.xml"
+            : $"{_baseUrl}/{Uri.EscapeDataString(topic)}/index~rss2.xml";
 
         try
         {
             using var client = _httpClientFactory.CreateClient("tagesschau");
             using var response = await client.GetAsync(url);
             response.EnsureSuccessStatusCode();
-            var json = await response.Content.ReadAsStringAsync();
-            return ParseResponse(json);
+            var xml = await response.Content.ReadAsStringAsync();
+            return ParseRssFeed(xml);
         }
         catch
         {
@@ -60,30 +66,27 @@ internal sealed class FetchTagesschauNewsFunction
         }
     }
 
-    private static List<NewsArticle> ParseResponse(string json)
+    private static List<NewsArticle> ParseRssFeed(string xml)
     {
-        if (string.IsNullOrWhiteSpace(json))
+        if (string.IsNullOrWhiteSpace(xml))
             return [];
 
         try
         {
-            using var doc = JsonDocument.Parse(json);
-            if (!doc.RootElement.TryGetProperty("news", out var newsArray))
-                return [];
-
+            var doc = XDocument.Parse(xml);
             var articles = new List<NewsArticle>();
-            foreach (var item in newsArray.EnumerateArray())
+
+            foreach (var item in doc.Descendants("item"))
             {
-                var headline = item.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
-                var topline = item.TryGetProperty("topline", out var tl) ? tl.GetString() ?? "" : "";
-                var teaser = item.TryGetProperty("firstSentence", out var fs) ? fs.GetString() ?? "" : "";
-                var date = item.TryGetProperty("date", out var d) ? d.GetString() ?? "" : "";
-                articles.Add(new NewsArticle("tagesschau", headline, topline, teaser, date));
+                var headline = item.Element("title")?.Value ?? "";
+                var teaser = item.Element("description")?.Value ?? "";
+                var date = item.Element("pubDate")?.Value ?? "";
+                articles.Add(new NewsArticle("tagesschau", headline, "", teaser, date));
             }
 
             return articles;
         }
-        catch (JsonException)
+        catch (System.Xml.XmlException)
         {
             return [];
         }
