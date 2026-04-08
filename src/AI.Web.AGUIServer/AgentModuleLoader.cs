@@ -1,66 +1,55 @@
 using System.Reflection;
+using AI.AGUI.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AI.Web.AGUIServer;
 
 /// <summary>
-/// Discovers and activates the configured <see cref="IAgentModule"/> implementation.
+/// Discovers and activates a concrete <see cref="IAgentModule"/> implementation.
 /// </summary>
 internal static class AgentModuleLoader
 {
     /// <summary>
-    /// Checks for a pre-registered <see cref="IAgentModule"/> in the service collection
-    /// first; when found its <see cref="IAgentModule.Register"/> method is invoked and
-    /// the config-driven path is skipped.
-    /// Otherwise reads <c>config["AgentModule"]</c>.  When a value is present the named
-    /// assembly is scanned for exactly one concrete <see cref="IAgentModule"/>
-    /// implementation, which is then instantiated and its
-    /// <see cref="IAgentModule.Register"/> method invoked.
-    /// When neither source provides a module the call is a no-op (single-agent fallback).
+    /// Looks for an <see cref="IAgentModule"/> first in the service collection
+    /// (test-injection path), then by scanning all non-framework assemblies loaded
+    /// in the current <see cref="AppDomain"/>.
     /// </summary>
-    public static IHostApplicationBuilder LoadAgentModule(this IHostApplicationBuilder builder)
+    /// <returns>
+    /// <see langword="true"/> when a module was found and its
+    /// <see cref="IAgentModule.Register"/> method was invoked;
+    /// <see langword="false"/> when no module was found.
+    /// </returns>
+    public static bool LoadAgentModule(this IHostApplicationBuilder builder)
     {
-        // Check for a pre-registered IAgentModule (e.g. injected by a test factory).
-        var moduleDescriptor = builder.Services.LastOrDefault(
-            d => d.ServiceType == typeof(IAgentModule));
+        // Pre-registered path — used by test factories to inject a specific module.
+        var moduleDescriptor = builder.Services.LastOrDefault(d => d.ServiceType == typeof(IAgentModule));
         if (moduleDescriptor?.ImplementationInstance is IAgentModule preRegistered)
         {
             preRegistered.Register(builder);
-            return builder;
+            return true;
         }
 
-        var moduleName = builder.Configuration["AgentModule"];
-
-        if (string.IsNullOrEmpty(moduleName))
-        {
-            return builder;
-        }
-
-        var assembly = AppDomain.CurrentDomain
+        // Discovery path — scan all non-framework assemblies in the current AppDomain.
+        var implementations = AppDomain.CurrentDomain
             .GetAssemblies()
-            .FirstOrDefault(a => a.GetName().Name == moduleName)
-            ?? throw new InvalidOperationException(
-                $"Assembly '{moduleName}' is not loaded in the current AppDomain.");
-
-        var implementations = assembly
-            .GetTypes()
+            .Where(a => !IsFrameworkAssembly(a))
+            .SelectMany(a =>
+            {
+                try { return a.GetTypes(); }
+                catch (ReflectionTypeLoadException) { return []; }
+            })
             .Where(t => t is { IsClass: true, IsAbstract: false }
                         && typeof(IAgentModule).IsAssignableFrom(t))
             .ToList();
 
         if (implementations.Count == 0)
-        {
-            throw new InvalidOperationException(
-                $"Assembly '{moduleName}' does not contain any implementation of IAgentModule.");
-        }
+            return false;
 
         if (implementations.Count > 1)
-        {
             throw new InvalidOperationException(
-                $"Assembly '{moduleName}' contains multiple IAgentModule implementations: " +
+                $"Multiple IAgentModule implementations found: " +
                 string.Join(", ", implementations.Select(t => t.FullName)) +
                 ". Exactly one implementation is required.");
-        }
 
         var implementationType = implementations[0];
         object? instance;
@@ -75,7 +64,17 @@ internal static class AgentModuleLoader
         }
 
         ((IAgentModule)instance!).Register(builder);
+        return true;
+    }
 
-        return builder;
+    private static bool IsFrameworkAssembly(Assembly assembly)
+    {
+        var name = assembly.GetName().Name;
+        return name is null
+            || name.StartsWith("System", StringComparison.Ordinal)
+            || name.StartsWith("Microsoft.", StringComparison.Ordinal)
+            || name.StartsWith("mscorlib", StringComparison.Ordinal)
+            || name.StartsWith("netstandard", StringComparison.Ordinal)
+            || name.StartsWith("Anonymously Hosted", StringComparison.Ordinal);
     }
 }

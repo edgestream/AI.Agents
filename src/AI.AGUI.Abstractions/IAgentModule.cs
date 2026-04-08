@@ -1,4 +1,6 @@
-namespace AI.Web.AGUIServer;
+using Microsoft.Extensions.Hosting;
+
+namespace AI.AGUI.Abstractions;
 
 /// <summary>
 /// Contract for pluggable agent modules.
