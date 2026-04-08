@@ -1,6 +1,5 @@
 <Solution>
   <Folder Name="/src/">
-    <Project Path="src/AI.AGUI.Abstractions/AI.AGUI.Abstractions.csproj" />
     <Project Path="src/AI.MAF.Client/AI.MAF.Client.csproj" />
     <Project Path="src/AI.MAF.Tools/AI.MAF.Tools.csproj" />
     <Project Path="src/AI.MCP.Client/AI.MCP.Client.csproj" />
