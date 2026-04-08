@@ -6,6 +6,8 @@ using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.Extensions.AI;
 
+#pragma warning disable MAAI001 // AgentSkillsProvider is marked experimental; suppress until the API stabilises in a future Microsoft.Agents.AI release
+
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
@@ -18,7 +20,12 @@ if (!builder.Services.Any(static d => d.IsKeyedService && d.ServiceType == typeo
     {
         var clientRegistry = sp.GetRequiredService<McpClientRegistry>();
         var toolsContext = new McpClientToolsAIContextProvider(clientRegistry);
+        var configuration = sp.GetRequiredService<IConfiguration>();
         var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
+        var skillsPath = configuration["Skills:Path"] ?? "skills";
+        var skillsProvider = new AgentSkillsProvider(
+            Path.Combine(AppContext.BaseDirectory, skillsPath),
+            loggerFactory: loggerFactory);
         var agentOptions = new ChatClientAgentOptions
         {
             Name = key,
@@ -27,7 +34,7 @@ if (!builder.Services.Any(static d => d.IsKeyedService && d.ServiceType == typeo
                 Instructions = "You are a helpful assistant.",
                 Tools = [FetchAIFunctionFactory.CreateAIFunction(sp)]
             },
-            AIContextProviders = [toolsContext],
+            AIContextProviders = [toolsContext, skillsProvider],
         };
         return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
     });

@@ -27,4 +27,8 @@
     <ProjectReference Include="../AI.MCP.Client/AI.MCP.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="skills/**" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
 </Project>
