@@ -1,3 +1,4 @@
+using AI.MAF.Tools;
 using AI.MCP.Client;
 using AI.Web.AGUIServer;
 using Microsoft.Agents.AI;
@@ -8,7 +9,6 @@ using Microsoft.Extensions.AI;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
-
 builder.AddAIClient();
 builder.AddMCPClient();
 builder.LoadAgentModule();
@@ -23,13 +23,16 @@ if (string.IsNullOrEmpty(builder.Configuration["AgentModule"]))
         var agentOptions = new ChatClientAgentOptions
         {
             Name = key,
-            ChatOptions = new ChatOptions { Instructions = "You are a helpful assistant." },
+            ChatOptions = new ChatOptions
+            {
+                Instructions = "You are a helpful assistant.",
+                Tools = [FetchAIFunctionFactory.CreateAIFunction(sp)]
+            },
             AIContextProviders = [toolsContext],
         };
         return new ChatClientAgent(sp.GetRequiredService<IChatClient>(), agentOptions, loggerFactory, services: sp);
     });
 }
-
 builder.Services.AddAGUI();
 
 WebApplication app = builder.Build();

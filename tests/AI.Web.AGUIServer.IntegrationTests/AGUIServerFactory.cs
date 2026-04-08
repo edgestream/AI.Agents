@@ -22,7 +22,6 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
     {
         _module = module;
     }
-
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         // Always provide dummy AzureOpenAI config so Program.cs can boot.

@@ -21,7 +21,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../AI.Client/AI.Client.csproj" />
+    <ProjectReference Include="../AI.MAF.Client/AI.MAF.Client.csproj" />
+    <ProjectReference Include="../AI.MAF.Tools/AI.MAF.Tools.csproj" />
     <ProjectReference Include="../AI.MCP.Client/AI.MCP.Client.csproj" />
   </ItemGroup>
 
