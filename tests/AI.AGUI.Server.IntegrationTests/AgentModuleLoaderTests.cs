@@ -2,7 +2,7 @@ using AI.AGUI.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
-namespace AI.Web.AGUIServer.IntegrationTests;
+namespace AI.AGUI.Server.IntegrationTests;
 
 #region Test doubles
 

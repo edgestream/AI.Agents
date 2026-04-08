@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="AI.Web.AGUIServer.IntegrationTests" />
+    <InternalsVisibleTo Include="AI.AGUI.Server.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,5 @@
 {
-  "name": "@edgestream/ai-web-aguichat",
+  "name": "@edgestream/ai-agui-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {

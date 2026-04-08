@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/AI.Web.AGUIServer/AI.Web.AGUIServer.csproj" />
+    <ProjectReference Include="../../src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
   </ItemGroup>
 
 </Project>

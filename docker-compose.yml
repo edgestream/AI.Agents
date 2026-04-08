@@ -2,8 +2,8 @@ services:
   backend:
     build:
       context: .
-      dockerfile: src/AI.Web.AGUIServer/Dockerfile
-    image: ghcr.io/edgestream/ai-web-aguiserver:latest
+      dockerfile: src/AI.AGUI.Server/Dockerfile
+    image: ghcr.io/edgestream/ai-agui-server:latest
     ports:
       - "8080:8080"
     environment:
@@ -22,9 +22,9 @@ services:
 
   frontend:
     build:
-      context: src/AI.Web.AGUIChat
+      context: src/AI.AGUI.Web
       dockerfile: Dockerfile
-    image: ghcr.io/edgestream/ai-web-aguichat:latest
+    image: ghcr.io/edgestream/ai-agui-web:latest
     ports:
       - "3000:3000"
     environment:

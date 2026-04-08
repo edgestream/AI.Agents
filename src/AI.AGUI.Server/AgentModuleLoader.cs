@@ -2,7 +2,7 @@ using System.Reflection;
 using AI.AGUI.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AI.Web.AGUIServer;
+namespace AI.AGUI.Server;
 
 /// <summary>
 /// Discovers and activates a concrete <see cref="IAgentModule"/> implementation.
