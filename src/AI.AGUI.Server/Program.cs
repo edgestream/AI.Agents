@@ -31,8 +31,13 @@ if (!builder.Services.Any(static d => d.IsKeyedService && d.ServiceType == typeo
             Name = key,
             ChatOptions = new ChatOptions
             {
-                Instructions = "You are a helpful assistant.",
-                Tools = [FetchAIFunctionFactory.CreateAIFunction(sp)]
+                Instructions = """
+                    You are a helpful assistant.
+
+                    When the user asks for a recipe, call the search_recipes tool.
+                    The tool returns a rendered recipe card that is displayed automatically — do not re-summarize the recipe as text.
+                    """,
+                Tools = [FetchAIFunctionFactory.CreateAIFunction(sp), SearchRecipesFunction.CreateAIFunction()]
             },
             AIContextProviders = [toolsContext, skillsProvider],
         };
