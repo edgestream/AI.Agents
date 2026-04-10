@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch AGUIChat",
+            "name": "AGUI.Web",
             "type": "node",
             "request": "launch",
             "preLaunchTask": "npm install (AGUIChat)",
@@ -22,17 +22,24 @@
             ]
         },
         {
-            "name": "Launch AGUIServer",
+            "name": "AGUI.Server",
             "type": "dotnet",
             "request": "launch",
             "projectPath": "${workspaceFolder}/src/AI.AGUI.Server/AI.AGUI.Server.csproj",
             "preLaunchTask": "build"
+        },
+        {
+            "name": "Samples (MealPlanner)",
+            "type": "dotnet",
+            "request": "launch",
+            "projectPath": "${workspaceFolder}/samples/MealPlanner/MealPlanner.csproj",
+            "preLaunchTask": "build (MealPlanner)"
         }
     ],
     "compounds": [
         {
-            "name": "Fullstack (Server + Chat)",
-            "configurations": ["Launch AGUIServer", "Launch AGUIChat"],
+            "name": "Fullstack (Server + Web)",
+            "configurations": ["AGUI.Server", "AGUI.Web"],
             "stopAll": true
         }
     ]
