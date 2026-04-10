@@ -1,373 +1,64 @@
+import type { Types } from "@a2ui/lit/0.8";
+
 /**
- * A2UI Theme Configuration (v0.8)
+ * A2UI Theme — uses the official litTheme from @copilotkit/a2ui-renderer v1.54.1
+ * (the version bundled inside @copilotkitnext/react), which is the same theme
+ * used by the a2ui-composer.ag-ui.com gallery.
  *
- * Matches the mcp-apps styling with lilac/mint color palette.
- * Used by createA2UIMessageRenderer for rendering A2UI components.
+ * The top-level @copilotkit/a2ui-renderer (v1.55.1) exports an empty litTheme
+ * because v0.9+ moved to server-driven theming. We must reference the nested
+ * v1.54.1 copy directly to get the actual theme object.
+ *
+ * Tabs styling is added on top because the gallery uses the Lit (Shadow DOM)
+ * renderer, where <button> UA styles are scoped automatically. The React
+ * (Light DOM) renderer needs explicit theme classes to achieve the same result.
  */
 
-import { Styles, type Types } from "@a2ui/lit/0.8";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const { litTheme: galleryTheme } = require(
+  "../node_modules/@copilotkitnext/react/node_modules/@copilotkit/a2ui-renderer"
+) as { litTheme: Types.Theme };
 
-// Base element styles
-const a = {
-  "typography-f-s": true,
-  "typography-fs-n": true,
-  "typography-w-500": true,
-  "layout-as-n": true,
-  "layout-dis-iflx": true,
-  "layout-al-c": true,
-  "color-c-p30": true,
-};
-
-const body = {
-  "typography-f-s": true,
-  "typography-fs-n": true,
-  "typography-w-400": true,
-  "layout-mt-0": true,
-  "layout-mb-2": true,
-  "typography-sz-bm": true,
-  "color-c-n10": true,
-};
-
-const button = {
-  "typography-f-sf": true,
-  "typography-fs-n": true,
-  "typography-w-500": true,
-  "layout-pt-3": true,
-  "layout-pb-3": true,
-  "layout-pl-5": true,
-  "layout-pr-5": true,
-  "layout-mb-1": true,
-  "border-br-12": true,
-  "border-bw-0": true,
-  "border-bs-s": true,
-  "color-bgc-p30": true,
-  "color-c-n100": true,
-  "behavior-ho-80": true,
-};
-
-const heading = {
-  "typography-f-s": true,
-  "typography-fs-n": true,
-  "typography-w-500": true,
-  "layout-mt-0": true,
-  "layout-mb-2": true,
-  "color-c-n10": true,
-};
-
-const h1 = { ...heading, "typography-sz-tl": true };
-const h2 = { ...heading, "typography-sz-tm": true };
-const h3 = { ...heading, "typography-sz-ts": true };
-const h4 = { ...heading, "typography-sz-bl": true };
-const h5 = { ...heading, "typography-sz-bm": true };
-
-const input = {
-  "typography-f-sf": true,
-  "typography-fs-n": true,
-  "typography-w-400": true,
-  "layout-pl-4": true,
-  "layout-pr-4": true,
-  "layout-pt-2": true,
-  "layout-pb-2": true,
-  "border-br-12": true,
-  "border-bw-1": true,
-  "color-bc-s70": true,
-  "border-bs-s": true,
-  "layout-as-n": true,
-  "color-c-n10": true,
-  "color-bgc-p100": true,
-};
-
-const p = {
-  "typography-f-s": true,
-  "typography-fs-n": true,
-  "typography-w-400": true,
-  "layout-m-0": true,
-  "typography-sz-bm": true,
-  "layout-as-n": true,
-  "color-c-n30": true,
-};
-
-const pre = {
-  "typography-f-c": true,
-  "typography-fs-n": true,
-  "typography-w-400": true,
-  "typography-sz-bm": true,
-  "typography-ws-p": true,
-  "layout-as-n": true,
-};
-
-const orderedList = {
-  "typography-f-s": true,
-  "typography-fs-n": true,
-  "typography-w-400": true,
-  "layout-m-0": true,
-  "typography-sz-bm": true,
-  "layout-as-n": true,
-  "color-c-n30": true,
-};
-
-const unorderedList = { ...orderedList };
-const listItem = { ...orderedList };
-
-const textarea = {
-  ...input,
-  "layout-r-none": true,
-  "layout-fs-c": true,
-};
-
-// Light theme variants for better text visibility
-const aLight = Styles.merge(a, { "color-c-n5": true });
-const bodyLight = Styles.merge(body, { "color-c-n5": true });
-const buttonLight = Styles.merge(button, { "color-c-n5": true });
-const h1Light = Styles.merge(h1, { "color-c-n5": true });
-const h2Light = Styles.merge(h2, { "color-c-n5": true });
-const h3Light = Styles.merge(h3, { "color-c-n5": true });
-const h4Light = Styles.merge(h4, { "color-c-n5": true });
-const h5Light = Styles.merge(h5, { "color-c-n5": true });
-const inputLight = Styles.merge(input, { "color-c-n5": true });
-const pLight = Styles.merge(p, { "color-c-n35": true });
-const preLight = Styles.merge(pre, { "color-c-n5": true });
-const textareaLight = Styles.merge(textarea, { "color-c-n5": true });
-
-// Theme export using v0.8 structure
 export const a2uiTheme: Types.Theme = {
-  additionalStyles: {
-    Button: {
-      "--n-35": "var(--n-100)",
-      "--n-30": "var(--n-100)",
-    },
-  },
+  ...galleryTheme,
   components: {
-    AudioPlayer: {},
-    Button: {
-      "layout-pt-2": true,
-      "layout-pb-2": true,
-      "layout-pl-4": true,
-      "layout-pr-4": true,
-      "border-br-12": true,
-      "border-bw-0": true,
-      "border-bs-s": true,
-      "color-bgc-p30": true,
-      "color-c-n100": true,
-      "behavior-ho-70": true,
-    },
-    Card: {
-      "border-br-9": true,
-      "color-bgc-p100": true,
-      "layout-p-4": true,
-    },
-    CheckBox: {
-      element: {
-        "layout-m-0": true,
-        "layout-mr-2": true,
-        "layout-p-2": true,
-        "border-br-12": true,
-        "border-bw-1": true,
-        "border-bs-s": true,
-        "color-bgc-p100": true,
-        "color-bc-p60": true,
-        "color-c-n30": true,
-        "color-c-p30": true,
-      },
-      label: {
-        "color-c-p30": true,
-        "typography-f-sf": true,
-        "typography-v-r": true,
-        "typography-w-400": true,
-        "layout-flx-1": true,
-        "typography-sz-ll": true,
-      },
-      container: {
-        "layout-dsp-iflex": true,
-        "layout-al-c": true,
-      },
-    },
-    Column: {
-      "layout-g-2": true,
-    },
-    DateTimeInput: {
-      container: {
-        "typography-sz-bm": true,
-        "layout-w-100": true,
-        "layout-g-2": true,
-        "layout-dsp-flexhor": true,
-        "layout-al-c": true,
-      },
-      label: {
-        "layout-flx-0": true,
-      },
-      element: {
-        "layout-pt-2": true,
-        "layout-pb-2": true,
-        "layout-pl-3": true,
-        "layout-pr-3": true,
-        "border-br-12": true,
-        "border-bw-1": true,
-        "border-bs-s": true,
-        "color-bgc-p100": true,
-        "color-bc-p60": true,
-        "color-c-n30": true,
-        "color-c-p30": true,
-      },
-    },
-    Divider: {},
-    Image: {
-      all: {
-        "border-br-5": true,
-        "layout-el-cv": true,
-        "layout-w-100": true,
-        "layout-h-100": true,
-      },
-      avatar: {},
-      header: {},
-      icon: {},
-      largeFeature: {},
-      mediumFeature: {},
-      smallFeature: {},
-    },
-    Icon: {},
-    List: {
-      "layout-g-4": true,
-      "layout-p-2": true,
-    },
-    Modal: {
-      backdrop: { "color-bbgc-p60_20": true },
-      element: {
-        "border-br-12": true,
-        "color-bgc-p100": true,
-        "layout-p-5": true,
-        "border-bw-1": true,
-        "border-bs-s": true,
-        "color-bc-p80": true,
-      },
-    },
-    MultipleChoice: {
-      container: {},
-      label: {},
-      element: {},
-    },
-    Row: {
-      "layout-g-4": true,
-    },
-    Slider: {
-      container: {},
-      label: {},
-      element: {},
-    },
+    ...galleryTheme.components,
+    // Tabs: extend the empty litTheme Tabs with React Light-DOM-specific styles.
+    // These replicate the underline-tab look the gallery achieves via Shadow DOM UA styles.
     Tabs: {
-      container: {},
-      controls: { all: {}, selected: {} },
-      element: {},
-    },
-    Text: {
-      all: {
-        "layout-w-100": true,
-        "layout-g-2": true,
-        "color-c-n30": true,
-      },
-      h1: {
-        "typography-f-s": true,
-        "typography-v-r": true,
-        "typography-w-400": true,
-        "layout-m-0": true,
-        "layout-p-0": true,
-        "typography-sz-tl": true,
-      },
-      h2: {
-        "typography-f-s": true,
-        "typography-v-r": true,
-        "typography-w-400": true,
-        "layout-m-0": true,
-        "layout-p-0": true,
-        "typography-sz-tm": true,
-      },
-      h3: {
-        "typography-f-s": true,
-        "typography-v-r": true,
-        "typography-w-400": true,
-        "layout-m-0": true,
-        "layout-p-0": true,
-        "typography-sz-ts": true,
-      },
-      h4: {
-        "typography-f-s": true,
-        "typography-v-r": true,
-        "typography-w-400": true,
-        "layout-m-0": true,
-        "layout-p-0": true,
-        "typography-sz-bl": true,
-      },
-      h5: {
-        "typography-f-s": true,
-        "typography-v-r": true,
-        "typography-w-400": true,
-        "layout-m-0": true,
-        "layout-p-0": true,
-        "typography-sz-bm": true,
-      },
-      body: {},
-      caption: {},
-    },
-    TextField: {
       container: {
-        "typography-sz-bm": true,
-        "layout-w-100": true,
-        "layout-g-2": true,
-        "layout-dsp-flexhor": true,
-        "layout-al-c": true,
+        // Stack tab-bar and content vertically with a gap below the separator line
+        "layout-dsp-flexvert": true,
+        "layout-g-4": true,
       },
-      label: {
-        "layout-flx-0": true,
+      controls: {
+        all: {
+          // Reset native <button> appearance (border, background) for all tabs
+          "border-bw-0": true,
+          "color-bgc-transparent": true,
+          "layout-pt-2": true,
+          "layout-pb-2": true,
+          "layout-pl-3": true,
+          "layout-pr-3": true,
+          "color-c-n50": true,
+        },
+        selected: {
+          // Dark 2px underline + dark text for the active tab
+          "border-bbw-2": true,
+          "border-bs-s": true,
+          "color-bc-n10": true,
+          "color-c-n10": true,
+        },
       },
       element: {
-        "typography-sz-bm": true,
-        "layout-pt-2": true,
-        "layout-pb-2": true,
-        "layout-pl-3": true,
-        "layout-pr-3": true,
-        "border-br-12": true,
-        "border-bw-1": true,
+        // Full-width separator line (1px light grey) below all tab buttons
+        "border-bw-0": true,
+        "border-bbw-1": true,
         "border-bs-s": true,
-        "color-bgc-p100": true,
-        "color-bc-p60": true,
-        "color-c-n30": true,
-        "color-c-p30": true,
+        "color-bc-n90": true,
+        "layout-dsp-flexhor": true,
+        "layout-g-1": true,
       },
     },
-    Video: {
-      "border-br-5": true,
-      "layout-el-cv": true,
-    },
-  },
-  elements: {
-    a: aLight,
-    audio: { "layout-w-100": true },
-    body: bodyLight,
-    button: buttonLight,
-    h1: h1Light,
-    h2: h2Light,
-    h3: h3Light,
-    h4: h4Light,
-    h5: h5Light,
-    iframe: { "behavior-sw-n": true },
-    input: inputLight,
-    p: pLight,
-    pre: preLight,
-    textarea: textareaLight,
-    video: { "layout-el-cv": true },
-  },
-  markdown: {
-    p: [...Object.keys(p)],
-    h1: [...Object.keys(h1)],
-    h2: [...Object.keys(h2)],
-    h3: [...Object.keys(h3)],
-    h4: [...Object.keys(h4)],
-    h5: [...Object.keys(h5)],
-    ul: [...Object.keys(unorderedList)],
-    ol: [...Object.keys(orderedList)],
-    li: [...Object.keys(listItem)],
-    a: [...Object.keys(a)],
-    strong: [],
-    em: [],
   },
 };

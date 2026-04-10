@@ -6,10 +6,11 @@ namespace AI.AGUI.Server;
 
 public sealed class SearchRecipesFunction
 {
-    // PropertyNamingPolicy = null preserves PascalCase on anonymous-object keys such as
-    // "Column", "Text", "List" — the A2UI renderer is case-sensitive on these discriminators.
+    // PropertyNamingPolicy = null keeps property names exactly as written in the
+    // anonymous-object literals below. The discriminator keys ("Card", "Tabs", …)
+    // are C# property names and must stay PascalCase, which they do with null policy.
     // Copy from Default so the TypeInfoResolver (reflection) is inherited.
-    private static readonly JsonSerializerOptions _pascalCaseOptions = new(JsonSerializerOptions.Default)
+    private static readonly JsonSerializerOptions _options = new(JsonSerializerOptions.Default)
     {
         PropertyNamingPolicy = null,
     };
@@ -19,7 +20,7 @@ public sealed class SearchRecipesFunction
             SearchAsync,
             name: "search_recipes",
             description: "Search for a recipe by dish name or ingredient. Returns an A2UI card that is rendered automatically in the chat.",
-            _pascalCaseOptions);
+            _options);
 
     [Description("Search for a recipe by dish name or ingredient.")]
     private static Task<object[]> SearchAsync(
@@ -29,59 +30,140 @@ public sealed class SearchRecipesFunction
     {
         var normalizedQuery = query.ToLowerInvariant();
 
-        string title;
-        string prepTime;
-        object[] ingredients;
-        object[] steps;
+        string title, image, rating, prepTime, cookTime, servings, reviewCountLabel;
+        object[] ingredients, instructions;
 
         if (normalizedQuery.Contains("pasta") || normalizedQuery.Contains("carbonara") || normalizedQuery.Contains("spaghetti"))
         {
-            title = "Spaghetti Carbonara";
-            prepTime = "20 min";
-            ingredients = ["200g spaghetti", "100g pancetta", "2 eggs", "50g Parmesan", "Black pepper"];
-            steps =
+            title            = "Spaghetti Carbonara";
+            image            = "https://images.unsplash.com/photo-1612874742237-6526221588e3?w=300&h=180&fit=crop";
+            rating           = "4.8";
+            reviewCountLabel = "(2,341 reviews)";
+            prepTime         = "15 min prep";
+            cookTime         = "20 min cook";
+            servings         = "Serves 2";
+            ingredients =
             [
-                "Bring a large pot of salted water to the boil and cook spaghetti al dente.",
-                "Fry pancetta in a dry pan over medium heat until crispy.",
-                "Whisk eggs with grated Parmesan and a generous pinch of black pepper.",
-                "Drain pasta, reserve a cup of pasta water.",
-                "Remove pan from heat, add pasta and pancetta, pour egg mixture over, toss quickly.",
-                "Add pasta water a splash at a time until glossy. Serve immediately.",
+                new { text = "200g spaghetti" },
+                new { text = "100g pancetta" },
+                new { text = "2 eggs" },
+                new { text = "50g Parmesan, grated" },
+                new { text = "Black pepper" },
+            ];
+            instructions =
+            [
+                new { text = "1. Cook spaghetti in salted boiling water until al dente." },
+                new { text = "2. Fry pancetta in a dry pan until crispy." },
+                new { text = "3. Whisk eggs with Parmesan and black pepper." },
+                new { text = "4. Drain pasta, reserving a cup of pasta water." },
+                new { text = "5. Toss pasta with pancetta off heat and mix quickly with egg mixture." },
+                new { text = "6. Add pasta water gradually until creamy. Serve immediately." },
             ];
         }
         else
         {
-            title = $"Classic {query} Recipe";
-            prepTime = "30 min";
-            ingredients = [$"200g {query}", "Salt", "Pepper", "2 tbsp olive oil", "1 garlic clove"];
-            steps =
+            title            = "Mediterranean Quinoa Bowl";
+            image            = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=300&h=180&fit=crop";
+            rating           = "4.9";
+            reviewCountLabel = "(1,247 reviews)";
+            prepTime         = "15 min prep";
+            cookTime         = "20 min cook";
+            servings         = "Serves 4";
+            ingredients =
             [
-                "Prepare all ingredients.",
-                "Heat olive oil in a pan over medium-high heat.",
-                "Cook following the standard method for the dish.",
-                "Season to taste and serve hot.",
+                new { text = "1 cup quinoa" },
+                new { text = "2 cups water" },
+                new { text = "1 cucumber, diced" },
+                new { text = "1 cup cherry tomatoes, halved" },
+            ];
+            instructions =
+            [
+                new { text = "1. Rinse quinoa and bring to a boil in water." },
+                new { text = "2. Reduce heat and simmer for 15 minutes." },
+                new { text = "3. Fluff with a fork and let cool." },
+                new { text = "4. Mix with diced vegetables." },
             ];
         }
 
+        // v0.8 format: component is a discriminated-union object { TypeName: { ...props } }
+        // StringValue = { path: "..." } or { literalString: "..." }
+        // children (Column/Row/List) = { explicitList: [...] } or { template: { componentId, dataBinding } }
         object[] components =
         [
-            new { id = "root-col",         component = new { Column = new { children = new { explicitList = new[] { "recipe-title", "prep-time", "ingredients-list", "steps-list" } } } } },
-            new { id = "recipe-title",     component = new { Text   = new { usageHint = "h1",       text = new { path = "title"       } } } },
-            new { id = "prep-time",        component = new { Text   = new { usageHint = "label",    text = new { path = "prepTime"    } } } },
-            new { id = "ingredients-list", component = new { List   = new { direction = "vertical", children = new { template = new { componentId = "ingredient-item", dataBinding = "/ingredients" } } } } },
-            new { id = "ingredient-item",  component = new { Text   = new { usageHint = "body",     text = new { path = "name"        } } } },
-            new { id = "steps-list",       component = new { List   = new { direction = "vertical", children = new { template = new { componentId = "step-item",       dataBinding = "/steps"       } } } } },
-            new { id = "step-item",        component = new { Text   = new { usageHint = "body",     text = new { path = "instruction" } } } },
-        ];
+            new { id = "root",
+                  component = new { Card = new { child = "tabs-container" } } },
 
-        object[] ingredientItems = ingredients.Select(i => (object)new { name = (string)i }).ToArray();
-        object[] stepItems       = steps.Select(s => (object)new { instruction = (string)s }).ToArray();
+            new { id = "tabs-container",
+                  component = new { Tabs = new { tabItems = new object[]
+                  {
+                      new { title = new { literalString = "Overview"     }, child = "overview-col"       },
+                      new { title = new { literalString = "Ingredients"  }, child = "ingredients-list"   },
+                      new { title = new { literalString = "Instructions" }, child = "instructions-list"  },
+                  }}}},
+
+            new { id = "overview-col",
+                  component = new { Column = new { children = new { explicitList = new[] { "recipe-image", "overview-content" } } } } },
+
+            new { id = "recipe-image",
+                  component = new { Image = new { url = new { path = "/image" }, usageHint = "mediumFeature", fit = "cover" } } },
+
+            new { id = "overview-content",
+                  component = new { Column = new { children = new { explicitList = new[] { "title", "rating-row", "times-row", "servings" } } } } },
+
+            new { id = "title",
+                  component = new { Text = new { text = new { path = "/title" }, usageHint = "h3" } } },
+
+            new { id = "rating-row",
+                  component = new { Row = new { children = new { explicitList = new[] { "star-icon", "rating", "review-count" } } } } },
+
+            new { id = "star-icon",
+                  component = new { Icon = new { name = new { literalString = "star" } } } },
+
+            new { id = "rating",
+                  component = new { Text = new { text = new { path = "/rating" }, usageHint = "body" } } },
+
+            new { id = "review-count",
+                  component = new { Text = new { text = new { path = "/reviewCountLabel" }, usageHint = "caption" } } },
+
+            new { id = "times-row",
+                  component = new { Row = new { children = new { explicitList = new[] { "prep-time", "cook-time" } } } } },
+
+            new { id = "prep-time",
+                  component = new { Row = new { children = new { explicitList = new[] { "prep-icon", "prep-text" } } } } },
+
+            new { id = "prep-icon",
+                  component = new { Icon = new { name = new { literalString = "calendarToday" } } } },
+
+            new { id = "prep-text",
+                  component = new { Text = new { text = new { path = "/prepTime" }, usageHint = "caption" } } },
+
+            new { id = "cook-time",
+                  component = new { Row = new { children = new { explicitList = new[] { "cook-icon", "cook-text" } } } } },
+
+            new { id = "cook-icon",
+                  component = new { Icon = new { name = new { literalString = "timer" } } } },
+
+            new { id = "cook-text",
+                  component = new { Text = new { text = new { path = "/cookTime" }, usageHint = "caption" } } },
+
+            new { id = "servings",
+                  component = new { Text = new { text = new { path = "/servings" }, usageHint = "caption" } } },
+
+            new { id = "ingredients-list",
+                  component = new { Column = new { children = new { template = new { componentId = "item-template", dataBinding = "/ingredients" } } } } },
+
+            new { id = "instructions-list",
+                  component = new { Column = new { children = new { template = new { componentId = "item-template", dataBinding = "/instructions" } } } } },
+
+            new { id = "item-template",
+                  component = new { Text = new { text = new { path = "text" }, usageHint = "body" } } },
+        ];
 
         object[] operations =
         [
             new { surfaceUpdate   = new { surfaceId = "recipe-surface", components } },
-            new { dataModelUpdate = new { surfaceId = "recipe-surface", path = "/", contents = new { title, prepTime, ingredients = ingredientItems, steps = stepItems } } },
-            new { beginRendering  = new { surfaceId = "recipe-surface", root = "root-col", styles = new { } } },
+            new { dataModelUpdate = new { surfaceId = "recipe-surface", path = "/", contents = new { image, title, rating, reviewCountLabel, prepTime, cookTime, servings, ingredients, instructions } } },
+            new { beginRendering  = new { surfaceId = "recipe-surface", root = "root", styles = new { } } },
         ];
 
         return Task.FromResult(operations);
