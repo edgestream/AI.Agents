@@ -25,7 +25,7 @@ namespace AI.AGUI.Server;
 /// The returned <see cref="AIContext"/> is merged with the request's own context by the agent.
 /// </para>
 /// </remarks>
-internal sealed class McpClientToolsAIContextProvider(McpClientRegistry registry) : AIContextProvider
+public sealed class McpClientToolsAIContextProvider(McpClientRegistry registry) : AIContextProvider
 {
     protected override ValueTask<AIContext> ProvideAIContextAsync(
         InvokingContext context,
