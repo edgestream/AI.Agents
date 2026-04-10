@@ -1,7 +1,7 @@
 using System.Text.Json.Serialization;
 
 namespace AI.AGUI.Server;
-
+/*
 /// <summary>
 /// Source-generated serializer context for the AGUI Server.
 /// Intentionally omits <c>PropertyNamingPolicy</c> so that C# property names
@@ -12,3 +12,4 @@ namespace AI.AGUI.Server;
 /// </summary>
 [JsonSerializable(typeof(object[]))]
 internal sealed partial class AGUIServerSerializerContext : JsonSerializerContext;
+*/
