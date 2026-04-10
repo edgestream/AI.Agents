@@ -17,7 +17,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
-    <ProjectReference Include="../../samples/MealPlanner.Core/MealPlanner.Core.csproj" />
   </ItemGroup>
 
 </Project>

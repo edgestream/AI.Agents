@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
-    <ProjectReference Include="../MealPlanner.Core/MealPlanner.Core.csproj" />
   </ItemGroup>
 
 </Project>
