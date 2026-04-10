@@ -31,7 +31,7 @@ public sealed class AgentModuleLoaderTests
     [TestMethod]
     public void LoadAgentModule_PreRegisteredModule_CallsRegister()
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
         builder.Services.AddSingleton<IAgentModule>(new StubAgentModule());
 
         builder.LoadAgentModule();
@@ -43,7 +43,7 @@ public sealed class AgentModuleLoaderTests
     [TestMethod]
     public void LoadAgentModule_PreRegisteredModule_ReturnsTrue()
     {
-        var builder = Host.CreateApplicationBuilder();
+        var builder = Microsoft.Extensions.Hosting.Host.CreateApplicationBuilder();
         builder.Services.AddSingleton<IAgentModule>(new StubAgentModule());
 
         bool result = builder.LoadAgentModule();

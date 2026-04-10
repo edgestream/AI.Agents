@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using MealPlanner;
 
 namespace AI.AGUI.Server.IntegrationTests;
 
@@ -26,8 +27,8 @@ public sealed class SearchRecipesFunctionTests
     public async Task AGUIEndpoint_WithSearchRecipesTool_ReturnsSuccessStream()
     {
         // Arrange: factory uses FakeChatClient which returns a plain text response
-        // without invoking any tools. This verifies that both tools (fetch and
-        // search_recipes) are registered without error and the endpoint remains healthy.
+        // without invoking any tools. Verifies the default server agent starts
+        // and the AGUI endpoint remains healthy.
         using var factory = new AGUIServerFactory();
         using var client = factory.CreateClient();
 

@@ -1,0 +1,1 @@
+await AI.AGUI.Server.Host.RunAsync(args);

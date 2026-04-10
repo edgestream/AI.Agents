@@ -1,4 +1,7 @@
 <Solution>
+  <Folder Name="/samples/">
+    <Project Path="samples/MealPlanner/MealPlanner.csproj" />
+  </Folder>
   <Folder Name="/src/">
     <Project Path="src/AI.AGUI.Abstractions/AI.AGUI.Abstractions.csproj" />
     <Project Path="src/AI.MAF.Client/AI.MAF.Client.csproj" />
