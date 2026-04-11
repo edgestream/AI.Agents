@@ -1,7 +1,7 @@
 import { CopilotRuntime, createCopilotEndpoint } from "@copilotkit/runtime/v2";
 import { HttpAgent } from "@ag-ui/client";
 
-const BACKEND_URL = process.env.BACKEND_URL ?? "http://localhost:8000";
+const BACKEND_URL = (process.env.BACKEND_URL ?? "http://localhost:8000").replace(/\/+$/, "");
 
 type CatalogEntry = { id: string; displayName: string; route: string };
 

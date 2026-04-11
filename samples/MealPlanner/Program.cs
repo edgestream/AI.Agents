@@ -9,7 +9,6 @@ using Microsoft.Extensions.AI;
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("applications.json", optional: true, reloadOnChange: false);
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
-builder.WebHost.UseUrls("http://localhost:8000");
 builder.AddAIClient();
 builder.Services.AddHttpClient();
 builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, id) =>
