@@ -2,6 +2,7 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /repo
 COPY src/AI.AGUI.Abstractions/AI.AGUI.Abstractions.csproj src/AI.AGUI.Abstractions/
+COPY src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj src/AI.AGUI.Hosting/
 COPY src/AI.MAF.Client/AI.MAF.Client.csproj src/AI.MAF.Client/
 COPY src/AI.MAF.Tools/AI.MAF.Tools.csproj src/AI.MAF.Tools/
 COPY src/AI.MCP.Client/AI.MCP.Client.csproj src/AI.MCP.Client/
