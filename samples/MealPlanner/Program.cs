@@ -8,7 +8,7 @@ builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
 {
     var projectClient = sp.GetRequiredService<AIProjectClient>();
     return projectClient.AsAIAgent(
-        "gpt-5.3-chat",
+        builder.Configuration["Foundry:Model"] ?? "gpt-5.3-chat",
         "You are an agent that helps users plan meals and find recipes.",
         name,
         "An agent that helps users plan meals and find recipes.",

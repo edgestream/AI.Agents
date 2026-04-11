@@ -16,16 +16,24 @@ namespace Microsoft.Extensions.Hosting;
 public static class HostApplicationBuilderExtensions
 {
     /// <summary>
-    /// Registers an <see cref="IChatClient"/> by auto-detecting the provider from configuration:
-    /// uses Foundry when <c>Foundry:ProjectEndpoint</c> is present, otherwise Azure OpenAI.
+    /// Registers an <see cref="IChatClient"/> by auto-detecting the provider from configuration.
+    /// Uses Foundry only when both <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> are present;
+    /// otherwise falls back to Azure OpenAI.
     /// </summary>
     public static IHostApplicationBuilder AddAIClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return !string.IsNullOrWhiteSpace(builder.Configuration["Foundry:ProjectEndpoint"])
-            ? builder.AddFoundryResponsesAgentClient()
-            : builder.AddAzureOpenAIClient();
+        var foundryProjectEndpoint = builder.Configuration["Foundry:ProjectEndpoint"];
+        var foundryModel = builder.Configuration["Foundry:Model"];
+        if (!string.IsNullOrWhiteSpace(foundryProjectEndpoint) && !string.IsNullOrWhiteSpace(foundryModel))
+        {
+            return builder.AddFoundryProjectClient(foundryProjectEndpoint, foundryModel);
+        }
+        else
+        {
+            return builder.AddAzureOpenAIClient();
+        }
     }
 
     public static IHostApplicationBuilder AddAzureOpenAIClient(this IHostApplicationBuilder builder)
@@ -55,18 +63,16 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddFoundryResponsesAgentClient(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddFoundryProjectClient(this IHostApplicationBuilder builder, string endpoint, string model)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNullOrEmpty(endpoint);
+        ArgumentNullException.ThrowIfNullOrEmpty(model);
 
-        var endpoint = builder.Configuration["Foundry:ProjectEndpoint"];
-        if (!string.IsNullOrWhiteSpace(endpoint))
+        builder.Services.AddSingleton(sp =>
         {
-            builder.Services.AddSingleton(sp =>
-            {
-                return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential());
-            });            
-        }
+            return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential());
+        });            
         builder.Services.AddSingleton(sp =>
         {
             var projectClient = sp.GetRequiredService<AIProjectClient>();
@@ -74,18 +80,9 @@ public static class HostApplicationBuilderExtensions
         });
         builder.Services.AddSingleton(sp =>
         {
-            var projectClient = sp.GetRequiredService<AIProjectClient>();
-            return projectClient.GetProjectOpenAIClient();
+            var openAIClient = sp.GetRequiredService<ProjectOpenAIClient>();
+            return openAIClient.GetChatClient(model);
         });
-        var model = builder.Configuration["Foundry:Model"];
-        if (!string.IsNullOrWhiteSpace(model))
-        {
-            builder.Services.AddSingleton(sp =>
-            {
-                var openAIClient = sp.GetRequiredService<ProjectOpenAIClient>();
-                return openAIClient.GetChatClient(model);
-            });
-        }
         builder.Services.AddSingleton(sp =>
         {
             var openAIChatClient = sp.GetRequiredService<ChatClient>();
