@@ -6,6 +6,7 @@ using Azure.Identity;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OpenAI.Chat;
 
 namespace Microsoft.Extensions.Hosting;
 
@@ -15,24 +16,26 @@ namespace Microsoft.Extensions.Hosting;
 public static class HostApplicationBuilderExtensions
 {
     /// <summary>
-    /// Registers an <see cref="IChatClient"/> by auto-detecting the provider from configuration:
-    /// uses Foundry when <c>Foundry:ProjectEndpoint</c> is present, otherwise Azure OpenAI.
+    /// Registers an <see cref="IChatClient"/> by auto-detecting the provider from configuration.
+    /// Uses Foundry only when both <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> are present;
+    /// otherwise falls back to Azure OpenAI.
     /// </summary>
     public static IHostApplicationBuilder AddAIClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        return !string.IsNullOrWhiteSpace(builder.Configuration["Foundry:ProjectEndpoint"])
-            ? builder.AddFoundryResponsesAgentClient()
-            : builder.AddAzureOpenAIClient();
+        var foundryProjectEndpoint = builder.Configuration["Foundry:ProjectEndpoint"];
+        var foundryModel = builder.Configuration["Foundry:Model"];
+        if (!string.IsNullOrWhiteSpace(foundryProjectEndpoint) && !string.IsNullOrWhiteSpace(foundryModel))
+        {
+            return builder.AddFoundryProjectClient(foundryProjectEndpoint, foundryModel);
+        }
+        else
+        {
+            return builder.AddAzureOpenAIClient();
+        }
     }
 
-    /// <summary>
-    /// Registers an <see cref="IChatClient"/> backed by Azure OpenAI.
-    /// Reads <c>AzureOpenAI:Endpoint</c>, <c>AzureOpenAI:DeploymentName</c>,
-    /// and optionally <c>AzureOpenAI:ApiKey</c> from configuration.
-    /// Falls back to <see cref="DefaultAzureCredential"/> when no API key is present.
-    /// </summary>
     public static IHostApplicationBuilder AddAzureOpenAIClient(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -60,45 +63,31 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    /// <summary>
-    /// Registers an <see cref="IChatClient"/> backed by a Microsoft Foundry project endpoint
-    /// using the Chat Completions API.
-    /// Reads <c>Foundry:ProjectEndpoint</c> and <c>Foundry:Model</c> from configuration.
-    /// Authentication uses <see cref="DefaultAzureCredential"/> (managed identity in production;
-    /// <see cref="Azure.Identity.AzureCliCredential"/> locally when <c>~/.azure</c> is bind-mounted).
-    /// </summary>
-    /// <remarks>
-    /// Uses Chat Completions (not the Responses API) because the stateless Responses API adapter
-    /// in Microsoft.Agents.AI.Foundry does not correctly translate tool-result messages into the
-    /// Responses API <c>function_call_output</c> schema, causing HTTP 400 invalid_payload errors
-    /// after tool calls. Chat Completions handles tool-result messages correctly and
-    /// <see cref="Microsoft.Agents.AI.ChatClientAgent"/> manages conversation history statelessly
-    /// by re-sending the full message list on every request.
-    /// </remarks>
-    public static IHostApplicationBuilder AddFoundryResponsesAgentClient(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddFoundryProjectClient(this IHostApplicationBuilder builder, string endpoint, string model)
     {
         ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNullOrEmpty(endpoint);
+        ArgumentNullException.ThrowIfNullOrEmpty(model);
 
-        var endpoint = builder.Configuration["Foundry:ProjectEndpoint"];
-        if (string.IsNullOrWhiteSpace(endpoint))
-            throw new InvalidOperationException("Foundry:ProjectEndpoint is not configured.");
-
-        var model = builder.Configuration["Foundry:Model"];
-        if (string.IsNullOrWhiteSpace(model))
-            throw new InvalidOperationException("Foundry:Model is not configured.");
-
-        AIProjectClient projectClient = new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential());
-        builder.Services.AddSingleton(projectClient);
-
-        var openAIClient = projectClient.GetProjectOpenAIClient();
-        builder.Services.AddSingleton(openAIClient);
-
-        var openAIChatClient = openAIClient.GetChatClient(model);
-        builder.Services.AddSingleton(openAIChatClient);
-
-        var chatClient = openAIChatClient.AsIChatClient();
-        builder.Services.AddSingleton(chatClient);
-
+        builder.Services.AddSingleton(sp =>
+        {
+            return new AIProjectClient(new Uri(endpoint), new DefaultAzureCredential());
+        });            
+        builder.Services.AddSingleton(sp =>
+        {
+            var projectClient = sp.GetRequiredService<AIProjectClient>();
+            return projectClient.GetProjectOpenAIClient();
+        });
+        builder.Services.AddSingleton(sp =>
+        {
+            var openAIClient = sp.GetRequiredService<ProjectOpenAIClient>();
+            return openAIClient.GetChatClient(model);
+        });
+        builder.Services.AddSingleton(sp =>
+        {
+            var openAIChatClient = sp.GetRequiredService<ChatClient>();
+            return openAIChatClient.AsIChatClient();
+        });
         return builder;
     }
 }
