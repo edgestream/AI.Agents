@@ -7,7 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
+    <ProjectReference Include="../../src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
+    <ProjectReference Include="../../src/AI.MAF.Client/AI.MAF.Client.csproj" />
+    <ProjectReference Include="../../src/AI.MCP.Client/AI.MCP.Client.csproj" />
   </ItemGroup>
 
 </Project>
