@@ -67,7 +67,7 @@ public sealed class LiveTests
         };
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        var response = await client.PostAsJsonAsync("/", payload, cts.Token);
+        var response = await client.PostAsJsonAsync("/agents/agui-agent", payload, cts.Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("text/event-stream", response.Content.Headers.ContentType?.MediaType);
@@ -108,7 +108,7 @@ public sealed class LiveTests
         };
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        var response = await client.PostAsJsonAsync("/", payload, cts.Token);
+        var response = await client.PostAsJsonAsync("/agents/agui-agent", payload, cts.Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("text/event-stream", response.Content.Headers.ContentType?.MediaType);
