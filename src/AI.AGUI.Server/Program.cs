@@ -2,16 +2,16 @@ using AI.AGUI.Hosting;
 using AI.MAF.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
+using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.Extensions.AI;
 
 #pragma warning disable MAAI001 // AgentSkillsProvider is marked experimental
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("applications.json", optional: true, reloadOnChange: false);
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 builder.AddAIClient();
 builder.Services.AddHttpClient();
-builder.AddAGUIApplication("agui-agent", "AGUI Agent", (sp, id) =>
+builder.AddAIAgent("agui-agent", (sp, id) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
     var configuration = sp.GetRequiredService<IConfiguration>();
@@ -38,7 +38,7 @@ builder.AddAGUIApplication("agui-agent", "AGUI Agent", (sp, id) =>
 
 var app = builder.Build();
 app.MapGet("/health", () => "OK");
-app.MapAGUI();
+app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("agui-agent"));
 await app.RunAsync();
 
 #pragma warning restore MAAI001

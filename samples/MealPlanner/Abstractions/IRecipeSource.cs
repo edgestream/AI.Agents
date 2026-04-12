@@ -8,11 +8,24 @@ namespace MealPlanner.Abstractions;
 public interface IRecipeSource
 {
     /// <summary>
-    /// Get a recipe by its URL. The URL should be unique to the recipe and should not change over time. The returned recipe should include all relevant information about the recipe, including ingredients, instructions, and any other relevant metadata.
+    /// Fetches a recipe by URL and returns a structured <see cref="Recipe"/> object.
+    /// This is used internally by the provider to retrieve recipe data,
+    /// which can then be transformed into different formats (e.g. summary string, A2UI card)
+    /// for use by the LLM and UI. The full Recipe object is never returned to the model,
+    /// only internal summaries or renderings.
     /// </summary>
     /// <param name="url">The URL of the recipe.</param>
-    /// <returns>The recipe corresponding to the given URL.</returns>
-    public Task<Recipe> GetRecipe(Uri url);
+    /// <returns>A structured <see cref="Recipe"/> object.</returns>
+    public Task<Recipe> FetchRecipe(string url);
+
+    /// <summary>
+    /// Fetches a recipe by URL and returns a compact, human-readable summary the LLM can reason about (title, description, timing, yield).
+    /// Use this before deciding which action to take next (e.g. render card, get nutrition, build shopping list).
+    /// </summary>
+    /// <param name="url">The URL of the recipe.</param>
+    /// <returns>A compact, human-readable summary of the recipe.</returns>
+    public Task<string> GetRecipe(string url);
+
     /// <summary>
     /// Search for recipes matching the query. Results should be returned in order of relevance, but may be randomized if the randomize parameter is set to true.
     /// </summary>

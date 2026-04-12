@@ -1,3 +1,4 @@
+using System.Text;
 using MealPlanner.Abstractions;
 using Schema.NET;
 
@@ -39,17 +40,42 @@ internal class FakeRecipeSource : IRecipeSource
             Description = "aus Bologna"
         }
     ];
-    public Task<Recipe> GetRecipe(Uri url)
+
+    public Task<Recipe> FetchRecipe(string url)
     {
         foreach (var recipe in _recipes)
         {           
-            if (recipe.Url.Any(x => x == url))
+            if (recipe.Url.Any(x => x.ToString() == url))
             {
                 return Task.FromResult(recipe);
             }
         }
         throw new KeyNotFoundException($"Recipe with URL '{url}' not found.");
     }
+
+    /// <inheritdoc />
+    public async Task<string> GetRecipe(string url)
+    {
+        var recipe = await FetchRecipe(url);
+
+        var sb = new StringBuilder();
+
+        var title = recipe.Name.OfType<string>().FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(title))
+            sb.AppendLine($"Title: {title}");
+
+        var description = recipe.Description.OfType<string>().FirstOrDefault();
+        if (!string.IsNullOrWhiteSpace(description))
+            sb.AppendLine($"Description: {description}");
+
+        var originUrl = recipe.Url.FirstOrDefault()
+               ?? recipe.MainEntityOfPage.OfType<Uri>().FirstOrDefault();
+        if (originUrl is not null)
+            sb.AppendLine($"URL: {originUrl}");
+
+        return sb.ToString().TrimEnd();
+    }
+
     public async IAsyncEnumerable<ListItem> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
     {
         foreach (var recipe in _recipes)
