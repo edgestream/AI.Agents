@@ -1,4 +1,4 @@
-using MealPlanner.Chefkoch;
+using MealPlanner.Providers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MealPlanner.E2ETests;

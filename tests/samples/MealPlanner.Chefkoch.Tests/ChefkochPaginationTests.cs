@@ -1,4 +1,4 @@
-using MealPlanner.Chefkoch;
+using MealPlanner.Providers;
 
 namespace MealPlanner.Chefkoch.Tests;
 

@@ -1,8 +1,6 @@
 <Solution>
   <Folder Name="/samples/">
     <Project Path="samples/MealPlanner/MealPlanner.csproj" />
-    <Project Path="samples/MealPlanner.Abstractions/MealPlanner.Abstractions.csproj" />
-    <Project Path="samples/MealPlanner.Chefkoch/MealPlanner.Chefkoch.csproj" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
@@ -14,7 +12,7 @@
   <Folder Name="/tests/">
     <Project Path="tests/AI.AGUI.Server.IntegrationTests/AI.AGUI.Server.IntegrationTests.csproj" />
     <Project Path="tests/AI.AGUI.E2ETests/AI.AGUI.E2ETests.csproj" />
-    <Project Path="tests/MealPlanner.Chefkoch.Tests/MealPlanner.Chefkoch.Tests.csproj" />
-    <Project Path="tests/MealPlanner.E2ETests/MealPlanner.E2ETests.csproj" />
+    <Project Path="tests/samples/MealPlanner.Chefkoch.Tests/MealPlanner.Chefkoch.Tests.csproj" />
+    <Project Path="tests/samples/MealPlanner.E2ETests/MealPlanner.E2ETests.csproj" />
   </Folder>
 </Solution>

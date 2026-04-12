@@ -1,4 +1,4 @@
-using MealPlanner.Chefkoch;
+using MealPlanner.Providers;
 
 namespace MealPlanner.Chefkoch.Tests;
 
@@ -59,7 +59,7 @@ public class ChefkochRecipeParsingTests
 
         Assert.IsTrue(recipe.Name.Any(n => n == "Spaghetti Carbonara"));
         Assert.IsTrue(recipe.Description.Any(d => d.ToString()!.Contains("Klassische italienische")));
-        Assert.IsTrue(recipe.Url.Any(u => u.ToString().Contains("1234567")));
+        Assert.IsTrue(recipe.MainEntityOfPage.Any(u => u.ToString()!.Contains("1234567")));
         Assert.IsTrue(recipe.Image.Any(i => i.ToString()!.Contains("chefkoch-cdn.de")));
 
         // Verify timings
