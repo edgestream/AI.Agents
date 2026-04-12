@@ -1,10 +1,12 @@
 using MealPlanner.Abstractions;
-using MealPlanner.Providers;
+using MealPlanner.Chefkoch;
 using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IRecipeSource, FakeRecipeSource>();
+builder.Services.AddHttpClient("chefkoch");
+builder.Services.AddSingleton<ChefkochRecipeSource>();
+builder.Services.AddSingleton<IRecipeSource>(sp => sp.GetRequiredService<ChefkochRecipeSource>());
 builder.AddAIClient();
 builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
 {
@@ -14,7 +16,11 @@ builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
         "You are an agent that helps users plan meals and find recipes.",
         name,
         "An agent that helps users plan meals and find recipes.",
-        [SearchRecipesFunctionFactory.CreateFunction(sp)]
+        [
+            SearchRecipesFunctionFactory.CreateFunction(sp),
+            ChefkochAIFunctions.CreateSearchFunction(sp),
+            ChefkochAIFunctions.CreateGetRecipeFunction(sp)
+        ]
     );
 });
 var app = builder.Build();
