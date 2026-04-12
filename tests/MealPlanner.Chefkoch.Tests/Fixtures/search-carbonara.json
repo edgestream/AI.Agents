@@ -1,0 +1,27 @@
+{
+  "count": 2,
+  "results": [
+    {
+      "recipe": {
+        "id": "1234567",
+        "title": "Spaghetti Carbonara Original",
+        "previewImageUrlTemplate": "https://img.chefkoch-cdn.de/rezepte/1234567/bilder/<format>/spaghetti-carbonara.jpg",
+        "rating": {
+          "rating": 4.75,
+          "numVotes": 312
+        }
+      }
+    },
+    {
+      "recipe": {
+        "id": "7654321",
+        "title": "Vegetarische Carbonara",
+        "previewImageUrlTemplate": "https://img.chefkoch-cdn.de/rezepte/7654321/bilder/<format>/veggie-carbonara.jpg",
+        "rating": {
+          "rating": 4.5,
+          "numVotes": 98
+        }
+      }
+    }
+  ]
+}

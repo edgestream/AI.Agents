@@ -11,6 +11,8 @@
     <ProjectReference Include="../../src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
     <ProjectReference Include="../../src/AI.MAF.Client/AI.MAF.Client.csproj" />
     <ProjectReference Include="../../src/AI.MCP.Client/AI.MCP.Client.csproj" />
+    <ProjectReference Include="../MealPlanner.Abstractions/MealPlanner.Abstractions.csproj" />
+    <ProjectReference Include="../MealPlanner.Chefkoch/MealPlanner.Chefkoch.csproj" />
   </ItemGroup>
 
 </Project>
