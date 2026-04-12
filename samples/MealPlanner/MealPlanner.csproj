@@ -13,4 +13,12 @@
     <ProjectReference Include="../../src/AI.MCP.Client/AI.MCP.Client.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Abstractions\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Schema.NET" Version="13.0.0" />
+  </ItemGroup>
+
 </Project>

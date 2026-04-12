@@ -1,8 +1,10 @@
-using MealPlanner;
+using MealPlanner.Abstractions;
+using MealPlanner.Providers;
 using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddSingleton<IRecipeSource, FakeRecipeSource>();
 builder.AddAIClient();
 builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
 {
@@ -12,7 +14,7 @@ builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
         "You are an agent that helps users plan meals and find recipes.",
         name,
         "An agent that helps users plan meals and find recipes.",
-        [SearchRecipesFunction.CreateAIFunction()]
+        [SearchRecipesFunctionFactory.CreateFunction(sp)]
     );
 });
 var app = builder.Build();
