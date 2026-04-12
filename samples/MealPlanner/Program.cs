@@ -4,7 +4,8 @@ using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<IRecipeSource, FakeRecipeSource>();
+builder.Services.AddHttpClient("chefkoch");
+builder.Services.AddSingleton<IRecipeSource, ChefkochRecipeSource>();
 builder.AddAIClient();
 builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
 {
