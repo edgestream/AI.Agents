@@ -1,4 +1,6 @@
 # AI.AGUI
+[![CI](https://github.com/edgestream/AI.AGUI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/edgestream/AI.AGUI/actions/workflows/ci.yml)
+
 > Conversational [AG-UI](https://docs.ag-ui.com/introduction) web interface and backend server
 
 ![image](https://mintcdn.com/tawkitai/-0mlsyK2_Ht4cjV3/images/ag-ui-overview-with-partners-dark.png?w=1650&fit=max&auto=format&n=-0mlsyK2_Ht4cjV3&q=85&s=e581c90e6ee93decb9151cb92355c435)
