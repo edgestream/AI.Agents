@@ -19,13 +19,18 @@ internal class ChefkochRecipeSource : IRecipeSource
     }
 
     /// <inheritdoc />
-    public async Task<Recipe> FetchRecipe(string url)
+    public async IAsyncEnumerable<Recipe> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
     {
-        using var httpClient = _httpClientFactory.CreateClient("chefkoch");
-        var html = await httpClient.GetStringAsync(url);
-        return ParseRecipeFromHtml(html);
+        using var httpClient = _httpClientFactory.CreateClient();
+        await foreach (var item in ListRecipes(query, offset, limit, randomize))
+        {
+            var url = item.Url.First();
+            var html = await httpClient.GetStringAsync(url);
+            var recipe = ParseRecipeFromHtml(html);
+            yield return recipe;
+        }
     }
-
+/*
     /// <inheritdoc />
     public async Task<string> GetRecipe(string url)
     {
@@ -72,9 +77,10 @@ internal class ChefkochRecipeSource : IRecipeSource
 
         return sb.ToString().TrimEnd();
     }
+*/
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ListItem> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
+    internal async IAsyncEnumerable<ListItem> ListRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
     {
         using var httpClient = _httpClientFactory.CreateClient("chefkoch");
 

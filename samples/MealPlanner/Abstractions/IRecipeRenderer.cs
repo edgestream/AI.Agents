@@ -1,4 +1,3 @@
-
 using Schema.NET;
 
 public interface IRecipeRenderer

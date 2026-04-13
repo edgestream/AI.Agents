@@ -1,4 +1,3 @@
-using MealPlanner.Abstractions;
 using Schema.NET;
 
 internal sealed class A2UIRecipeRenderer : IRecipeRenderer
