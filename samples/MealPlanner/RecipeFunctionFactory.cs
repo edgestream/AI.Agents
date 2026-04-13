@@ -16,12 +16,12 @@ internal static class RecipeFunctionFactory
         
         async Task<object[]> SearchAndRenderRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
         {
-            var recipes = source.SearchRecipes(query, offset, limit, randomize);
-            await foreach (var recipe in recipes)
+            var cards = new List<object>();
+            await foreach (var recipe in source.SearchRecipes(query, offset, limit, randomize))
             {
-                return renderer.RenderRecipe(recipe);
+                cards.AddRange(renderer.RenderRecipe(recipe));
             }
-            return [];
+            return cards.ToArray();
         }
 
         return AIFunctionFactory.Create(SearchAndRenderRecipes,

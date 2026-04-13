@@ -8,6 +8,7 @@ internal sealed class A2UIRecipeRenderer : IRecipeRenderer
       /// </summary>
       public object[] RenderRecipe(Recipe recipe)
       {
+            var surfaceId        = Guid.NewGuid().ToString("N");
             var title            = recipe.Name.FirstOrDefault() ?? "Recipe";
             var image            = GetImageUrl(recipe);
             var (rating, reviewCountLabel) = GetRatingInfo(recipe);
@@ -41,7 +42,7 @@ internal sealed class A2UIRecipeRenderer : IRecipeRenderer
                   component = new { Column = new { children = new { explicitList = new[] { "recipe-image", "overview-content" } } } } },
 
             new { id = "recipe-image",
-                  component = new { Image = new { url = new { path = "/image" }, usageHint = "mediumFeature", fit = "cover" } } },
+                  component = new { Image = new { url = new { path = "/image" }, usageHint = "smallFeature", fit = "cover" } } },
 
             new { id = "overview-content",
                   component = new { Column = new { children = new { explicitList = new[] { "title", "rating-row", "times-row", "servings" } } } } },
@@ -97,9 +98,9 @@ internal sealed class A2UIRecipeRenderer : IRecipeRenderer
 
             object[] operations =
             [
-            new { surfaceUpdate   = new { surfaceId = "recipe-surface", components } },
-            new { dataModelUpdate = new { surfaceId = "recipe-surface", path = "/", contents = new { image, title, rating, reviewCountLabel, prepTime, cookTime, servings, ingredients, instructions } } },
-            new { beginRendering  = new { surfaceId = "recipe-surface", root = "root", styles = new { } } },
+            new { surfaceUpdate   = new { surfaceId, components } },
+            new { dataModelUpdate = new { surfaceId, path = "/", contents = new { image, title, rating, reviewCountLabel, prepTime, cookTime, servings, ingredients, instructions } } },
+            new { beginRendering  = new { surfaceId, root = "root", styles = new { } } },
             ];
 
             return operations;
