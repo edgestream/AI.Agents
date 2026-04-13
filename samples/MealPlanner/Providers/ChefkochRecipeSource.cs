@@ -1,4 +1,3 @@
-using System.Text;
 using HtmlAgilityPack;
 using MealPlanner.Abstractions;
 using Schema.NET;
@@ -26,58 +25,20 @@ internal class ChefkochRecipeSource : IRecipeSource
         {
             var url = item.Url.First();
             var html = await httpClient.GetStringAsync(url);
-            var recipe = ParseRecipeFromHtml(html);
+            Recipe recipe;
+            try
+            {
+                recipe = ParseRecipeFromHtml(html);
+            }
+            catch (InvalidOperationException)
+            {
+                // Skip pages that don't contain a Recipe JSON-LD block
+                // (search results occasionally link to category or editorial pages).
+                continue;
+            }
             yield return recipe;
         }
     }
-/*
-    /// <inheritdoc />
-    public async Task<string> GetRecipe(string url)
-    {
-        var recipe = await FetchRecipe(url);
-
-        var sb = new StringBuilder();
-
-        var title = recipe.Name.OfType<string>().FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(title))
-            sb.AppendLine($"Title: {title}");
-
-        var description = recipe.Description.OfType<string>().FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(description))
-            sb.AppendLine($"Description: {description}");
-
-        var yield = recipe.RecipeYield.OfType<string>().FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(yield))
-            sb.AppendLine($"Yield: {yield}");
-
-        var prep = recipe.PrepTime.FirstOrDefault();
-        if (prep.HasValue) sb.AppendLine($"Prep time: {FormatDuration(prep.Value)}");
-
-        var cook = recipe.CookTime.FirstOrDefault();
-        if (cook.HasValue) sb.AppendLine($"Cook time: {FormatDuration(cook.Value)}");
-
-        var total = recipe.TotalTime.FirstOrDefault();
-        if (total.HasValue) sb.AppendLine($"Total time: {FormatDuration(total.Value)}");
-
-        var rating = recipe.AggregateRating.OfType<IAggregateRating>().FirstOrDefault();
-        if (rating is not null)
-        {
-            var value = rating.RatingValue.OfType<double?>().FirstOrDefault()
-                     ?? (double.TryParse(rating.RatingValue.OfType<string>().FirstOrDefault(), out var d) ? d : (double?)null);
-            var count = rating.ReviewCount.OfType<int?>().FirstOrDefault()
-                     ?? rating.RatingCount.OfType<int?>().FirstOrDefault();
-            if (value.HasValue)
-                sb.AppendLine($"Rating: {value:F1}{(count.HasValue ? $" ({count} reviews)" : "")}");
-        }
-
-        var originUrl = recipe.Url.FirstOrDefault()
-               ?? recipe.MainEntityOfPage.OfType<Uri>().FirstOrDefault();
-        if (originUrl is not null)
-            sb.AppendLine($"URL: {originUrl}");
-
-        return sb.ToString().TrimEnd();
-    }
-*/
 
     /// <inheritdoc />
     internal async IAsyncEnumerable<ListItem> ListRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
@@ -277,14 +238,5 @@ internal class ChefkochRecipeSource : IRecipeSource
         {
             return false;
         }
-    }
-
-    private static string FormatDuration(TimeSpan ts)
-    {
-        if (ts.TotalMinutes < 60)
-            return $"{(int)ts.TotalMinutes} min";
-        var h = (int)ts.TotalHours;
-        var m = ts.Minutes;
-        return m == 0 ? $"{h} h" : $"{h} h {m} min";
     }
 }

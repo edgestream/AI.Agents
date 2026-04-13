@@ -37,7 +37,7 @@ public sealed class AGUIEndpointTests
         };
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        var response = await _client.PostAsJsonAsync("/agents/agui-agent", payload, cts.Token);
+        var response = await _client.PostAsJsonAsync("/", payload, cts.Token);
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
         Assert.AreEqual("text/event-stream", response.Content.Headers.ContentType?.MediaType);
@@ -57,7 +57,7 @@ public sealed class AGUIEndpointTests
         };
 
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        var response = await _client.PostAsJsonAsync("/agents/agui-agent", payload, cts.Token);
+        var response = await _client.PostAsJsonAsync("/", payload, cts.Token);
         var body = await response.Content.ReadAsStringAsync(cts.Token);
 
         Assert.IsFalse(string.IsNullOrWhiteSpace(body), "SSE stream body should not be empty.");
