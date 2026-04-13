@@ -90,7 +90,7 @@ public sealed class AgentSkillsTests
             };
 
             using var cts = new System.Threading.CancellationTokenSource(TimeSpan.FromSeconds(10));
-            var response = await client.PostAsJsonAsync("/agents/agui-agent", payload, cts.Token);
+            var response = await client.PostAsJsonAsync("/", payload, cts.Token);
 
             Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
             Assert.AreEqual("text/event-stream", response.Content.Headers.ContentType?.MediaType);

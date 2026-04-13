@@ -1,4 +1,3 @@
-using AI.AGUI.Hosting;
 using AI.MCP.Client;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;

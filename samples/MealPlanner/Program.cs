@@ -2,23 +2,31 @@ using MealPlanner.Abstractions;
 using MealPlanner.Providers;
 using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
+using Microsoft.Agents.AI.Hosting;
+using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
+using Microsoft.Agents.AI;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddHttpClient("chefkoch");
+
+builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IRecipeSource, ChefkochRecipeSource>();
+builder.Services.AddSingleton<IRecipeRenderer, A2UIRecipeRenderer>();
 builder.AddAIClient();
-builder.AddAGUIApplication("meal-planner", "Meal Planner", (sp, name) =>
+builder.AddAIAgent("meal-planner", (sp, name) =>
 {
     var projectClient = sp.GetRequiredService<AIProjectClient>();
     return projectClient.AsAIAgent(
-        builder.Configuration["Foundry:Model"] ?? "gpt-5.3-chat",
-        "You are an agent that helps users plan meals and find recipes.",
-        name,
-        "An agent that helps users plan meals and find recipes.",
-        [SearchRecipesFunctionFactory.CreateFunction(sp)]
+        model: builder.Configuration["Foundry:Model"]!,
+        instructions: "You are an agent that helps users find recipes.",
+        name: name,
+        description: "An agent that helps users find recipes.",
+        tools: [RecipeFunctionFactory.CreateSearchFunction(sp)]
     );
 });
+
 var app = builder.Build();
+
 app.MapGet("/health", () => "OK");
-app.MapAGUI();
+app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("meal-planner"));
+
 await app.RunAsync();

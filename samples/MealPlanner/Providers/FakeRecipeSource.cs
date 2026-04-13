@@ -39,29 +39,14 @@ internal class FakeRecipeSource : IRecipeSource
             Description = "aus Bologna"
         }
     ];
-    public Task<Recipe> GetRecipe(Uri url)
-    {
-        foreach (var recipe in _recipes)
-        {           
-            if (recipe.Url.Any(x => x == url))
-            {
-                return Task.FromResult(recipe);
-            }
-        }
-        throw new KeyNotFoundException($"Recipe with URL '{url}' not found.");
-    }
-    public async IAsyncEnumerable<ListItem> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
+
+    public async IAsyncEnumerable<Recipe> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
     {
         foreach (var recipe in _recipes)
         {
             if (recipe.Name.Any(x => x.Contains(query, StringComparison.OrdinalIgnoreCase)))
             {
-                yield return new ListItem
-                {
-                    Url = recipe.Url,
-                    Name = recipe.Name,
-                    Description = recipe.Description
-                };
+                yield return recipe;
             }
         };
     }

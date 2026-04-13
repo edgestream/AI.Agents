@@ -18,15 +18,30 @@ internal class ChefkochRecipeSource : IRecipeSource
     }
 
     /// <inheritdoc />
-    public async Task<Recipe> GetRecipe(Uri url)
+    public async IAsyncEnumerable<Recipe> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
     {
-        using var httpClient = _httpClientFactory.CreateClient("chefkoch");
-        var html = await httpClient.GetStringAsync(url);
-        return ParseRecipeFromHtml(html);
+        using var httpClient = _httpClientFactory.CreateClient();
+        await foreach (var item in ListRecipes(query, offset, limit, randomize))
+        {
+            var url = item.Url.First();
+            var html = await httpClient.GetStringAsync(url);
+            Recipe recipe;
+            try
+            {
+                recipe = ParseRecipeFromHtml(html);
+            }
+            catch (InvalidOperationException)
+            {
+                // Skip pages that don't contain a Recipe JSON-LD block
+                // (search results occasionally link to category or editorial pages).
+                continue;
+            }
+            yield return recipe;
+        }
     }
 
     /// <inheritdoc />
-    public async IAsyncEnumerable<ListItem> SearchRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
+    internal async IAsyncEnumerable<ListItem> ListRecipes(string query, int offset = 0, int limit = 10, bool randomize = false)
     {
         using var httpClient = _httpClientFactory.CreateClient("chefkoch");
 
