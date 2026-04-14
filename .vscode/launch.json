@@ -3,23 +3,28 @@
     "configurations": [
         {
             "name": "AGUI.Web",
-            "type": "node",
+            "type": "node-terminal",
             "request": "launch",
             "preLaunchTask": "npm install (AGUIChat)",
             "cwd": "${workspaceFolder}/src/AI.AGUI.Web",
-            "runtimeExecutable": "npm",
-            "runtimeArgs": ["run", "dev"],
-            "console": "integratedTerminal",
-            "serverReadyAction": {
-                "pattern": "- Local:.+(https?://\\S+)",
-                "uriFormat": "%s",
-                "action": "openExternally"
-            },
+            "command": "npm run dev",
             "resolveSourceMapLocations": [
                 "${workspaceFolder}/**",
                 "!**/node_modules/**",
                 "!**/.next/**"
-            ]
+            ],
+            "serverReadyAction": {
+                "pattern": "Ready in",
+                "uriFormat": "http://localhost:3000",
+                "action": "openPreview"
+            }
+        },
+        {
+            "name": "AGUI.Browser",
+            "type": "editor-browser",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "preLaunchTask": "wait-for-web"
         },
         {
             "name": "AGUI.Server",
@@ -39,7 +44,7 @@
     "compounds": [
         {
             "name": "Fullstack (Server + Web)",
-            "configurations": ["AGUI.Server", "AGUI.Web"],
+            "configurations": ["AGUI.Server", "AGUI.Web", "AGUI.Browser"],
             "stopAll": true
         }
     ]

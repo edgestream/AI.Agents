@@ -33,6 +33,12 @@
                 "cwd": "${workspaceFolder}/src/AI.AGUI.Web"
             },
             "problemMatcher": []
+        },
+        {
+            "label": "wait-for-web",
+            "type": "shell",
+            "command": "while (-not (Test-NetConnection -ComputerName localhost -Port 3000 -InformationLevel Quiet -WarningAction SilentlyContinue)) { Start-Sleep -Milliseconds 500 }",
+            "problemMatcher": []
         }
     ]
 }
