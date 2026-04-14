@@ -77,20 +77,22 @@ public sealed class ChatPageTests : PageTest
 
         // Wait for the send button to become enabled — it is disabled until the
         // SSE connection to the backend is established.
-        var sendButton = Page.GetByTestId("copilot-send-button");
+        // NOTE: CopilotKit ≥ 1.55 no longer emits data-testid attributes; the
+        // button is identified by its aria-label instead.
+        var sendButton = Page.Locator("button[aria-label='Send']");
         await Expect(sendButton).ToBeEnabledAsync(new LocatorAssertionsToBeEnabledOptions { Timeout = 30_000 });
 
         // Send the message.
         await input.PressAsync("Enter");
 
         // The user message must appear in the chat log.
-        // CopilotKit renders user turns with data-testid="copilot-user-message".
-        var userMessage = Page.GetByTestId("copilot-user-message");
+        // CopilotKit ≥ 1.55 renders user turns with class copilotKitUserMessage.
+        var userMessage = Page.Locator(".copilotKitUserMessage");
         await Expect(userMessage.First).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 30_000 });
 
         // An assistant message container must appear — any content is accepted.
-        // CopilotKit renders assistant turns with data-testid="copilot-assistant-message".
-        var assistantMessage = Page.GetByTestId("copilot-assistant-message");
+        // CopilotKit ≥ 1.55 renders assistant turns with class copilotKitAssistantMessage.
+        var assistantMessage = Page.Locator(".copilotKitAssistantMessage");
         await Expect(assistantMessage.First).ToBeVisibleAsync(new LocatorAssertionsToBeVisibleOptions { Timeout = 30_000 });
     }
 }

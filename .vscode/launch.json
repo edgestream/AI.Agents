@@ -8,6 +8,10 @@
             "preLaunchTask": "npm install (AGUIChat)",
             "cwd": "${workspaceFolder}/src/AI.AGUI.Web",
             "command": "npm run dev",
+            "env": {
+                "LOG_LEVEL": "debug",
+                "NODE_OPTIONS": "--enable-source-maps"
+            },
             "resolveSourceMapLocations": [
                 "${workspaceFolder}/**",
                 "!**/node_modules/**",
