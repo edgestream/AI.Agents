@@ -1,17 +1,23 @@
 "use client";
 
-import { CopilotChat, CopilotKitProvider } from "@copilotkit/react-core/v2";
-import { a2uiTheme } from "./theme";
+import { CopilotKitCSSProperties, CopilotChat } from "@copilotkit/react-ui";
 
 export default function Page() {
   return (
-    <CopilotKitProvider
-      runtimeUrl="/api/copilotkit"
-      a2ui={{ theme: a2uiTheme }}
-      showDevConsole={true}>
-      <main>
-        <CopilotChat agentId="my_agent" labels={{ welcomeMessageText: "" }} />
-      </main>
-    </CopilotKitProvider>
+    <main
+      className="h-screen"
+      style={
+        { "--copilot-kit-primary-color": "#383b99" } as CopilotKitCSSProperties
+      }
+    >
+      <CopilotChat
+        className="h-full"
+        disableSystemMessage={true}
+        labels={{
+          title: "AGUIChat",
+          initial: "👋 Hi! How can I help you today?",
+        }}
+      />
+    </main>
   );
 }
