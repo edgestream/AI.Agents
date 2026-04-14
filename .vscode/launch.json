@@ -20,13 +20,6 @@
             }
         },
         {
-            "name": "AGUI.Browser",
-            "type": "editor-browser",
-            "request": "launch",
-            "url": "http://localhost:3000",
-            "preLaunchTask": "wait-for-web"
-        },
-        {
             "name": "AGUI.Server",
             "type": "dotnet",
             "request": "launch",
@@ -39,12 +32,19 @@
             "request": "launch",
             "projectPath": "${workspaceFolder}/samples/MealPlanner/MealPlanner.csproj",
             "preLaunchTask": "build (MealPlanner)"
+        },
+        {
+            "name": "Local browser",
+            "type": "editor-browser",
+            "request": "launch",
+            "url": "http://localhost:3000",
+            "preLaunchTask": "wait-for-web"
         }
     ],
     "compounds": [
         {
             "name": "Fullstack (Server + Web)",
-            "configurations": ["AGUI.Server", "AGUI.Web", "AGUI.Browser"],
+            "configurations": ["AGUI.Server", "AGUI.Web", "Local browser"],
             "stopAll": true
         }
     ]
