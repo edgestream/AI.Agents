@@ -1,4 +1,5 @@
 using AI.AGUI.Hosting;
+using AI.AGUI.Server;
 using AI.MAF.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -28,8 +29,11 @@ builder.AddAIAgent("agui-agent", (sp, id) =>
         Name = id,
         ChatOptions = new ChatOptions
         {
-            Instructions = "You are a helpful assistant.",
-            Tools = [FetchAIFunctionFactory.CreateAIFunction(sp)]
+            Instructions = """
+                You are a helpful assistant.
+                When asked to show, generate, or demo a card or A2UI widget, call the generate_test_card tool.
+                """,
+            Tools = [FetchAIFunctionFactory.CreateAIFunction(sp), A2UITestCardFunction.Create()]
         },
         AIContextProviders = [..contextProviders],
     };

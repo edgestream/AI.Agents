@@ -14,6 +14,7 @@ const runtime = new CopilotRuntime({
       url: process.env.BACKEND_URL || "http://localhost:8000/",
     }),
   },
+  a2ui: {},
 });
 
 export const POST = async (req: NextRequest) => {
