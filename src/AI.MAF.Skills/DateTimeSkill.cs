@@ -4,11 +4,12 @@ using Microsoft.Agents.AI;
 
 namespace AI.MAF.Skills;
 
+#pragma warning disable MAAI001 // AgentClassSkill is marked experimental
+
 /// <summary>
 /// A class-based agent skill for date/time operations.
 /// Demonstrates the <see cref="AgentClassSkill{T}"/> pattern with resources and scripts.
 /// </summary>
-#pragma warning disable MAAI001 // AgentClassSkill is marked experimental
 public sealed class DateTimeSkill : AgentClassSkill<DateTimeSkill>
 {
     /// <inheritdoc />
@@ -107,4 +108,5 @@ public sealed class DateTimeSkill : AgentClassSkill<DateTimeSkill>
         });
     }
 }
+
 #pragma warning restore MAAI001

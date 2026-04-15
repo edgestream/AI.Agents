@@ -2,10 +2,11 @@ using Microsoft.Agents.AI;
 
 namespace AI.MAF.Skills;
 
+#pragma warning disable MAAI001 // Agent skills types are marked experimental
+
 /// <summary>
 /// Options for configuring the <see cref="AgentSkillsProvider"/>.
 /// </summary>
-#pragma warning disable MAAI001 // Agent skills types are marked experimental
 public sealed class AgentSkillsProviderOptions
 {
     /// <summary>
@@ -27,4 +28,5 @@ public sealed class AgentSkillsProviderOptions
     /// </summary>
     public AgentFileSkillScriptRunner? FileScriptRunner { get; set; }
 }
+
 #pragma warning restore MAAI001

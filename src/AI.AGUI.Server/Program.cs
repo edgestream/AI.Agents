@@ -10,27 +10,19 @@ using Microsoft.Extensions.AI;
 #pragma warning disable MAAI001 // AgentSkillsProvider is marked experimental
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
-builder.AddAIClient();
+
 builder.Services.AddHttpClient();
-
-// Register class-based skills
-builder.Services.AddAgentSkill<DateTimeSkill>();
-
-// Register the skills provider (combines file-based and class-based skills)
-builder.Services.AddAgentSkillsProvider(options =>
-{
-    options.FileSkillsPath = builder.Configuration["Skills:Path"] ?? "skills";
-});
-
+builder.AddAIClient();
+builder.AddAIAgentSkill<DateTimeSkill>();
 builder.AddAIAgent("agui-agent", (sp, id) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
     var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
     var skillsProvider = sp.GetRequiredService<AgentSkillsProvider>();
-    var contextProviders = new List<Microsoft.Agents.AI.AIContextProvider> { skillsProvider };
-    if (sp.GetService<AI.MCP.Client.McpClientRegistry>() is { } registry)
-        contextProviders.Insert(0, new McpClientToolsAIContextProvider(registry));
+    var contextProviders = new List<AIContextProvider> { skillsProvider };
+    if (sp.GetService<AI.MCP.Client.McpClientRegistry>() is { } registry) contextProviders.Insert(0, new McpClientToolsAIContextProvider(registry));
     var agentOptions = new ChatClientAgentOptions
     {
         Name = id,
@@ -48,10 +40,10 @@ builder.AddAIAgent("agui-agent", (sp, id) =>
 });
 
 var app = builder.Build();
+
 app.MapGet("/health", () => "OK");
 app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("agui-agent"));
-await app.RunAsync();
 
-#pragma warning restore MAAI001
+await app.RunAsync();
 
 public partial class Program { }
