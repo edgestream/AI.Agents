@@ -1,5 +1,6 @@
 using MealPlanner.Abstractions;
 using MealPlanner.Providers;
+using AI.MAF.Client;
 using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -11,7 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHttpClient();
 builder.Services.AddSingleton<IRecipeSource, ChefkochRecipeSource>();
 builder.Services.AddSingleton<IRecipeRenderer, A2UIRecipeRenderer>();
-builder.AddAIClient();
+builder.Services.AddAIProjectClient();
 builder.AddAIAgent("meal-planner", (sp, name) =>
 {
     var projectClient = sp.GetRequiredService<AIProjectClient>();

@@ -19,14 +19,12 @@ namespace AI.MCP.Client;
 public sealed class HostingService(
     McpClientRegistry registry,
     IServiceProvider serviceProvider,
-    IOptionsMonitor<McpClientOptions> options,
+    IOptions<McpClientOptions> options,
     ILogger<HostingService> logger) : IHostedService
 {
-    private IDisposable? _optionsChangeListener;
-
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        foreach (var (name, serverOptions) in options.CurrentValue.Servers)
+        foreach (var (name, serverOptions) in options.Value.Servers)
         {
             var transport = CreateTransport(name, serverOptions);
             var client = await McpClient.CreateAsync(transport, cancellationToken: cancellationToken);
@@ -61,17 +59,9 @@ public sealed class HostingService(
                 }
             }, TaskScheduler.Default);
         }
-
-        _optionsChangeListener = options.OnChange(_ =>
-            logger.LogWarning(
-                "MCP client configuration changed; restart required to apply."));
     }
 
-    public Task StopAsync(CancellationToken cancellationToken)
-    {
-        _optionsChangeListener?.Dispose();
-        return Task.CompletedTask;
-    }
+    public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
     private static IClientTransport CreateTransport(string name, McpServerOptions serverOptions)
     {

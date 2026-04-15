@@ -4,13 +4,7 @@
     "DeploymentName": "",
     "ApiKey": ""
   },
-  "McpServers": {
-    "learn": {
-      "type": "http",
-      "url": "https://learn.microsoft.com/api/mcp"
-    }
-  },
-  "Skills": {
-    "Path": "skills"
+  "Foundry": {
+    "Endpoint": ""
   }
 }
