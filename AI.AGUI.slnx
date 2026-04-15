@@ -5,6 +5,7 @@
   <Folder Name="/src/">
     <Project Path="src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
     <Project Path="src/AI.MAF.Client/AI.MAF.Client.csproj" />
+    <Project Path="src/AI.MAF.Skills/AI.MAF.Skills.csproj" />
     <Project Path="src/AI.MAF.Tools/AI.MAF.Tools.csproj" />
     <Project Path="src/AI.MCP.Client/AI.MCP.Client.csproj" />
     <Project Path="src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
