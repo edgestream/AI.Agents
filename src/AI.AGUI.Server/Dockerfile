@@ -4,6 +4,7 @@ WORKDIR /repo
 COPY src/AI.AGUI.Abstractions/AI.AGUI.Abstractions.csproj src/AI.AGUI.Abstractions/
 COPY src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj src/AI.AGUI.Hosting/
 COPY src/AI.MAF.Client/AI.MAF.Client.csproj src/AI.MAF.Client/
+COPY src/AI.MAF.Skills/AI.MAF.Skills.csproj src/AI.MAF.Skills/
 COPY src/AI.MAF.Tools/AI.MAF.Tools.csproj src/AI.MAF.Tools/
 COPY src/AI.MCP.Client/AI.MCP.Client.csproj src/AI.MCP.Client/
 COPY src/AI.AGUI.Server/AI.AGUI.Server.csproj src/AI.AGUI.Server/
