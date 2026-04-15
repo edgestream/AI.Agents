@@ -6,16 +6,16 @@ namespace AI.AGUI.Server.IntegrationTests;
 
 /// <summary>
 /// Optional live integration tests that boot the real application against real cloud credentials.
-/// Provider selection is automatic: Foundry is used when <c>Foundry:ProjectEndpoint</c> is set
-/// in the local configuration; otherwise Azure OpenAI is used.
-/// Tests are skipped when neither provider is configured (e.g. in CI without credentials).
+/// The current server wiring uses <see cref="AI.MAF.Client.ServiceCollectionExtensions.AddAIProjectClient"/>,
+/// so live tests require the <c>Foundry:Endpoint</c> setting in local configuration.
+/// Tests are skipped when Foundry is not configured (e.g. in CI without credentials).
 /// </summary>
 [TestClass]
 [TestCategory("Live")]
 public sealed class LiveTests
 {
     /// <summary>
-    /// Returns true when at least one AI provider is configured in local settings,
+    /// Returns true when the Foundry endpoint is configured in local settings,
     /// indicating that real cloud calls can be made.
     /// </summary>
     private static bool HasProviderConfig()
@@ -26,8 +26,7 @@ public sealed class LiveTests
             .AddEnvironmentVariables()
             .Build();
 
-        return !string.IsNullOrWhiteSpace(config["Foundry:ProjectEndpoint"])
-            || !string.IsNullOrWhiteSpace(config["AzureOpenAI:Endpoint"]);
+        return !string.IsNullOrWhiteSpace(config["Foundry:Endpoint"]);
     }
 
     [TestMethod]

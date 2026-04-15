@@ -13,8 +13,7 @@
 ```json
 {
   "Foundry": {
-    "ProjectEndpoint": "https://<ai-services-name>.services.ai.azure.com/api/projects/<project-name>",
-    "Model": "<model-deployment-name>"
+    "Endpoint": "https://<ai-services-name>.services.ai.azure.com/api/projects/<project-name>"
   }
 }
 ```

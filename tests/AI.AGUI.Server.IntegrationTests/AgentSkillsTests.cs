@@ -115,7 +115,7 @@ public sealed class AgentSkillsTests
         using var factory = new AGUIServerFactory();
         using var scope = factory.Services.CreateScope();
 
-        var skills = scope.ServiceProvider.GetServices<IRegisteredAgentSkill>().ToArray();
+        var skills = scope.ServiceProvider.GetServices<AgentSkill>().ToArray();
         var provider = scope.ServiceProvider.GetRequiredService<AgentSkillsProvider>();
 
         Assert.IsTrue(skills.Length > 0, "At least one skill should be registered");
