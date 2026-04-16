@@ -7,6 +7,7 @@ import {
   UserMessage,
 } from "@copilotkit/react-ui";
 import { useRenderActivityMessage } from "@copilotkit/react-core/v2";
+import { UserMenu } from "./components/UserAvatar";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ActivityAwareRenderMessage(props: any) {
@@ -67,21 +68,32 @@ function ActivityAwareRenderMessage(props: any) {
 
 export default function Page() {
   return (
-    <main
-      className="h-screen"
-      style={
-        { "--copilot-kit-primary-color": "#383b99" } as CopilotKitCSSProperties
-      }
-    >
-      <CopilotChat
-        className="h-full"
-        disableSystemMessage={true}
-        RenderMessage={ActivityAwareRenderMessage}
-        labels={{
-          title: "AGUIChat",
-          initial: "👋 Hi! How can I help you today?",
-        }}
-      />
-    </main>
+    <>
+      {/* Header with user info */}
+      <header className="flex-none border-b border-gray-200 bg-white">
+        <div className="flex items-center justify-between px-4 py-2">
+          <h1 className="text-lg font-semibold text-gray-900">AGUIChat</h1>
+          <UserMenu />
+        </div>
+      </header>
+      
+      {/* Main chat area */}
+      <main
+        className="flex-1 min-h-0"
+        style={
+          { "--copilot-kit-primary-color": "#383b99" } as CopilotKitCSSProperties
+        }
+      >
+        <CopilotChat
+          className="h-full"
+          disableSystemMessage={true}
+          RenderMessage={ActivityAwareRenderMessage}
+          labels={{
+            title: "AGUIChat",
+            initial: "👋 Hi! How can I help you today?",
+          }}
+        />
+      </main>
+    </>
   );
 }

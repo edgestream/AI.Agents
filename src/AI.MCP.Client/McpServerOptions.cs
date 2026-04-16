@@ -103,4 +103,91 @@ public sealed class McpServerOptions
     /// Ignored for HTTP/SSE transports.
     /// </remarks>
     public Dictionary<string, string?>? Env { get; set; }
+
+    /// <summary>
+    /// Gets or sets the OAuth 2.0 authentication configuration for this MCP server.
+    /// </summary>
+    /// <remarks>
+    /// When configured, the MCP server requires per-user OAuth authorization before
+    /// tools can be invoked. Users must complete the OAuth flow to authorize access.
+    /// </remarks>
+    /// <example>
+    /// <code>
+    /// "McpServers": {
+    ///   "github": {
+    ///     "command": "npx",
+    ///     "args": ["-y", "@modelcontextprotocol/server-github"],
+    ///     "auth": {
+    ///       "type": "OAuth",
+    ///       "clientId": "...",
+    ///       "authorizationUrl": "https://github.com/login/oauth/authorize",
+    ///       "tokenUrl": "https://github.com/login/oauth/access_token",
+    ///       "scopes": ["repo", "read:user"]
+    ///     }
+    ///   }
+    /// }
+    /// </code>
+    /// </example>
+    public McpOAuthOptions? Auth { get; set; }
+}
+
+/// <summary>
+/// OAuth 2.0 authentication configuration for an MCP server that requires per-user authorization.
+/// </summary>
+public sealed class McpOAuthOptions
+{
+    /// <summary>
+    /// Gets or sets the authentication type. Must be "OAuth" for OAuth 2.0 flows.
+    /// </summary>
+    public string Type { get; set; } = "OAuth";
+
+    /// <summary>
+    /// Gets or sets the OAuth client ID registered with the external provider.
+    /// </summary>
+    public string? ClientId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the OAuth client secret registered with the external provider.
+    /// Optional for public clients using PKCE.
+    /// </summary>
+    public string? ClientSecret { get; set; }
+
+    /// <summary>
+    /// Gets or sets the authorization endpoint URL for the OAuth provider.
+    /// </summary>
+    public string? AuthorizationUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the token endpoint URL for the OAuth provider.
+    /// </summary>
+    public string? TokenUrl { get; set; }
+
+    /// <summary>
+    /// Gets or sets the scopes to request during authorization.
+    /// </summary>
+    public string[]? Scopes { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether to use PKCE (Proof Key for Code Exchange).
+    /// Defaults to true for enhanced security.
+    /// </summary>
+    public bool UsePkce { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the environment variable name to inject the access token into.
+    /// Defaults to the standard name for common MCP servers.
+    /// </summary>
+    /// <remarks>
+    /// For GitHub MCP, this should be "GITHUB_PERSONAL_ACCESS_TOKEN".
+    /// For MS Graph MCP, this should be "GRAPH_ACCESS_TOKEN" or similar.
+    /// </remarks>
+    public string? TokenEnvVar { get; set; }
+
+    /// <summary>
+    /// Returns true if this configuration represents a valid OAuth setup.
+    /// </summary>
+    public bool IsConfigured =>
+        !string.IsNullOrEmpty(ClientId) &&
+        !string.IsNullOrEmpty(AuthorizationUrl) &&
+        !string.IsNullOrEmpty(TokenUrl);
 }

@@ -3,6 +3,7 @@
     <Project Path="samples/MealPlanner/MealPlanner.csproj" />
   </Folder>
   <Folder Name="/src/">
+    <Project Path="src/AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
     <Project Path="src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
     <Project Path="src/AI.MAF.Client/AI.MAF.Client.csproj" />
     <Project Path="src/AI.MAF.Skills/AI.MAF.Skills.csproj" />
