@@ -12,7 +12,7 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
  * Creates an HttpAgent with forwarded authentication headers.
  */
 function createAuthenticatedAgent(request: NextRequest): HttpAgent {
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:8000/";
+  const backendUrl = process.env.BACKEND_URL || "http://localhost:8080/";
   
   // Extract Easy Auth headers to forward to the backend
   const authHeaders: Record<string, string> = {};
