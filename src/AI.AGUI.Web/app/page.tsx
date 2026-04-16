@@ -71,8 +71,7 @@ export default function Page() {
     <>
       {/* Header with user info */}
       <header className="flex-none border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between px-4 py-2">
-          <h1 className="text-lg font-semibold text-gray-900">AGUIChat</h1>
+        <div className="flex items-center justify-end px-4 py-2">
           <UserMenu />
         </div>
       </header>
@@ -89,7 +88,7 @@ export default function Page() {
           disableSystemMessage={true}
           RenderMessage={ActivityAwareRenderMessage}
           labels={{
-            title: "AGUIChat",
+            title: "",
             initial: "👋 Hi! How can I help you today?",
           }}
         />
