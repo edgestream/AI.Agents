@@ -19,7 +19,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The service collection to add the skill to.</param>
     /// <returns>The updated service collection.</returns>
     public static IServiceCollection AddAIAgentSkill<TSkill>(this IServiceCollection services)
-        where TSkill : AgentClassSkill<TSkill>, new()
+        where TSkill : AgentClassSkill<TSkill>
     {
         services.AddSingleton<AgentSkill, TSkill>();
         services.TryAddSingleton(sp =>

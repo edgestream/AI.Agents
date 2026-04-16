@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using AI.AGUI.Server;
 using AI.MAF.Skills;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -119,6 +120,8 @@ public sealed class AgentSkillsTests
         var provider = scope.ServiceProvider.GetRequiredService<AgentSkillsProvider>();
 
         Assert.IsTrue(skills.Length > 0, "At least one skill should be registered");
+        Assert.IsTrue(skills.OfType<DateTimeSkill>().Any(), "DateTimeSkill should be registered");
+        Assert.IsTrue(skills.OfType<UserProfileSkill>().Any(), "UserProfileSkill should be registered");
         Assert.IsNotNull(provider, "AgentSkillsProvider should be registered");
     }
 }

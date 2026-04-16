@@ -1,4 +1,5 @@
 using AI.AGUI.Auth;
+using AI.AGUI.Server;
 using AI.MAF.Client;
 using AI.MAF.Skills;
 using AI.MCP.Client;
@@ -23,6 +24,7 @@ builder.Services.AddMCPClient();
 
 builder.Services.AddAIProjectClient();
 builder.Services.AddAIAgentSkill<DateTimeSkill>();
+builder.Services.AddAIAgentSkill<UserProfileSkill>();
 builder.Services.AddAIAgent("agui-agent", (sp, key) =>
 {
     var projectClient = sp.GetRequiredService<AIProjectClient>();
