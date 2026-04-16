@@ -45,6 +45,17 @@ public static class ServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Registers the MCP authorization service for checking OAuth requirements.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddMcpAuthorizationService(this IServiceCollection services)
+    {
+        services.TryAddSingleton<IMcpAuthorizationService, McpAuthorizationService>();
+        return services;
+    }
 }
 
 /// <summary>

@@ -24,6 +24,7 @@ public static class OAuthExtensions
         services.AddHttpClient<IOAuthService, OAuthService>();
         services.TryAddSingleton<IOAuthStateStore, InMemoryOAuthStateStore>();
         services.AddOAuthTokenStore();
+        services.AddMcpAuthorizationService();
         return services;
     }
 

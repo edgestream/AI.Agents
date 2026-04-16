@@ -1,4 +1,5 @@
 using AI.AGUI.Auth;
+using AI.MCP.Client;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -247,5 +248,142 @@ public sealed class AuthenticationTests
         var retrieved = await store.ConsumeStateAsync("nonexistent");
 
         Assert.IsNull(retrieved);
+    }
+
+    [TestMethod]
+    public async Task McpAuthorizationService_NoOAuthConfig_AlwaysAuthorized()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
+        var mcpOptions = Options.Create(new McpClientOptions
+        {
+            Servers = new Dictionary<string, McpServerOptions>
+            {
+                ["filesystem"] = new McpServerOptions { Type = "stdio", Command = "npx" }
+            }
+        });
+        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+
+        var isAuthorized = await service.IsAuthorizedAsync("filesystem", "user-123");
+
+        Assert.IsTrue(isAuthorized);
+    }
+
+    [TestMethod]
+    public async Task McpAuthorizationService_WithOAuthConfig_NotAuthorizedWithoutToken()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
+        var mcpOptions = Options.Create(new McpClientOptions
+        {
+            Servers = new Dictionary<string, McpServerOptions>
+            {
+                ["github"] = new McpServerOptions
+                {
+                    Type = "stdio",
+                    Command = "npx",
+                    Auth = new McpOAuthOptions
+                    {
+                        ClientId = "test-client",
+                        AuthorizationUrl = "https://github.com/login/oauth/authorize",
+                        TokenUrl = "https://github.com/login/oauth/access_token"
+                    }
+                }
+            }
+        });
+        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+
+        var isAuthorized = await service.IsAuthorizedAsync("github", "user-123");
+
+        Assert.IsFalse(isAuthorized);
+    }
+
+    [TestMethod]
+    public async Task McpAuthorizationService_WithOAuthConfig_AuthorizedWithValidToken()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
+        var mcpOptions = Options.Create(new McpClientOptions
+        {
+            Servers = new Dictionary<string, McpServerOptions>
+            {
+                ["github"] = new McpServerOptions
+                {
+                    Type = "stdio",
+                    Command = "npx",
+                    Auth = new McpOAuthOptions
+                    {
+                        ClientId = "test-client",
+                        AuthorizationUrl = "https://github.com/login/oauth/authorize",
+                        TokenUrl = "https://github.com/login/oauth/access_token"
+                    }
+                }
+            }
+        });
+        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+
+        // Store a valid token
+        await tokenStore.SetTokenAsync("user-123", "github", new OAuthToken
+        {
+            AccessToken = "valid-token",
+            ExpiresAt = DateTimeOffset.UtcNow.AddHours(1)
+        });
+
+        var isAuthorized = await service.IsAuthorizedAsync("github", "user-123");
+
+        Assert.IsTrue(isAuthorized);
+    }
+
+    [TestMethod]
+    public void McpAuthorizationService_GenerateConsentRequired_ReturnsConsentInfo()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
+        var mcpOptions = Options.Create(new McpClientOptions
+        {
+            Servers = new Dictionary<string, McpServerOptions>
+            {
+                ["github"] = new McpServerOptions
+                {
+                    Type = "stdio",
+                    Command = "npx",
+                    Auth = new McpOAuthOptions
+                    {
+                        ClientId = "test-client",
+                        AuthorizationUrl = "https://github.com/login/oauth/authorize",
+                        TokenUrl = "https://github.com/login/oauth/access_token",
+                        Scopes = ["repo", "read:user"]
+                    }
+                }
+            }
+        });
+        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+
+        var consent = service.GenerateConsentRequired("github", "https://example.com");
+
+        Assert.IsNotNull(consent);
+        Assert.AreEqual("github", consent.McpServerName);
+        Assert.AreEqual("GitHub", consent.DisplayName);
+        Assert.AreEqual("https://example.com/oauth/authorize/github", consent.AuthorizeUrl);
+        Assert.AreEqual(2, consent.Scopes.Count);
+    }
+
+    [TestMethod]
+    public void McpAuthorizationService_GenerateConsentRequired_NoOAuthConfig_ReturnsNull()
+    {
+        var cache = new MemoryCache(new MemoryCacheOptions());
+        var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
+        var mcpOptions = Options.Create(new McpClientOptions
+        {
+            Servers = new Dictionary<string, McpServerOptions>
+            {
+                ["filesystem"] = new McpServerOptions { Type = "stdio", Command = "npx" }
+            }
+        });
+        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+
+        var consent = service.GenerateConsentRequired("filesystem", "https://example.com");
+
+        Assert.IsNull(consent);
     }
 }
