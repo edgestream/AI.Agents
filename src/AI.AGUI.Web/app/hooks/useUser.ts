@@ -11,6 +11,8 @@ export interface UserInfo {
   displayName?: string;
   email?: string;
   picture?: string;
+  tenantId?: string;
+  domain?: string;
 }
 
 /**
