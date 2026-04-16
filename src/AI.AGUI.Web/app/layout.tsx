@@ -13,7 +13,7 @@ export default function RootLayout({ children }: {
 }) {
   return (
     <html lang="en">
-      <body className="antialiased">
+      <body className="antialiased flex flex-col h-screen">
         <CopilotKit runtimeUrl="/api/copilotkit" agent="my_agent">
           {children}
         </CopilotKit>
