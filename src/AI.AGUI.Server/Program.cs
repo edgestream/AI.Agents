@@ -17,6 +17,7 @@ builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environmen
 
 // Add authentication services
 builder.Services.AddUserContext();
+builder.Services.AddGraphProfileService();
 builder.Services.AddMcpOAuth();
 
 // Add MCP client for OAuth configuration lookup

@@ -22,7 +22,24 @@ public static class ServiceCollectionExtensions
     }
 
     /// <summary>
+    /// Registers the Microsoft Graph profile service for enriching user identity with Graph data.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddGraphProfileService(this IServiceCollection services)
+    {
+        services.AddHttpClient("MicrosoftGraph", client =>
+        {
+            client.BaseAddress = new Uri("https://graph.microsoft.com/v1.0/");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
+        services.TryAddSingleton<IGraphProfileService, GraphProfileService>();
+        return services;
+    }
+
+    /// <summary>
     /// Registers the OAuth token store for storing per-user tokens for external MCP tools.
+    /// </summary>
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Optional configuration delegate.</param>
