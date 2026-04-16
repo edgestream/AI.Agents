@@ -221,6 +221,15 @@ resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if
           clientSecretSettingName: 'entra-client-secret'
           openIdIssuer: '${environment().authentication.loginEndpoint}${entraTenantId}/v2.0'
         }
+        login: {
+          // Request Graph User.Read scope so the access token can be used
+          // to retrieve the user's display name and profile photo from Microsoft Graph.
+          // See: https://learn.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-user
+          loginParameters: [
+            'response_type=code id_token'
+            'scope=openid offline_access profile https://graph.microsoft.com/User.Read'
+          ]
+        }
         validation: {
           allowedAudiences: [
             entraClientId

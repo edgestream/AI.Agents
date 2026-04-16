@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace AI.AGUI.Auth;
@@ -23,6 +24,11 @@ namespace AI.AGUI.Auth;
 ///   <item><c>X-MS-CLIENT-PRINCIPAL-NAME</c>: The user's principal name (UPN or email)</item>
 ///   <item><c>X-MS-CLIENT-PRINCIPAL-ID</c>: The user's unique object ID</item>
 /// </list>
+/// </para>
+/// <para>
+/// When <see cref="IGraphProfileService"/> is registered and the access token includes 
+/// Microsoft Graph User.Read scope, the middleware enriches the user context with 
+/// the user's display name and profile photo from Graph.
 /// </para>
 /// </remarks>
 public sealed class UserContextMiddleware
@@ -63,7 +69,7 @@ public sealed class UserContextMiddleware
 
     public async Task InvokeAsync(HttpContext context)
     {
-        var userContext = ExtractUserContext(context);
+        var userContext = await ExtractUserContextAsync(context);
         context.Items[typeof(IUserContext)] = userContext;
 
         // Also set the user principal for ASP.NET Core authentication
@@ -89,7 +95,7 @@ public sealed class UserContextMiddleware
         await _next(context);
     }
 
-    private IUserContext ExtractUserContext(HttpContext context)
+    private async Task<IUserContext> ExtractUserContextAsync(HttpContext context)
     {
         // Try Easy Auth headers first
         var principalId = context.Request.Headers[PrincipalIdHeader].FirstOrDefault();
@@ -160,6 +166,41 @@ public sealed class UserContextMiddleware
         if (string.IsNullOrEmpty(principalId))
         {
             return UserContext.Anonymous;
+        }
+
+        // Try to enrich with Microsoft Graph if the service is available
+        var graphService = context.RequestServices.GetService<IGraphProfileService>();
+        if (graphService is not null && !string.IsNullOrEmpty(accessToken))
+        {
+            try
+            {
+                // Fetch profile and photo in parallel for better performance
+                var profileTask = graphService.GetCurrentUserProfileAsync(accessToken, context.RequestAborted);
+                var photoTask = graphService.GetCurrentUserPhotoAsDataUrlAsync(accessToken, context.RequestAborted);
+
+                await Task.WhenAll(profileTask, photoTask);
+
+                var graphProfile = profileTask.Result;
+                var graphPhoto = photoTask.Result;
+
+                if (graphProfile is not null)
+                {
+                    // Prefer Graph display name over token claims
+                    displayName = graphProfile.DisplayName ?? displayName;
+                    email = graphProfile.Mail ?? graphProfile.UserPrincipalName ?? email;
+                    _logger.LogDebug("Enriched user context with Graph profile: {DisplayName}", displayName);
+                }
+
+                if (!string.IsNullOrEmpty(graphPhoto))
+                {
+                    picture = graphPhoto;
+                    _logger.LogDebug("Enriched user context with Graph photo.");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogDebug(ex, "Graph enrichment failed, falling back to token claims.");
+            }
         }
 
         return new UserContext(

@@ -1,3 +1,4 @@
+using AI.AGUI.Auth;
 using AI.MCP.Client;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -17,6 +18,18 @@ namespace AI.AGUI.Server.IntegrationTests;
 /// </summary>
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
+    private IGraphProfileService? _graphService;
+
+    /// <summary>
+    /// Sets a custom Graph profile service to be used during tests.
+    /// Call this before <see cref="WebApplicationFactory{TEntryPoint}.CreateClient"/>.
+    /// </summary>
+    public AGUIServerFactory WithGraphService(IGraphProfileService graphService)
+    {
+        _graphService = graphService;
+        return this;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Foundry:Endpoint", "https://fake.foundry.endpoint/");
@@ -66,6 +79,18 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             var mcpDescriptor = services.SingleOrDefault(
                 d => d.ImplementationType == typeof(HostingService));
             if (mcpDescriptor is not null) services.Remove(mcpDescriptor);
+
+            // If a custom Graph service is provided, replace the production registration.
+            if (_graphService is not null)
+            {
+                var graphDescriptor = services.SingleOrDefault(
+                    d => d.ServiceType == typeof(IGraphProfileService));
+                if (graphDescriptor is not null)
+                {
+                    services.Remove(graphDescriptor);
+                }
+                services.AddSingleton(_graphService);
+            }
         });
     }
 }
