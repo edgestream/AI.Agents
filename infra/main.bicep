@@ -39,6 +39,10 @@ param entraClientSecret string = ''
 @description('Microsoft Entra tenant ID. Required when entraClientId is set.')
 param entraTenantId string = ''
 
+@secure()
+@description('Full SAS URL for a private blob container used by the Container Apps auth token store.')
+param tokenStoreSasUrl string = ''
+
 var tags = {
   'azd-env-name': environmentName
 }
@@ -65,6 +69,7 @@ module resources './resources.bicep' = {
     entraClientId: entraClientId
     entraClientSecret: entraClientSecret
     entraTenantId: entraTenantId
+    tokenStoreSasUrl: tokenStoreSasUrl
     tags: tags
   }
 }
