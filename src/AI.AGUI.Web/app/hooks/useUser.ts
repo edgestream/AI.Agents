@@ -13,6 +13,8 @@ export interface UserInfo {
   picture?: string;
   tenantId?: string;
   domain?: string;
+  /** The active auth mode: `"local"` when using local Entra sign-in, `"aca"` when on ACA Easy Auth. */
+  authMode?: "local" | "aca";
 }
 
 /**

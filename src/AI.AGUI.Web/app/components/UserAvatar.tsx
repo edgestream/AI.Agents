@@ -81,6 +81,24 @@ function getProfileDetails(user: UserInfo): Array<{ label: string; value: string
 }
 
 /**
+ * Returns the sign-in URL based on the auth mode.
+ * - Local mode: `/api/auth/login` (MSAL flow handled by our route handler)
+ * - ACA mode: `/.auth/login/aad` (handled by Azure Container Apps Easy Auth)
+ */
+function getSignInUrl(authMode: string | undefined): string {
+  return authMode === "local" ? "/api/auth/login" : "/.auth/login/aad";
+}
+
+/**
+ * Returns the sign-out URL based on the auth mode.
+ * - Local mode: `/api/auth/logout` (clears session cookie)
+ * - ACA mode: `/.auth/logout` (handled by Azure Container Apps Easy Auth)
+ */
+function getSignOutUrl(authMode: string | undefined): string {
+  return authMode === "local" ? "/api/auth/logout" : "/.auth/logout";
+}
+
+/**
  * Displays the current user's avatar and optionally their name.
  */
 export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
@@ -101,7 +119,7 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
   if (!user?.authenticated) {
     return (
       <a
-        href="/.auth/login/aad"
+        href={getSignInUrl(user?.authMode)}
         className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
       >
         <div
@@ -168,7 +186,7 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
 }
 
 /**
- * Displays user menu with sign out option.
+ * Displays user menu with sign in/sign out option.
  */
 export function UserMenu() {
   const { user, loading } = useUser();
@@ -184,7 +202,7 @@ export function UserMenu() {
   if (!user?.authenticated) {
     return (
       <a
-        href="/.auth/login/aad"
+        href={getSignInUrl(user?.authMode)}
         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
       >
         Sign in
@@ -193,8 +211,14 @@ export function UserMenu() {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-3">
       <UserAvatar size={44} />
+      <a
+        href={getSignOutUrl(user.authMode)}
+        className="text-xs text-gray-500 hover:text-gray-700"
+      >
+        Sign out
+      </a>
     </div>
   );
 }
