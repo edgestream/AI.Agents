@@ -95,11 +95,11 @@ public sealed class UserContextMiddleware
         _logger.LogTrace("Incoming request headers: {Headers}",
             JsonSerializer.Serialize(context.Request.Headers.ToDictionary(
                 header => header.Key,
-                header => header.Value.ToString())));
+                header => SanitizeHeaderValueForLogging(header.Key, header.Value.ToString()))));
 
-        var principalId = context.Request.Headers[MS_CLIENT_PRINCIPAL_ID].FirstOrDefault();
-        var principalName = context.Request.Headers[MS_CLIENT_PRINCIPAL_NAME].FirstOrDefault();
-        var accessToken = context.Request.Headers[MS_TOKEN_AAD_ACCESS_TOKEN].FirstOrDefault();
+        var principalId = GetNormalizedHeaderValue(context.Request.Headers, MS_CLIENT_PRINCIPAL_ID);
+        var principalName = GetRepeatedValueCollapsedHeaderValue(context.Request.Headers, MS_CLIENT_PRINCIPAL_NAME);
+        var accessToken = GetNormalizedHeaderValue(context.Request.Headers, MS_TOKEN_AAD_ACCESS_TOKEN);
 
         if (string.IsNullOrEmpty(principalId))
         {
@@ -138,7 +138,7 @@ public sealed class UserContextMiddleware
         }
         else
         {
-            _logger.LogTrace("Current user photo as data url retrieved for graph profile: {url}", photoDataUrl);
+            _logger.LogTrace("Current user photo retrieved for graph profile.");
         }
 
         return new UserContext(
@@ -148,5 +148,107 @@ public sealed class UserContextMiddleware
             picture: photoDataUrl,
             accessToken: accessToken
         );
+    }
+
+    private string? GetNormalizedHeaderValue(IHeaderDictionary headers, string headerName)
+    {
+        if (!headers.TryGetValue(headerName, out var values))
+        {
+            return null;
+        }
+
+        var rawValue = values.ToString().Trim();
+        if (string.IsNullOrEmpty(rawValue))
+        {
+            return null;
+        }
+
+        if (!rawValue.Contains(','))
+        {
+            return rawValue;
+        }
+
+        var distinctValues = rawValue
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        if (distinctValues.Length == 0)
+        {
+            return null;
+        }
+
+        if (distinctValues.Length == 1)
+        {
+            _logger.LogDebug("Header {HeaderName} contained duplicated values. Normalizing to a single value.", headerName);
+        }
+        else
+        {
+            _logger.LogWarning("Header {HeaderName} contained multiple distinct values. Using the first value.", headerName);
+        }
+
+        return distinctValues[0];
+    }
+
+    private string? GetRepeatedValueCollapsedHeaderValue(IHeaderDictionary headers, string headerName)
+    {
+        if (!headers.TryGetValue(headerName, out var values))
+        {
+            return null;
+        }
+
+        var rawValue = values.ToString().Trim();
+        if (string.IsNullOrEmpty(rawValue) || !rawValue.Contains(','))
+        {
+            return string.IsNullOrEmpty(rawValue) ? null : rawValue;
+        }
+
+        var splitValues = rawValue
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+        if (splitValues.Length > 1 && splitValues.All(value => string.Equals(value, splitValues[0], StringComparison.Ordinal)))
+        {
+            _logger.LogDebug("Header {HeaderName} contained duplicated values. Normalizing to a single value.", headerName);
+            return splitValues[0];
+        }
+
+        return rawValue;
+    }
+
+    private static string SanitizeHeaderValueForLogging(string headerName, string value)
+    {
+        if (!IsSensitiveHeader(headerName))
+        {
+            return value;
+        }
+
+        var splitValues = value
+            .Split(',', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(ShortenSensitiveValue);
+
+        return string.Join(", ", splitValues);
+    }
+
+    private static bool IsSensitiveHeader(string headerName)
+    {
+        return headerName.Equals(MS_TOKEN_AAD_ACCESS_TOKEN, StringComparison.OrdinalIgnoreCase)
+            || headerName.Equals(MS_TOKEN_AAD_ID_TOKEN, StringComparison.OrdinalIgnoreCase)
+            || headerName.Equals("X-MS-TOKEN-AAD-REFRESH-TOKEN", StringComparison.OrdinalIgnoreCase)
+            || headerName.Equals("X-MS-CLIENT-PRINCIPAL", StringComparison.OrdinalIgnoreCase)
+            || headerName.Equals("Authorization", StringComparison.OrdinalIgnoreCase)
+            || headerName.Equals("Cookie", StringComparison.OrdinalIgnoreCase)
+            || headerName.Equals("Set-Cookie", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string ShortenSensitiveValue(string value)
+    {
+        var trimmedValue = value.Trim();
+
+        if (trimmedValue.Length <= 5)
+        {
+            return trimmedValue;
+        }
+
+        return $"{trimmedValue[..5]}...";
     }
 }

@@ -1,29 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "nodejs";
-
-const debugLogLevelValues = new Set(["debug", "trace"]);
-
-function isDebugLoggingEnabled(): boolean {
-  return debugLogLevelValues.has((process.env.LOG_LEVEL ?? "").trim().toLowerCase());
-}
-
-function logHeaders(route: string, label: string, headers: Headers | HeadersInit): void {
-  if (!isDebugLoggingEnabled()) {
-    return;
-  }
-
-  const normalizedHeaders = headers instanceof Headers
-    ? Object.fromEntries(headers.entries())
-    : headers;
-
-  process.stdout.write(`[easy-auth] ${JSON.stringify({
-    route,
-    label,
-    headers: normalizedHeaders,
-  })}\n`);
-}
-
 /**
  * User info response shape matching the backend /api/me endpoint.
  */
@@ -48,8 +24,6 @@ export async function GET(request: NextRequest) {
   const accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
   const idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
 
-  logHeaders("/api/me", "incoming request headers", request.headers);
-
   // If we have Easy Auth headers, forward to backend
   if (principalId || principalName || accessToken || idToken) {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
@@ -68,8 +42,6 @@ export async function GET(request: NextRequest) {
       if (idToken) {
         backendHeaders["X-MS-TOKEN-AAD-ID-TOKEN"] = idToken;
       }
-
-      logHeaders("/api/me", "forwarded backend headers", backendHeaders);
 
       const response = await fetch(`${backendUrl}/api/me`, {
         headers: backendHeaders,
