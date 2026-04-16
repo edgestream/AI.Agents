@@ -129,7 +129,7 @@ jobs:
 
       - name: Create appsettings.Development.json
         run: |
-          echo '{"Foundry":{"ProjectEndpoint":"${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}","Model":"${{ secrets.FOUNDRY_MODEL }}"}}' > appsettings.Development.json
+          echo '{"Foundry":{"Endpoint":"${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}","Model":"${{ secrets.FOUNDRY_MODEL }}"}}' > appsettings.Development.json
 
       - name: Export SP credentials for Docker Compose
         run: |
@@ -168,7 +168,7 @@ jobs:
           # DefaultAzureCredential resolves via EnvironmentCredential when all three SP vars are set.
           # Live tests use a bare WebApplicationFactory — config must come from env vars.
           # Foundry path: DefaultAzureCredential resolves via EnvironmentCredential (SP vars).
-          Foundry__ProjectEndpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
+          Foundry__Endpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
           Foundry__Model: ${{ secrets.FOUNDRY_MODEL }}
 
       - name: Stop stack
