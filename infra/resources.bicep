@@ -27,7 +27,13 @@ param entraClientSecret string = ''
 @description('Microsoft Entra tenant ID. Required when entraClientId is set.')
 param entraTenantId string = ''
 
+@secure()
+@description('Full SAS URL for a private blob container used by the Container Apps auth token store. When set, Easy Auth stores provider tokens in that container.')
+param tokenStoreSasUrl string = ''
+
 param tags object
+
+var tokenStoreSasSecretName = 'token-store-sas-url'
 
 // Log Analytics Workspace
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
@@ -93,6 +99,12 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
           {
             name: 'entra-client-secret'
             value: entraClientSecret
+          }
+        ] : [],
+        !empty(tokenStoreSasUrl) ? [
+          {
+            name: tokenStoreSasSecretName
+            value: tokenStoreSasUrl
           }
         ] : []
       )
@@ -213,7 +225,7 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
 resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if (!empty(entraClientId)) {
   parent: app
   name: 'current'
-  properties: {
+  properties: union({
     platform: {
       enabled: true
     }
@@ -243,7 +255,17 @@ resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if
         }
       }
     }
-  }
+  }, !empty(tokenStoreSasUrl) ? {
+    login: {
+      tokenStore: {
+        enabled: true
+        tokenRefreshExtensionHours: 72
+        azureBlobStorage: {
+          sasUrlSettingName: tokenStoreSasSecretName
+        }
+      }
+    }
+  } : {})
 }
 
 output APP_URI string = 'https://${app.properties.configuration.ingress.fqdn}'
