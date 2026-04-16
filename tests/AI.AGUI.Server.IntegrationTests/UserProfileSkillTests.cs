@@ -19,7 +19,7 @@ public sealed class UserProfileSkillTests
                 displayName: "Mario Rossi",
                 email: "mario@example.com")));
 
-        var result = skill.GetUserFullName();
+        var result = skill.GetUserProfile();
 
         var json = JsonDocument.Parse(result);
         Assert.IsTrue(json.RootElement.GetProperty("available").GetBoolean());
@@ -34,7 +34,7 @@ public sealed class UserProfileSkillTests
     {
         var skill = new UserProfileSkill(new TestUserContextAccessor(UserContext.Anonymous));
 
-        var result = skill.GetUserFullName();
+        var result = skill.GetUserProfile();
 
         var json = JsonDocument.Parse(result);
         Assert.IsFalse(json.RootElement.GetProperty("available").GetBoolean());
