@@ -1,5 +1,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,22 +40,22 @@ public sealed class UserContextMiddleware
     /// <summary>
     /// Header name for the Entra ID access token.
     /// </summary>
-    public const string AccessTokenHeader = "X-MS-TOKEN-AAD-ACCESS-TOKEN";
+    public const string MS_TOKEN_AAD_ACCESS_TOKEN = "X-MS-TOKEN-AAD-ACCESS-TOKEN";
 
     /// <summary>
     /// Header name for the Entra ID ID token.
     /// </summary>
-    public const string IdTokenHeader = "X-MS-TOKEN-AAD-ID-TOKEN";
+    public const string MS_TOKEN_AAD_ID_TOKEN = "X-MS-TOKEN-AAD-ID-TOKEN";
 
     /// <summary>
     /// Header name for the user's principal name.
     /// </summary>
-    public const string PrincipalNameHeader = "X-MS-CLIENT-PRINCIPAL-NAME";
+    public const string MS_CLIENT_PRINCIPAL_NAME = "X-MS-CLIENT-PRINCIPAL-NAME";
 
     /// <summary>
     /// Header name for the user's object ID.
     /// </summary>
-    public const string PrincipalIdHeader = "X-MS-CLIENT-PRINCIPAL-ID";
+    public const string MS_CLIENT_PRINCIPAL_ID = "X-MS-CLIENT-PRINCIPAL-ID";
 
     /// <summary>
     /// Header name for Authorization bearer token forwarded from frontend.
@@ -97,17 +98,17 @@ public sealed class UserContextMiddleware
 
     private async Task<IUserContext> ExtractUserContextAsync(HttpContext context)
     {
-        var principalId = context.Request.Headers[PrincipalIdHeader].FirstOrDefault();
+        var principalId = context.Request.Headers[MS_CLIENT_PRINCIPAL_ID].FirstOrDefault();
         if (string.IsNullOrEmpty(principalId))
         {
-            _logger.LogDebug("No principal ID header found. User will be treated as anonymous.");
+            _logger.LogDebug("No MS_CLIENT_PRINCIPAL_ID header found. User will be treated as anonymous.");
             return UserContext.Anonymous;
         }
 
-        var accessToken = context.Request.Headers[AccessTokenHeader].FirstOrDefault();
+        var accessToken = context.Request.Headers[MS_TOKEN_AAD_ACCESS_TOKEN].FirstOrDefault();
         if (string.IsNullOrEmpty(accessToken))
         {
-            _logger.LogWarning("Principal ID header is present but no access token found. User context will have limited information.");
+            _logger.LogWarning("MS_TOKEN_AAD_ACCESS_TOKEN header is present but no access token found. User context will have limited information.");
             return new UserContext(principalId);
         }
 
@@ -124,8 +125,20 @@ public sealed class UserContextMiddleware
             _logger.LogWarning("Access token is present but Graph profile could not be retrieved. User context will have limited information.");
             return new UserContext(principalId);
         }
+        else
+        {
+            _logger.LogTrace("User profile retrieved from graph: {userProfile}", JsonSerializer.Serialize(userProfile));
+        }
 
         var photoDataUrl = await graphService.GetCurrentUserPhotoAsDataUrlAsync(accessToken, context.RequestAborted);
+        if (photoDataUrl is null)
+        {
+            _logger.LogDebug("No photo data URL retrieved for graph profile.");
+        }
+        else
+        {
+            _logger.LogTrace("Current user photo as data url retrieved for graph profile: {url}", photoDataUrl);
+        }
 
         return new UserContext(
             userId: principalId,
