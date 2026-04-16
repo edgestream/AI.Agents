@@ -1,6 +1,7 @@
 using AI.AGUI.Auth;
 using AI.MAF.Client;
 using AI.MAF.Skills;
+using AI.MCP.Client;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -16,6 +17,9 @@ builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environmen
 // Add authentication services
 builder.Services.AddUserContext();
 builder.Services.AddMcpOAuth();
+
+// Add MCP client for OAuth configuration lookup
+builder.Services.AddMCPClient();
 
 builder.Services.AddAIProjectClient();
 builder.Services.AddAIAgentSkill<DateTimeSkill>();

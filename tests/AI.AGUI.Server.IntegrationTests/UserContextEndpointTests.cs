@@ -94,4 +94,56 @@ public sealed class UserContextEndpointTests
         Assert.AreEqual("github", json.RootElement.GetProperty("mcpServerName").GetString());
         Assert.IsTrue(json.RootElement.GetProperty("revoked").GetBoolean());
     }
+
+    [TestMethod]
+    public async Task GetOAuthAuthorize_WithoutAuth_ReturnsUnauthorized()
+    {
+        await using var factory = new AGUIServerFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/oauth/authorize/github");
+
+        Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetOAuthAuthorize_UnknownServer_ReturnsNotFound()
+    {
+        await using var factory = new AGUIServerFactory();
+        using var client = factory.CreateClient();
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, "/oauth/authorize/unknown-server");
+        request.Headers.Add("X-MS-CLIENT-PRINCIPAL-ID", "user-123");
+
+        var response = await client.SendAsync(request);
+
+        Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetOAuthCallback_WithoutParams_ReturnsBadRequest()
+    {
+        await using var factory = new AGUIServerFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/oauth/callback");
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [TestMethod]
+    public async Task GetOAuthCallback_WithError_ReturnsBadRequestWithError()
+    {
+        await using var factory = new AGUIServerFactory();
+        using var client = factory.CreateClient();
+
+        var response = await client.GetAsync("/oauth/callback?error=access_denied&error_description=User+denied+access");
+
+        Assert.AreEqual(HttpStatusCode.BadRequest, response.StatusCode);
+        
+        var content = await response.Content.ReadAsStringAsync();
+        var json = JsonDocument.Parse(content);
+        
+        Assert.AreEqual("access_denied", json.RootElement.GetProperty("error").GetString());
+    }
 }
