@@ -160,6 +160,12 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'HOSTNAME'
               value: '0.0.0.0'
             }
+            {
+              // Single-user environments benefit from verbose request logging while debugging
+              // Easy Auth header forwarding through the Next.js route handlers.
+              name: 'LOG_LEVEL'
+              value: 'debug'
+            }
           ]
           // Readiness probe ensures the pod is not marked ready until Next.js is listening.
           // Without this, Easy Auth receives traffic before port 3000 is open on cold starts,

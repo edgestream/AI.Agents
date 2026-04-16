@@ -1,4 +1,3 @@
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text.Json;
 using Microsoft.AspNetCore.Http;
@@ -57,11 +56,6 @@ public sealed class UserContextMiddleware
     /// </summary>
     public const string MS_CLIENT_PRINCIPAL_ID = "X-MS-CLIENT-PRINCIPAL-ID";
 
-    /// <summary>
-    /// Header name for Authorization bearer token forwarded from frontend.
-    /// </summary>
-    public const string AuthorizationHeader = "Authorization";
-
     public UserContextMiddleware(RequestDelegate next, ILogger<UserContextMiddleware> logger)
     {
         _next = next;
@@ -98,32 +92,39 @@ public sealed class UserContextMiddleware
 
     private async Task<IUserContext> ExtractUserContextAsync(HttpContext context)
     {
+        _logger.LogTrace("Incoming request headers: {Headers}",
+            JsonSerializer.Serialize(context.Request.Headers.ToDictionary(
+                header => header.Key,
+                header => header.Value.ToString())));
+
         var principalId = context.Request.Headers[MS_CLIENT_PRINCIPAL_ID].FirstOrDefault();
+        var principalName = context.Request.Headers[MS_CLIENT_PRINCIPAL_NAME].FirstOrDefault();
+        var accessToken = context.Request.Headers[MS_TOKEN_AAD_ACCESS_TOKEN].FirstOrDefault();
+
         if (string.IsNullOrEmpty(principalId))
         {
             _logger.LogDebug("No MS_CLIENT_PRINCIPAL_ID header found. User will be treated as anonymous.");
             return UserContext.Anonymous;
         }
 
-        var accessToken = context.Request.Headers[MS_TOKEN_AAD_ACCESS_TOKEN].FirstOrDefault();
         if (string.IsNullOrEmpty(accessToken))
         {
-            _logger.LogWarning("MS_TOKEN_AAD_ACCESS_TOKEN header is present but no access token found. User context will have limited information.");
-            return new UserContext(principalId);
+            _logger.LogWarning("No MS_TOKEN_AAD_ACCESS_TOKEN header found. Graph enrichment will be skipped and Easy Auth principal headers will be used.");
+            return new UserContext(userId: principalId);
         }
 
         var graphService = context.RequestServices.GetService<IGraphProfileService>();
         if (graphService is null)
         {
-            _logger.LogWarning("IGraphProfileService is not registered. User context will have limited information.");
-            return new UserContext(principalId);
+            _logger.LogWarning("IGraphProfileService is not registered. Easy Auth principal headers will be used without Graph enrichment.");
+            return new UserContext(userId: principalId, accessToken: accessToken);
         }
 
         var userProfile = await graphService.GetCurrentUserProfileAsync(accessToken, context.RequestAborted);
         if (userProfile is null)
         {
-            _logger.LogWarning("Access token is present but Graph profile could not be retrieved. User context will have limited information.");
-            return new UserContext(principalId);
+            _logger.LogWarning("Access token is present but Graph profile could not be retrieved. Easy Auth principal headers will be used.");
+            return new UserContext(userId: principalId, accessToken: accessToken);
         }
         else
         {
