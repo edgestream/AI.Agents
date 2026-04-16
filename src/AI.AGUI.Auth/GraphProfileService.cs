@@ -77,9 +77,9 @@ public sealed class GraphProfileService : IGraphProfileService
             var graphClient = CreateGraphClient(accessToken);
 
             // Request the photo binary stream
-            var photoStream = await graphClient.Me.Photo.Content.GetAsync(cancellationToken: cancellationToken);
+            await using var photoStream = await graphClient.Me.Photo.Content.GetAsync(cancellationToken: cancellationToken);
 
-            if (photoStream is null || photoStream.Length == 0)
+            if (photoStream is null)
             {
                 return null;
             }

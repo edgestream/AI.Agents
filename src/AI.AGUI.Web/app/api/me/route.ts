@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 const debugLogLevelValues = new Set(["debug", "trace"]);
 
 function isDebugLoggingEnabled(): boolean {
@@ -15,11 +17,11 @@ function logHeaders(route: string, label: string, headers: Headers | HeadersInit
     ? Object.fromEntries(headers.entries())
     : headers;
 
-  console.info("[easy-auth]", JSON.stringify({
+  process.stdout.write(`[easy-auth] ${JSON.stringify({
     route,
     label,
     headers: normalizedHeaders,
-  }));
+  })}\n`);
 }
 
 /**
