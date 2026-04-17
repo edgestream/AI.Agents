@@ -3,7 +3,7 @@
     <Project Path="samples/MealPlanner/MealPlanner.csproj" />
   </Folder>
   <Folder Name="/src/" />
-  <Folder Name="/src/Abstractions/" />
+  <Project Path="src/Abstractions/Abstractions.csproj" />
   <Folder Name="/src/AGUI/">
     <Project Path="src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
   </Folder>
