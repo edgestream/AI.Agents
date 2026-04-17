@@ -4,14 +4,14 @@ import { getRedirectUri } from "./config";
 let msalInstance: ConfidentialClientApplication | null = null;
 
 function getMsalConfig(): Configuration {
-  const clientId = process.env.ENTRA_CLIENT_ID || process.env.AZURE_CLIENT_ID;
-  const clientSecret = process.env.ENTRA_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET;
-  const tenantId = process.env.ENTRA_TENANT_ID || process.env.AZURE_TENANT_ID;
+  const clientId = process.env.ENTRA_CLIENT_ID;
+  const clientSecret = process.env.ENTRA_CLIENT_SECRET;
+  const tenantId = process.env.ENTRA_TENANT_ID;
 
   if (!clientId || !clientSecret || !tenantId) {
     throw new Error(
       "ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID " +
-      "are required for local auth mode. AZURE_* is still accepted as a compatibility fallback. " +
+      "are required for interactive local auth mode. AZURE_* values alone do not enable browser sign-in. " +
       "See docs/AZURE_ENTRA_LOCAL_AUTH.md."
     );
   }

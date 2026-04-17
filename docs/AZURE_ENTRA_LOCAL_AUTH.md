@@ -6,6 +6,8 @@ When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flo
 
 When the local Entra variables are omitted, the app still starts in anonymous local mode. In that state the Sign in UI stays hidden, and backend Foundry calls can still authenticate through `DefaultAzureCredential` sources such as `az login`.
 
+`AZURE_CLIENT_ID`, `AZURE_CLIENT_SECRET`, and `AZURE_TENANT_ID` do not enable browser sign-in by themselves. They remain backend credential inputs only. Interactive local sign-in requires the explicit `ENTRA_*` app-registration variables.
+
 ## Prerequisites
 
 These prerequisites apply when you want interactive local sign-in. They are not required for anonymous local usage.
@@ -111,7 +113,7 @@ Browser                  Next.js Middleware           Route Handler / Backend
 | Sign in | `GET /api/auth/login` | `GET /.auth/login/aad` |
 | Sign out | `GET /api/auth/logout` | `GET /.auth/logout` |
 
-The UI components (`UserMenu`, `UserAvatar`) automatically select the correct URL based on the `authMode` field returned by `/api/me`. Local processes default to `local`; hosted ACA deployments must set `AUTH_MODE=aca` explicitly. In local mode the Sign in action is only shown when the Entra app-registration variables and `AUTH_SESSION_SECRET` are present.
+The UI components (`UserMenu`, `UserAvatar`) automatically select the correct URL based on the `authMode` field returned by `/api/me`. Local processes default to `local`; hosted ACA deployments must set `AUTH_MODE=aca` explicitly. In local mode the Sign in action is only shown when the explicit `ENTRA_*` app-registration variables and `AUTH_SESSION_SECRET` are present.
 
 ## Security Notes
 
@@ -125,7 +127,7 @@ The UI components (`UserMenu`, `UserAvatar`) automatically select the correct UR
 | Symptom | Cause | Fix |
 |---|---|---|
 | `AUTH_SESSION_SECRET environment variable is required` | Missing env var | Add `AUTH_SESSION_SECRET` to your `.env` / `.env.local` |
-| `ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID are required` | Missing app registration env vars | Add all three and keep the `AZURE_*` compatibility values in sync for Azure SDK consumers |
+| `ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID are required` | Missing app registration env vars | Add all three for browser sign-in and keep the `AZURE_*` compatibility values in sync for Azure SDK consumers |
 | You want anonymous local usage only | No local sign-in configuration | Leave the Entra variables unset, sign in stays hidden, and use `az login` for backend `DefaultAzureCredential` access |
 | Sign in redirects but callback fails with "invalid_grant" | Authorization code reuse or clock skew | Clear cookies and try again |
 | Callback fails with "redirect_uri mismatch" | Redirect URI not registered | Add `http://localhost:3000/api/auth/callback` to the app registration |
