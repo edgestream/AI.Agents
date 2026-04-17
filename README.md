@@ -1,5 +1,4 @@
 # AI.AGUI
-[![CI](https://github.com/edgestream/AI.AGUI/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/edgestream/AI.AGUI/actions/workflows/ci.yml)
 
 > Conversational [AG-UI](https://docs.ag-ui.com/introduction) web interface and backend server
 
