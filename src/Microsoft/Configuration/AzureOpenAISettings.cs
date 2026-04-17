@@ -1,3 +1,5 @@
+namespace AI.Agents.Microsoft.Configuration;
+
 public sealed class AzureOpenAISettings
 {
     public string Endpoint { get; set; } = string.Empty;

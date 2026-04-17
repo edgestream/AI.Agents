@@ -1,3 +1,4 @@
+using AI.Agents.Microsoft.Configuration;
 using Azure;
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.OpenAI;
@@ -8,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using OpenAI.Chat;
 
-namespace AI.MAF.Client;
+namespace AI.Agents.Microsoft;
 
 /// <summary>
 /// Extension methods for registering AI clients with dependency injection.

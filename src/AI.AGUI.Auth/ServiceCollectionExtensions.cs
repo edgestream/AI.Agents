@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -18,22 +17,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddHttpContextAccessor();
         services.TryAddSingleton<IUserContextAccessor, UserContextAccessor>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the Microsoft Graph profile service for enriching user identity with Graph data.
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddGraphProfileService(this IServiceCollection services)
-    {
-        services.AddHttpClient("MicrosoftGraph", client =>
-        {
-            client.BaseAddress = new Uri("https://graph.microsoft.com/v1.0/");
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
-        });
-        services.TryAddSingleton<IGraphProfileService, GraphProfileService>();
         return services;
     }
 
@@ -72,22 +55,5 @@ public static class ServiceCollectionExtensions
     {
         services.TryAddSingleton<IMcpAuthorizationService, McpAuthorizationService>();
         return services;
-    }
-}
-
-/// <summary>
-/// Extension methods for configuring authentication middleware.
-/// </summary>
-public static class ApplicationBuilderExtensions
-{
-    /// <summary>
-    /// Adds the user context middleware to the pipeline. Should be called early in the pipeline,
-    /// after authentication/authorization middleware if using ASP.NET Core auth.
-    /// </summary>
-    /// <param name="app">The application builder.</param>
-    /// <returns>The application builder for chaining.</returns>
-    public static IApplicationBuilder UseUserContext(this IApplicationBuilder app)
-    {
-        return app.UseMiddleware<UserContextMiddleware>();
     }
 }

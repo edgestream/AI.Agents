@@ -6,7 +6,7 @@ namespace AI.AGUI.Server.IntegrationTests;
 
 /// <summary>
 /// Optional live integration tests that boot the real application against real cloud credentials.
-/// The current server wiring uses <see cref="AI.MAF.Client.ServiceCollectionExtensions.AddAIProjectClient"/>,
+/// The current server wiring uses <see cref="AI.Agents.Microsoft.ServiceCollectionExtensions.AddAIProjectClient"/>,
 /// so live tests require the <c>Foundry:Endpoint</c> setting in local configuration.
 /// Tests are skipped when Foundry is not configured (e.g. in CI without credentials).
 /// </summary>

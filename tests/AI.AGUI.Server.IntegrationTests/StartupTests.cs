@@ -1,4 +1,4 @@
-using AI.MAF.Client;
+using AI.Agents.Microsoft;
 using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;

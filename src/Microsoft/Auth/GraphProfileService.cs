@@ -4,7 +4,7 @@ using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Microsoft.Auth;
 
 /// <summary>
 /// Implementation of <see cref="IGraphProfileService"/> using the Microsoft Graph SDK.
@@ -52,7 +52,7 @@ public sealed class GraphProfileService : IGraphProfileService
                 Surname: user.Surname,
                 Id: user.Id);
         }
-        catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
+        catch (global::Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
         {
             _logger.LogWarning(ex, "Graph access denied fetching profile (HTTP {StatusCode}). The app registration is missing the Microsoft Graph User.Read delegated permission or admin consent has not been granted.", ex.ResponseStatusCode);
             return null;
@@ -76,7 +76,6 @@ public sealed class GraphProfileService : IGraphProfileService
         {
             var graphClient = CreateGraphClient(accessToken);
 
-            // Request the photo binary stream
             await using var photoStream = await graphClient.Me.Photo.Content.GetAsync(cancellationToken: cancellationToken);
 
             if (photoStream is null)
@@ -84,7 +83,6 @@ public sealed class GraphProfileService : IGraphProfileService
                 return null;
             }
 
-            // Read the stream into a byte array
             using var memoryStream = new MemoryStream();
             await photoStream.CopyToAsync(memoryStream, cancellationToken);
             var photoBytes = memoryStream.ToArray();
@@ -94,19 +92,17 @@ public sealed class GraphProfileService : IGraphProfileService
                 return null;
             }
 
-            // Determine MIME type by checking magic bytes
             var mimeType = DetectImageMimeType(photoBytes);
             var base64 = Convert.ToBase64String(photoBytes);
 
             return $"data:{mimeType};base64,{base64}";
         }
-        catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 404)
+        catch (global::Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 404)
         {
-            // User has no photo set
             _logger.LogDebug("User has no photo set in Microsoft Graph.");
             return null;
         }
-        catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
+        catch (global::Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
         {
             _logger.LogWarning(ex, "Graph access denied fetching photo (HTTP {StatusCode}). The app registration is missing the Microsoft Graph User.Read delegated permission or admin consent has not been granted.", ex.ResponseStatusCode);
             return null;
@@ -128,7 +124,6 @@ public sealed class GraphProfileService : IGraphProfileService
 
     private static string DetectImageMimeType(byte[] imageBytes)
     {
-        // Check magic bytes for common image formats
         if (imageBytes.Length >= 3 && imageBytes[0] == 0xFF && imageBytes[1] == 0xD8 && imageBytes[2] == 0xFF)
         {
             return "image/jpeg";
@@ -146,7 +141,6 @@ public sealed class GraphProfileService : IGraphProfileService
             return "image/webp";
         }
 
-        // Default to JPEG (Graph typically returns JPEG)
         return "image/jpeg";
     }
 }

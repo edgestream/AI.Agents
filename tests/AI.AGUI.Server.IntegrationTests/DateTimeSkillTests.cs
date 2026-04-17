@@ -1,5 +1,5 @@
 using System.Text.Json;
-using AI.MAF.Skills;
+using AI.Agents.Microsoft.Skills;
 
 namespace AI.AGUI.Server.IntegrationTests;
 

@@ -19,9 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="../AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
     <ProjectReference Include="../AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
-    <ProjectReference Include="../AI.MAF.Client/AI.MAF.Client.csproj" />
-    <ProjectReference Include="../AI.MAF.Skills/AI.MAF.Skills.csproj" />
-    <ProjectReference Include="../AI.MAF.Tools/AI.MAF.Tools.csproj" />
+    <ProjectReference Include="../Microsoft/Microsoft.csproj" />
     <ProjectReference Include="../AI.MCP.Client/AI.MCP.Client.csproj" />
   </ItemGroup>
 

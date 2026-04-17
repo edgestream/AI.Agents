@@ -2,7 +2,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace AI.MAF.Skills;
+namespace AI.Agents.Microsoft.Skills;
 
 #pragma warning disable MAAI001 // AgentClassSkill is for evaluation purposes
 
