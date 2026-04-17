@@ -468,5 +468,5 @@ Verify by checking the `tokenstore` blob container in the Azure portal — it sh
 - Azure Developer CLI Container Apps workflows: https://learn.microsoft.com/azure/developer/azure-developer-cli/container-apps-workflows
 - Azure Container Apps authentication with Microsoft Entra ID: https://learn.microsoft.com/azure/container-apps/authentication-entra
 - Azure Container Apps token store: https://learn.microsoft.com/azure/container-apps/token-store
-- Microsoft guidance for requesting `openid offline_access profile https://graph.microsoft.com/User.Read`: https://learn.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-user
+- Microsoft guidance for requesting`openid offline_access profile https://graph.microsoft.com/User.Read`: https://learn.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-user
 - Microsoft Entra admin consent guidance: https://learn.microsoft.com/troubleshoot/entra/entra-id/app-integration/troubleshoot-consent-issues#perform-admin-consent

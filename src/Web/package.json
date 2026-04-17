@@ -1,0 +1,35 @@
+{
+  "name": "@edgestream/ai-agents-web",
+  "version": "0.1.0",
+  "private": true,
+  "_comments": {
+    "@copilotkit/*": "Pinned to pkg-pr-new preview build (commit 022a546) — includes fix for inspector not receiving AG-UI events from per-thread clones. Revert to '^1.55.x' semver once upstream publishes a release that includes CopilotKit/CopilotKit#3872. Tracked in edgestream/AI.AGUI#128."
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@ag-ui/client": "^0.0.52",
+    "@azure/msal-node": "^5.1.2",
+    "@copilotkit/react-core": "https://pkg.pr.new/@copilotkit/react-core@022a546",
+    "@copilotkit/react-ui": "https://pkg.pr.new/@copilotkit/react-ui@022a546",
+    "@copilotkit/runtime": "https://pkg.pr.new/@copilotkit/runtime@022a546",
+    "next": "16.2.1",
+    "react": "19.2.4",
+    "react-dom": "19.2.4"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "babel-plugin-react-compiler": "1.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

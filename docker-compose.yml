@@ -2,8 +2,8 @@ services:
   backend:
     build:
       context: .
-      dockerfile: src/AI.AGUI.Server/Dockerfile
-    image: ghcr.io/edgestream/ai-agui-server:latest
+      dockerfile: src/Server/Dockerfile
+    image: ghcr.io/edgestream/agents-server:latest
     ports:
       - "8080:8080"
     environment:
@@ -26,13 +26,26 @@ services:
 
   frontend:
     build:
-      context: src/AI.AGUI.Web
+      context: src/Web
       dockerfile: Dockerfile
-    image: ghcr.io/edgestream/ai-agui-web:latest
+    image: ghcr.io/edgestream/agents-web:latest
     ports:
       - "3000:3000"
     environment:
-      - BACKEND_URL=http://backend:8080/
+      - BACKEND_URL=http://backend:8080
+      - AUTH_MODE=${AUTH_MODE:-}
+      - AZURE_TENANT_ID
+      - AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET
+      - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:-}
+      - AUTH_COOKIE_SECURE=${AUTH_COOKIE_SECURE:-}
+    sysctls:
+      # Disable IPv6 — Docker on Windows has no IPv6 routing; without this Node.js
+      # Happy Eyeballs tries IPv6 first and the AggregateError prevents token exchange.
+      net.ipv6.conf.all.disable_ipv6: 1
+    env_file:
+      - path: .env
+        required: false
     depends_on:
       backend:
         condition: service_healthy

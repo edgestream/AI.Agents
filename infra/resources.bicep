@@ -34,10 +34,11 @@ param tokenStoreSasUrl string = ''
 param tags object
 
 var tokenStoreSasSecretName = 'token-store-sas-url'
+var environmentSuffix = 'agents-${toLower(environmentName)}'
 
 // Log Analytics Workspace
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'log-ai-agui-${toLower(environmentName)}'
+  name: 'log-${environmentSuffix}'
   location: location
   tags: tags
   properties: {
@@ -50,7 +51,7 @@ resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
 
 // Container Apps Environment (Consumption tier)
 resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
-  name: 'cae-ai-agui-${toLower(environmentName)}'
+  name: 'cae-${environmentSuffix}'
   location: location
   tags: tags
   properties: {
@@ -68,7 +69,7 @@ resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
 // Mirrors the docker-compose single-host layout. Halves ACA billing for personal deployments
 // where independent scaling of the two containers is not required.
 resource app 'Microsoft.App/containerApps@2023-05-01' = {
-  name: 'ca-ai-agui'
+  name: 'ca-${environmentSuffix}'
   location: location
   tags: union(tags, { 'azd-service-name': 'backend' })
   identity: {

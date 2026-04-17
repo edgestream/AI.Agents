@@ -8,9 +8,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
-    <ProjectReference Include="../../src/AI.MAF.Client/AI.MAF.Client.csproj" />
-    <ProjectReference Include="../../src/AI.MCP.Client/AI.MCP.Client.csproj" />
+    <ProjectReference Include="../../src/AGUI/AGUI.csproj" />
+    <ProjectReference Include="../../src/Microsoft/Microsoft.csproj" />
+    <ProjectReference Include="../../src/MCP/MCP.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="MealPlanner.Chefkoch.Tests" />
-    <InternalsVisibleTo Include="MealPlanner.E2ETests" />
+    <InternalsVisibleTo Include="MealPlanner.Tests" />
   </ItemGroup>
 
 </Project>

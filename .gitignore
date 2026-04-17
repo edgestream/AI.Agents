@@ -5,6 +5,8 @@
 
 # dotenv files
 .env
+.env.local
+.env.*.local
 
 # ASP.NET Core settings (may contain secrets)
 appsettings.*.json
