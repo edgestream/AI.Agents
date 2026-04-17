@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { isLocalAuth, getPostLogoutRedirectUri } from "@/app/lib/auth/config";
-import { clearSessionCookie } from "@/app/lib/auth/session";
+import { clearSessionCookie, decrypt, type SessionRef } from "@/app/lib/auth/session";
+import { removeFullSession } from "@/app/lib/auth/serverSessionStore";
 
 /**
  * GET /api/auth/logout
@@ -8,12 +9,19 @@ import { clearSessionCookie } from "@/app/lib/auth/session";
  * Clears the local auth session cookie and optionally redirects the user
  * to the Entra ID logout endpoint.
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   if (!isLocalAuth()) {
     return NextResponse.json(
       { error: "Local auth is not enabled." },
       { status: 404 },
     );
+  }
+
+  // Remove the server-side session if we can identify it from the cookie
+  const cookieHeader = request.cookies.get("__agui_auth")?.value;
+  if (cookieHeader) {
+    const ref = await decrypt<SessionRef>(cookieHeader);
+    if (ref?.sessionId) removeFullSession(ref.sessionId);
   }
 
   const cookie = clearSessionCookie();

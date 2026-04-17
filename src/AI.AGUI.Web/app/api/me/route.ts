@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthMode, type AuthMode } from "@/app/lib/auth/config";
+import { resolveLocalSession } from "@/app/lib/auth/resolveLocalSession";
 
 /**
  * User info response shape matching the backend /api/me endpoint.
@@ -59,10 +60,22 @@ function getTenantIdFromIdToken(idToken: string | null): string | undefined {
  */
 export async function GET(request: NextRequest) {
   const authMode = getAuthMode();
-  const principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
-  const principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
-  const accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
-  const idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
+  let principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
+  let principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
+  let accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
+  let idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
+
+  // In local auth mode, headers come from the route handler itself (not middleware)
+  // because middleware runs in a separate worker and cannot share in-memory state.
+  if (!principalId && !principalName) {
+    const localSession = await resolveLocalSession(request);
+    if (localSession) {
+      principalId = localSession.principalId;
+      principalName = localSession.principalName;
+      accessToken = localSession.accessToken;
+      idToken = localSession.idToken;
+    }
+  }
   const tenantId = getTenantIdFromIdToken(idToken);
 
   // If we have Easy Auth headers (or local-auth injected headers), forward to backend

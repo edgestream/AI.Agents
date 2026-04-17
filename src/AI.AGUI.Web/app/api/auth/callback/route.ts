@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isLocalAuth } from "@/app/lib/auth/config";
+import { isLocalAuth, getPostLogoutRedirectUri } from "@/app/lib/auth/config";
 import { acquireTokenByCode } from "@/app/lib/auth/msal";
-import { createSessionCookie, type AuthSession } from "@/app/lib/auth/session";
+import { type AuthSession } from "@/app/lib/auth/session";
+import { storeNonce } from "@/app/lib/auth/nonceStore";
 
 /**
  * GET /api/auth/callback
@@ -50,10 +51,14 @@ export async function GET(request: NextRequest) {
       principalName,
     };
 
-    const cookie = await createSessionCookie(session);
-    const response = NextResponse.redirect(new URL("/", request.url));
-    response.headers.set("Set-Cookie", cookie);
-    return response;
+    // Chrome blocks Set-Cookie on cross-site responses (HTTPS Entra → HTTP localhost).
+    // Fix: redirect the browser to /api/auth/commit?nonce=... which is a same-site
+    // HTTP→HTTP request. Chrome accepts Set-Cookie on that same-site response.
+    const nonce = crypto.randomUUID();
+    storeNonce(nonce, session);
+    const commitUrl = new URL("/api/auth/commit", getPostLogoutRedirectUri());
+    commitUrl.searchParams.set("nonce", nonce);
+    return NextResponse.redirect(commitUrl.toString());
   } catch (error) {
     console.error("Token acquisition failed:", error);
     return NextResponse.json(

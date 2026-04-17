@@ -38,6 +38,11 @@ services:
       - AZURE_CLIENT_ID
       - AZURE_CLIENT_SECRET
       - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:-}
+      - AUTH_COOKIE_SECURE=${AUTH_COOKIE_SECURE:-}
+    sysctls:
+      # Disable IPv6 — Docker on Windows has no IPv6 routing; without this Node.js
+      # Happy Eyeballs tries IPv6 first and the AggregateError prevents token exchange.
+      net.ipv6.conf.all.disable_ipv6: 1
     env_file:
       - path: .env
         required: false
