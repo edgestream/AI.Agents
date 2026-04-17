@@ -1,4 +1,3 @@
-using AI.Agents.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -18,32 +17,6 @@ public static class ServiceCollectionExtensions
     {
         services.AddHttpContextAccessor();
         services.TryAddSingleton<IUserContextAccessor, UserContextAccessor>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers the OAuth token store for storing per-user tokens for external MCP tools.
-    /// </summary>
-    /// </summary>
-    /// <param name="services">The service collection.</param>
-    /// <param name="configure">Optional configuration delegate.</param>
-    /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddOAuthTokenStore(
-        this IServiceCollection services,
-        Action<OAuthTokenStoreOptions>? configure = null)
-    {
-        services.AddMemoryCache();
-        services.TryAddSingleton<IOAuthTokenStore, InMemoryOAuthTokenStore>();
-
-        if (configure is not null)
-        {
-            services.Configure(configure);
-        }
-        else
-        {
-            services.AddOptions<OAuthTokenStoreOptions>();
-        }
-
         return services;
     }
 
