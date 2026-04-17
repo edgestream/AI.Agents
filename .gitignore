@@ -10,6 +10,7 @@
 
 # ASP.NET Core settings (may contain secrets)
 appsettings.*.json
+!src/Server/appsettings.Development.json
 
 # User-specific files
 *.rsuser

@@ -36,11 +36,13 @@ docker compose down
 
 ### Running local
 
-Copy `appsettings.Development.json` from the repository root into `src/Server/` then start the backend:
+Create `appsettings.Development.json` in the repository root, then start the backend:
 
 ```bash
 dotnet run --project src/Server
 ```
+
+The server project reads the same root file through the committed `src/Server/appsettings.Development.json` symlink, so there is no second local copy to keep in sync.
 
 Open another console and start the frontend:
 
@@ -48,6 +50,8 @@ Open another console and start the frontend:
 cd src/Web
 npm run dev
 ```
+
+On Windows, the checkout must preserve symlinks as real links. That typically means Developer Mode is enabled and `git config core.symlinks true` was in effect when the repository was cloned.
 
 ### Running tests
 
