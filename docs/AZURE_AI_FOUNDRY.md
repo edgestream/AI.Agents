@@ -14,7 +14,8 @@ This document covers the Azure AI Foundry and Azure OpenAI configuration used by
 
 Start from `appsettings.json.example` and add your AI configuration in the repository root.
 
-The backend reads that root file through the committed `src/Server/appsettings.Development.json` symlink. Do not create a second copy under `src/Server/`.
+For `docker compose`, the backend container reads that repository-root file through the mounted secret file.
+For a native `dotnet run --project src/Server`, keep local overrides in `src/Server/appsettings.Development.json` or use user secrets.
 
 Minimal Foundry example:
 
