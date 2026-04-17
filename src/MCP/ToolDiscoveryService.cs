@@ -1,14 +1,14 @@
 using Microsoft.Extensions.Logging;
 using ModelContextProtocol.Client;
 
-namespace AI.MCP.Client;
+namespace AI.Agents.MCP;
 
 /// <summary>
-/// Discovers tools from a single MCP client and registers them into <see cref="McpClientRegistry"/>.
+/// Discovers tools from a single MCP client and registers them into <see cref="MCPClientRegistry"/>.
 /// One instance is spawned per connected client by <see cref="HostingService"/>.
 /// </summary>
 internal sealed class ToolDiscoveryService(
-    McpClientRegistry registry,
+    MCPClientRegistry registry,
     ILogger<ToolDiscoveryService> logger)
 {
     public async Task DiscoverAsync(
@@ -23,4 +23,3 @@ internal sealed class ToolDiscoveryService(
             "Discovered {Count} tool(s) from MCP server '{Name}'.", tools.Count, serverName);
     }
 }
-

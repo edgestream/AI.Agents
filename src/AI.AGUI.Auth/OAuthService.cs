@@ -1,7 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Web;
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Microsoft.Extensions.Logging;
 
 namespace AI.AGUI.Auth;
@@ -23,7 +23,7 @@ public interface IOAuthService
     Task<OAuthAuthorizationResult> GenerateAuthorizationUrlAsync(
         string userId,
         string mcpServerName,
-        McpOAuthOptions options,
+        MCPOAuthOptions options,
         string callbackUrl,
         CancellationToken cancellationToken = default);
 
@@ -39,7 +39,7 @@ public interface IOAuthService
     Task<OAuthTokenExchangeResult> ExchangeCodeAsync(
         string stateId,
         string authorizationCode,
-        McpOAuthOptions options,
+        MCPOAuthOptions options,
         string callbackUrl,
         CancellationToken cancellationToken = default);
 
@@ -54,7 +54,7 @@ public interface IOAuthService
     Task<OAuthToken?> RefreshTokenAsync(
         string userId,
         string mcpServerName,
-        McpOAuthOptions options,
+        MCPOAuthOptions options,
         CancellationToken cancellationToken = default);
 }
 
@@ -136,7 +136,7 @@ public sealed class OAuthService : IOAuthService
     public async Task<OAuthAuthorizationResult> GenerateAuthorizationUrlAsync(
         string userId,
         string mcpServerName,
-        McpOAuthOptions options,
+        MCPOAuthOptions options,
         string callbackUrl,
         CancellationToken cancellationToken = default)
     {
@@ -188,7 +188,7 @@ public sealed class OAuthService : IOAuthService
     public async Task<OAuthTokenExchangeResult> ExchangeCodeAsync(
         string stateId,
         string authorizationCode,
-        McpOAuthOptions options,
+        MCPOAuthOptions options,
         string callbackUrl,
         CancellationToken cancellationToken = default)
     {
@@ -283,7 +283,7 @@ public sealed class OAuthService : IOAuthService
     public async Task<OAuthToken?> RefreshTokenAsync(
         string userId,
         string mcpServerName,
-        McpOAuthOptions options,
+        MCPOAuthOptions options,
         CancellationToken cancellationToken = default)
     {
         var existingToken = await _tokenStore.GetTokenAsync(userId, mcpServerName, cancellationToken);

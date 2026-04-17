@@ -26,7 +26,7 @@ public sealed class DirectHostingTests
     }
 
     /// <summary>
-    /// The McpClientRegistry is always registered to support OAuth endpoint 
+    /// The MCPClientRegistry is always registered to support OAuth endpoint 
     /// configuration lookup, even when no MCP servers are configured.
     /// The registry will be empty but the service is available.
     /// </summary>
@@ -35,11 +35,11 @@ public sealed class DirectHostingTests
     {
         using var factory = new AGUIServerFactory();
 
-        var registry = factory.Services.GetService<AI.MCP.Client.McpClientRegistry>();
+        var registry = factory.Services.GetService<AI.Agents.MCP.MCPClientRegistry>();
 
         // Registry is now always registered to support OAuth configuration lookup
-        Assert.IsNotNull(registry, "McpClientRegistry should be registered for OAuth endpoint support.");
-        Assert.AreEqual(0, registry.Tools.Count, "McpClientRegistry should have no tools when no MCP servers are configured.");
+        Assert.IsNotNull(registry, "MCPClientRegistry should be registered for OAuth endpoint support.");
+        Assert.AreEqual(0, registry.Tools.Count, "MCPClientRegistry should have no tools when no MCP servers are configured.");
     }
 
     /// <summary>

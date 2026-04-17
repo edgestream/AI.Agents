@@ -1,4 +1,4 @@
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -21,11 +21,11 @@ public sealed class McpClientRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        var registry = provider.GetService<McpClientRegistry>();
+        var registry = provider.GetService<MCPClientRegistry>();
         var hostedServices = provider.GetServices<IHostedService>().ToArray();
-        var options = provider.GetRequiredService<IOptions<McpClientOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<MCPClientOptions>>().Value;
 
-        Assert.IsNotNull(registry, "McpClientRegistry should be registered.");
+        Assert.IsNotNull(registry, "MCPClientRegistry should be registered.");
         Assert.IsTrue(hostedServices.OfType<HostingService>().Any(), "HostingService should be registered as a hosted service.");
         Assert.AreEqual(0, options.Servers.Count, "Default MCP options should start empty when no configuration is present.");
     }
@@ -53,7 +53,7 @@ public sealed class McpClientRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        var options = provider.GetRequiredService<IOptions<McpClientOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<MCPClientOptions>>().Value;
 
         Assert.IsTrue(options.Servers.TryGetValue("learn", out var learn), "Expected HTTP MCP server to be bound.");
         Assert.AreEqual("http", learn.Type);
@@ -76,7 +76,7 @@ public sealed class McpClientRegistrationTests
         services.AddSingleton<IConfiguration>(configuration);
         services.AddMCPClient(options =>
         {
-            options.Servers["learn"] = new McpServerOptions
+            options.Servers["learn"] = new MCPServerOptions
             {
                 Type = "http",
                 Url = "https://learn.microsoft.com/api/mcp",
@@ -85,7 +85,7 @@ public sealed class McpClientRegistrationTests
 
         await using var provider = services.BuildServiceProvider();
 
-        var options = provider.GetRequiredService<IOptions<McpClientOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<MCPClientOptions>>().Value;
 
         Assert.IsTrue(options.Servers.TryGetValue("learn", out var learn), "Expected MCP server configured in code to be available.");
         Assert.AreEqual("http", learn.Type);

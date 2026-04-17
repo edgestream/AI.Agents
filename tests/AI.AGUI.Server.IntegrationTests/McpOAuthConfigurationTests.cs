@@ -1,4 +1,4 @@
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
@@ -9,7 +9,7 @@ namespace AI.AGUI.Server.IntegrationTests;
 public sealed class McpOAuthConfigurationTests
 {
     [TestMethod]
-    public async Task McpServerOptions_BindsOAuthConfiguration()
+    public async Task MCPServerOptions_BindsOAuthConfiguration()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -36,7 +36,7 @@ public sealed class McpOAuthConfigurationTests
         services.AddMCPClient();
 
         await using var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptions<McpClientOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<MCPClientOptions>>().Value;
 
         Assert.IsTrue(options.Servers.TryGetValue("github", out var github));
         Assert.AreEqual("stdio", github.Type);
@@ -56,7 +56,7 @@ public sealed class McpOAuthConfigurationTests
     }
 
     [TestMethod]
-    public async Task McpServerOptions_WithoutOAuth_HasNullAuth()
+    public async Task MCPServerOptions_WithoutOAuth_HasNullAuth()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -74,16 +74,16 @@ public sealed class McpOAuthConfigurationTests
         services.AddMCPClient();
 
         await using var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptions<McpClientOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<MCPClientOptions>>().Value;
 
         Assert.IsTrue(options.Servers.TryGetValue("filesystem", out var filesystem));
         Assert.IsNull(filesystem.Auth);
     }
 
     [TestMethod]
-    public void McpOAuthOptions_IsConfigured_FalseWhenMissingRequired()
+    public void MCPOAuthOptions_IsConfigured_FalseWhenMissingRequired()
     {
-        var auth = new McpOAuthOptions
+        var auth = new MCPOAuthOptions
         {
             ClientId = "test-client-id"
             // Missing AuthorizationUrl and TokenUrl
@@ -93,9 +93,9 @@ public sealed class McpOAuthConfigurationTests
     }
 
     [TestMethod]
-    public void McpOAuthOptions_IsConfigured_TrueWhenComplete()
+    public void MCPOAuthOptions_IsConfigured_TrueWhenComplete()
     {
-        var auth = new McpOAuthOptions
+        var auth = new MCPOAuthOptions
         {
             ClientId = "test-client-id",
             AuthorizationUrl = "https://example.com/authorize",
@@ -106,7 +106,7 @@ public sealed class McpOAuthConfigurationTests
     }
 
     [TestMethod]
-    public async Task McpServerOptions_HttpWithOAuth_BindsCorrectly()
+    public async Task MCPServerOptions_HttpWithOAuth_BindsCorrectly()
     {
         var configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -129,7 +129,7 @@ public sealed class McpOAuthConfigurationTests
         services.AddMCPClient();
 
         await using var provider = services.BuildServiceProvider();
-        var options = provider.GetRequiredService<IOptions<McpClientOptions>>().Value;
+        var options = provider.GetRequiredService<IOptions<MCPClientOptions>>().Value;
 
         Assert.IsTrue(options.Servers.TryGetValue("ms365", out var ms365));
         Assert.AreEqual("http", ms365.Type);

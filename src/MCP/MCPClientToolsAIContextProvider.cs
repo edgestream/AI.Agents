@@ -1,8 +1,7 @@
-using AI.MCP.Client;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 
-namespace AI.AGUI.Hosting;
+namespace AI.Agents.MCP;
 
 #pragma warning disable MAAI001
 
@@ -13,17 +12,17 @@ namespace AI.AGUI.Hosting;
 /// <para>
 /// <see cref="Microsoft.Agents.AI.ChatClientAgent"/> clones its
 /// <see cref="Microsoft.Extensions.AI.ChatOptions"/> (including any tools list) at construction
-/// time. Because <see cref="AI.MCP.Client.HostingService.StartAsync"/> populates clients only
+/// time. Because <see cref="AI.Agents.MCP.HostingService.StartAsync"/> populates clients only
 /// after the agent singleton is already resolved, the cloned list would always be empty if tools
 /// were supplied via the constructor.
 /// </para>
 /// <para>
-/// This provider reads from <see cref="McpClientRegistry.Tools"/> at request-invocation time
+/// This provider reads from <see cref="MCPClientRegistry.Tools"/> at request-invocation time
 /// (after all hosted services have fully started), so the registry always holds a
 /// fully-populated list by then.
 /// </para>
 /// </remarks>
-public sealed class McpClientToolsAIContextProvider(McpClientRegistry registry) : AIContextProvider
+public sealed class MCPClientToolsAIContextProvider(MCPClientRegistry registry) : AIContextProvider
 {
     protected override ValueTask<AIContext> ProvideAIContextAsync(
         InvokingContext context,

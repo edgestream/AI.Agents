@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 
-namespace AI.MCP.Client;
+namespace AI.Agents.MCP;
 
 /// <summary>
 /// Extension methods for registering the MCP client infrastructure with dependency injection.
@@ -11,7 +11,7 @@ namespace AI.MCP.Client;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers the MCP client infrastructure and binds <see cref="McpClientOptions"/>
+    /// Registers the MCP client infrastructure and binds <see cref="MCPClientOptions"/>
     /// from the specified configuration section.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
@@ -23,11 +23,11 @@ public static class ServiceCollectionExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
 
         services.AddHttpClient();
-        services.AddOptions<McpClientOptions>()
+        services.AddOptions<MCPClientOptions>()
             .Configure<IConfiguration>((options, configuration) =>
-                options.Servers = configuration.GetSection(sectionName).Get<Dictionary<string, McpServerOptions>>() ?? []);
+            options.Servers = configuration.GetSection(sectionName).Get<Dictionary<string, MCPServerOptions>>() ?? []);
 
-        services.TryAddSingleton<McpClientRegistry>();
+        services.TryAddSingleton<MCPClientRegistry>();
         services.TryAddTransient<ToolDiscoveryService>();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, HostingService>());
 
@@ -38,9 +38,9 @@ public static class ServiceCollectionExtensions
     /// Registers the MCP client infrastructure and allows callers to configure the options in code.
     /// </summary>
     /// <param name="services">The service collection to update.</param>
-    /// <param name="configure">The delegate used to configure <see cref="McpClientOptions"/>.</param>
+    /// <param name="configure">The delegate used to configure <see cref="MCPClientOptions"/>.</param>
     /// <returns>The updated service collection.</returns>
-    public static IServiceCollection AddMCPClient(this IServiceCollection services, Action<McpClientOptions> configure)
+    public static IServiceCollection AddMCPClient(this IServiceCollection services, Action<MCPClientOptions> configure)
     {
         ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(configure);
