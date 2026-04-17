@@ -24,6 +24,8 @@ openid offline_access profile https://graph.microsoft.com/User.Read
 
 That extra `User.Read` scope is required so `/api/me` can enrich the signed-in user with Microsoft Graph profile data and photo.
 
+For production deployments, an external **token store** backed by Azure Blob Storage is recommended so that Easy Auth tokens survive container restarts and scale-to-zero events. See [Token Store For Easy Auth](#token-store-for-easy-auth) for details.
+
 ## Prerequisites
 
 - Azure subscription access with permission to provision resource groups and Azure Container Apps
@@ -320,6 +322,97 @@ After changing or merging this infrastructure definition, apply it with:
 azd provision -e Production
 ```
 
+## Token Store For Easy Auth
+
+### Why a token store is needed
+
+When Easy Auth completes the login flow, it stores the resulting tokens — ID token, access token, and refresh token — in its **token store**. These tokens are what Easy Auth uses to inject the `X-MS-TOKEN-AAD-ACCESS-TOKEN` header into every authenticated request so the backend can call Microsoft Graph.
+
+By default, Container Apps Easy Auth keeps its token store on the container's local filesystem. This means:
+
+- when the container restarts, all tokens are lost
+- when the app scales to zero (this repo uses `minReplicas: 0`), every stored token disappears
+- after any of these events, every user must sign in again
+
+For a production deployment, an **external token store backed by Azure Blob Storage** eliminates this problem. Easy Auth reads and writes tokens to a blob container instead of the local filesystem, so tokens survive any container lifecycle event.
+
+An external token store also enables `tokenRefreshExtensionHours`. When configured, Easy Auth will use the stored refresh token (obtained via the `offline_access` scope) to silently renew expired access tokens for up to the configured number of hours without forcing a new interactive login.
+
+### How to set up the token store
+
+#### 1. Create a Storage Account and blob container
+
+```powershell
+$rgName   = 'rg-ai-agui-production'
+$saName   = 'staaguiauth'          # must be globally unique, lowercase, 3-24 chars
+$location = 'eastus2'
+
+az storage account create `
+  --name $saName `
+  --resource-group $rgName `
+  --location $location `
+  --sku Standard_LRS `
+  --kind StorageV2 `
+  --min-tls-version TLS1_2
+
+az storage container create `
+  --name tokenstore `
+  --account-name $saName `
+  --auth-mode login
+```
+
+#### 2. Generate a SAS URL
+
+The SAS URL must grant **read, write, delete, and list** permissions on the `tokenstore` blob container. Set an expiry that matches your security policy — one year is common for personal deployments.
+
+```powershell
+$expiry = (Get-Date).AddYears(1).ToUniversalTime().ToString('yyyy-MM-ddTHH:mm:ssZ')
+
+$sasToken = az storage container generate-sas `
+  --name tokenstore `
+  --account-name $saName `
+  --permissions rwdl `
+  --expiry $expiry `
+  --auth-mode login `
+  --as-user `
+  --output tsv
+
+$sasUrl = "https://$saName.blob.core.windows.net/tokenstore?$sasToken"
+```
+
+> **Security note**: The SAS URL is a secret that grants direct access to the token store blob container. Treat it like a client secret.
+
+#### 3. Store the SAS URL in the `azd` environment
+
+```powershell
+azd env set TOKEN_STORE_SAS_URL $sasUrl
+```
+
+#### 4. Provision
+
+```powershell
+azd provision -e Production
+```
+
+This deploys the `login.tokenStore` configuration in the `appAuthConfig` resource, pointing Easy Auth at the blob container.
+
+### What happens after provisioning
+
+Once the token store is configured:
+
+- Easy Auth writes tokens to blobs named by session ID in the `tokenstore` container.
+- Tokens survive container restarts and scale-to-zero events.
+- Easy Auth silently refreshes expired access tokens using the stored refresh token for up to `tokenRefreshExtensionHours` (72 hours by default in this repo's Bicep).
+- Users no longer need to re-authenticate after every container restart.
+
+### Token store is optional
+
+The token store is strongly recommended for production but not strictly required. Without it:
+
+- the app still works
+- users are forced to re-authenticate after any container restart or scale event
+- `X-MS-TOKEN-AAD-ACCESS-TOKEN` is unavailable until the user signs in again
+
 ## Validation Checklist
 
 After the Entra admin grants consent and the infrastructure is reprovisioned:
@@ -356,9 +449,24 @@ Try signing out and signing in again after `azd provision`.
 
 The signed-in account does not have enough Microsoft Entra directory privilege to grant tenant-wide consent. Use a more privileged Entra admin account.
 
+### Users must re-authenticate after every container restart
+
+The token store is not configured. Easy Auth is storing tokens on the container's local filesystem, which is lost on every restart or scale-to-zero event. Follow the [Token Store For Easy Auth](#token-store-for-easy-auth) section to set up Azure Blob Storage–backed token persistence.
+
+### Token store configured but tokens are still lost
+
+Possible causes:
+
+- the SAS URL has expired — generate a new one and run `azd env set TOKEN_STORE_SAS_URL` followed by `azd provision`
+- the SAS URL does not have sufficient permissions (needs read, write, delete, list)
+- the Storage Account or blob container was deleted
+
+Verify by checking the `tokenstore` blob container in the Azure portal — it should contain blobs after a successful sign-in.
+
 ## References
 
 - Azure Developer CLI Container Apps workflows: https://learn.microsoft.com/azure/developer/azure-developer-cli/container-apps-workflows
 - Azure Container Apps authentication with Microsoft Entra ID: https://learn.microsoft.com/azure/container-apps/authentication-entra
-- Microsoft guidance for requesting `openid offline_access profile https://graph.microsoft.com/User.Read`: https://learn.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-user
+- Azure Container Apps token store: https://learn.microsoft.com/azure/container-apps/token-store
+- Microsoft guidance for requesting`openid offline_access profile https://graph.microsoft.com/User.Read`: https://learn.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-user
 - Microsoft Entra admin consent guidance: https://learn.microsoft.com/troubleshoot/entra/entra-id/app-integration/troubleshoot-consent-issues#perform-admin-consent
