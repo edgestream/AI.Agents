@@ -1,5 +1,5 @@
-using AI.Agents.Auth;
 using AI.Agents.MCP;
+using AI.Agents.Microsoft.Auth;
 using AI.Agents.OAuth;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -252,7 +252,7 @@ public sealed class AuthenticationTests
     }
 
     [TestMethod]
-    public async Task McpAuthorizationService_NoOAuthConfig_AlwaysAuthorized()
+    public async Task MCPAuthorizationService_NoOAuthConfig_AlwaysAuthorized()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
@@ -263,7 +263,7 @@ public sealed class AuthenticationTests
                 ["filesystem"] = new MCPServerOptions { Type = "stdio", Command = "npx" }
             }
         });
-        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+        var service = new MCPAuthorizationService(tokenStore, mcpOptions);
 
         var isAuthorized = await service.IsAuthorizedAsync("filesystem", "user-123");
 
@@ -271,7 +271,7 @@ public sealed class AuthenticationTests
     }
 
     [TestMethod]
-    public async Task McpAuthorizationService_WithOAuthConfig_NotAuthorizedWithoutToken()
+    public async Task MCPAuthorizationService_WithOAuthConfig_NotAuthorizedWithoutToken()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
@@ -292,7 +292,7 @@ public sealed class AuthenticationTests
                 }
             }
         });
-        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+        var service = new MCPAuthorizationService(tokenStore, mcpOptions);
 
         var isAuthorized = await service.IsAuthorizedAsync("github", "user-123");
 
@@ -300,7 +300,7 @@ public sealed class AuthenticationTests
     }
 
     [TestMethod]
-    public async Task McpAuthorizationService_WithOAuthConfig_AuthorizedWithValidToken()
+    public async Task MCPAuthorizationService_WithOAuthConfig_AuthorizedWithValidToken()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
@@ -321,7 +321,7 @@ public sealed class AuthenticationTests
                 }
             }
         });
-        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+        var service = new MCPAuthorizationService(tokenStore, mcpOptions);
 
         // Store a valid token
         await tokenStore.SetTokenAsync("user-123", "github", new OAuthToken
@@ -336,7 +336,7 @@ public sealed class AuthenticationTests
     }
 
     [TestMethod]
-    public void McpAuthorizationService_GenerateConsentRequired_ReturnsConsentInfo()
+    public void MCPAuthorizationService_GenerateConsentRequired_ReturnsConsentInfo()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
@@ -358,7 +358,7 @@ public sealed class AuthenticationTests
                 }
             }
         });
-        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+        var service = new MCPAuthorizationService(tokenStore, mcpOptions);
 
         var consent = service.GenerateConsentRequired("github", "https://example.com");
 
@@ -370,7 +370,7 @@ public sealed class AuthenticationTests
     }
 
     [TestMethod]
-    public void McpAuthorizationService_GenerateConsentRequired_NoOAuthConfig_ReturnsNull()
+    public void MCPAuthorizationService_GenerateConsentRequired_NoOAuthConfig_ReturnsNull()
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
@@ -381,7 +381,7 @@ public sealed class AuthenticationTests
                 ["filesystem"] = new MCPServerOptions { Type = "stdio", Command = "npx" }
             }
         });
-        var service = new McpAuthorizationService(tokenStore, mcpOptions);
+        var service = new MCPAuthorizationService(tokenStore, mcpOptions);
 
         var consent = service.GenerateConsentRequired("filesystem", "https://example.com");
 

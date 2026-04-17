@@ -1,7 +1,6 @@
 <Solution>
   <Project Path="src/Abstractions/Abstractions.csproj" />
   <Project Path="src/AGUI/AGUI.csproj" />
-  <Project Path="src/Auth/Auth.csproj" />
   <Project Path="src/MCP/MCP.csproj" />
   <Project Path="src/Microsoft/Microsoft.csproj" />
   <Project Path="src/OAuth/OAuth.csproj" />
