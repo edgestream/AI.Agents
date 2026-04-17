@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isLocalAuth, getPostLogoutRedirectUri } from "@/app/lib/auth/config";
+import { canSignIn, isLocalAuth, getPostLogoutRedirectUri } from "@/app/lib/auth/config";
 import { acquireTokenByCode } from "@/app/lib/auth/msal";
 import { type AuthSession } from "@/app/lib/auth/session";
 import { storeNonce } from "@/app/lib/auth/nonceStore";
@@ -14,7 +14,14 @@ import { storeNonce } from "@/app/lib/auth/nonceStore";
 export async function GET(request: NextRequest) {
   if (!isLocalAuth()) {
     return NextResponse.json(
-      { error: "Local auth is not enabled." },
+      { error: "Local auth is disabled because AUTH_MODE=aca." },
+      { status: 404 },
+    );
+  }
+
+  if (!canSignIn()) {
+    return NextResponse.json(
+      { error: "Local sign-in is not configured for this process." },
       { status: 404 },
     );
   }

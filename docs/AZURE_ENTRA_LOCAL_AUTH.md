@@ -4,7 +4,13 @@ The web app supports an optional **local authentication mode** that lets develop
 
 When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flow via MSAL, stores the resulting tokens in an encrypted session cookie, and injects the same `X-MS-*` Easy Auth headers that ACA would provide. The backend, Graph enrichment, and all auth-sensitive UI work identically in both modes.
 
+When the local Entra variables are omitted, the app still starts in anonymous local mode. In that state the Sign in UI stays hidden, and backend Foundry calls can still authenticate through `DefaultAzureCredential` sources such as `az login`.
+
+The repo root `.env` can remain the single source of truth for the local app registration. Interactive local sign-in accepts the canonical `ENTRA_*` variables or the mirrored `AZURE_*` values used by Azure SDKs.
+
 ## Prerequisites
+
+These prerequisites apply when you want interactive local sign-in. They are not required for anonymous local usage.
 
 | Item | Notes |
 |---|---|
@@ -43,9 +49,10 @@ The root `.env` is the **single source of truth** for all local development cred
 Add the following to the root `.env` (alongside the existing credentials):
 
 ```env
-# Enable local Entra auth (omit or set to "aca" for production / ACA behavior)
-AUTH_MODE=local
+# Local Entra auth is the default. Set AUTH_MODE=aca only for hosted / Easy Auth behavior.
+# AUTH_MODE=local
 
+# Required only when you want interactive local sign-in.
 # A random secret used to encrypt the session cookie (min. 32 characters)
 AUTH_SESSION_SECRET=<random-secret-string>
 
@@ -106,7 +113,7 @@ Browser                  Next.js Middleware           Route Handler / Backend
 | Sign in | `GET /api/auth/login` | `GET /.auth/login/aad` |
 | Sign out | `GET /api/auth/logout` | `GET /.auth/logout` |
 
-The UI components (`UserMenu`, `UserAvatar`) automatically select the correct URL based on the `authMode` field returned by `/api/me`.
+The UI components (`UserMenu`, `UserAvatar`) automatically select the correct URL based on the `authMode` field returned by `/api/me`. Local processes default to `local`; hosted ACA deployments must set `AUTH_MODE=aca` explicitly. In local mode the Sign in action is only shown when either the `ENTRA_*` or `AZURE_*` app-registration variables and `AUTH_SESSION_SECRET` are present.
 
 ## Security Notes
 
@@ -120,8 +127,9 @@ The UI components (`UserMenu`, `UserAvatar`) automatically select the correct UR
 | Symptom | Cause | Fix |
 |---|---|---|
 | `AUTH_SESSION_SECRET environment variable is required` | Missing env var | Add `AUTH_SESSION_SECRET` to your `.env` / `.env.local` |
-| `ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID are required` | Missing app registration env vars | Add all three and keep the `AZURE_*` compatibility values in sync for Azure SDK consumers |
+| `ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID are required` | Missing app registration env vars | Add all three for browser sign-in, or provide the mirrored `AZURE_*` values from the same app registration in the root `.env` |
+| You want anonymous local usage only | No local sign-in configuration | Leave the Entra variables unset, sign in stays hidden, and use `az login` for backend `DefaultAzureCredential` access |
 | Sign in redirects but callback fails with "invalid_grant" | Authorization code reuse or clock skew | Clear cookies and try again |
 | Callback fails with "redirect_uri mismatch" | Redirect URI not registered | Add `http://localhost:3000/api/auth/callback` to the app registration |
-| Profile shows anonymous after sign-in | Middleware not matching the route | Ensure `AUTH_MODE=local` is set and restart the dev server |
+| Profile shows anonymous after sign-in | Middleware not matching the route | Ensure `AUTH_MODE` is unset or set to `local`, then restart the dev server |
 | Graph enrichment returns no photo/display name | Access token lacks `User.Read` scope | Re-consent or update the app registration's API permissions |

@@ -15,6 +15,8 @@ export interface UserInfo {
   domain?: string;
   /** The active auth mode: `"local"` when using local Entra sign-in, `"aca"` when on ACA Easy Auth. */
   authMode?: "local" | "aca";
+  /** Whether the current process is configured to offer interactive sign-in. */
+  canSignIn?: boolean;
 }
 
 /**

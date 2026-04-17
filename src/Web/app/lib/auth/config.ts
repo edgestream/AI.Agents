@@ -7,20 +7,29 @@
  *   downstream route handlers and the backend see the same contract as ACA
  *   Easy Auth.
  *
- * - `"aca"` (default) – Azure Container Apps Easy Auth is responsible for
+ * - `"aca"` – Azure Container Apps Easy Auth is responsible for
  *   authentication; the Next.js app trusts the `X-MS-*` headers provided by
  *   the ingress.
  *
- * Set `AUTH_MODE=local` in `.env.local` to enable the local flow.
+ * `local` is the safe default for developer workstations. Azure-hosted
+ * deployments must set `AUTH_MODE=aca` explicitly.
  */
 
 export type AuthMode = "local" | "aca";
+
+function hasLocalAuthAppRegistration(): boolean {
+  return Boolean(
+    (process.env.ENTRA_CLIENT_ID || process.env.AZURE_CLIENT_ID)
+    && (process.env.ENTRA_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET)
+    && (process.env.ENTRA_TENANT_ID || process.env.AZURE_TENANT_ID),
+  );
+}
 
 /**
  * Returns the current authentication mode.
  */
 export function getAuthMode(): AuthMode {
-  return process.env.AUTH_MODE === "local" ? "local" : "aca";
+  return process.env.AUTH_MODE === "aca" ? "aca" : "local";
 }
 
 /**
@@ -28,6 +37,21 @@ export function getAuthMode(): AuthMode {
  */
 export function isLocalAuth(): boolean {
   return getAuthMode() === "local";
+}
+
+/**
+ * Returns whether interactive sign-in is configured for the current process.
+ *
+ * Local mode allows anonymous usage without Entra app-registration settings.
+ * Interactive sign-in is available once either ENTRA_* or AZURE_* app-registration
+ * settings and the session secret are configured.
+ */
+export function canSignIn(): boolean {
+  if (getAuthMode() === "aca") {
+    return true;
+  }
+
+  return hasLocalAuthAppRegistration() && Boolean(process.env.AUTH_SESSION_SECRET);
 }
 
 /**

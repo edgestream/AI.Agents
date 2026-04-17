@@ -100,6 +100,10 @@ function getSignOutUrl(authMode: string | undefined): string {
   return authMode === "local" ? "/api/auth/logout" : "/.auth/logout";
 }
 
+function showSignIn(user: UserInfo | null | undefined): boolean {
+  return Boolean(user?.canSignIn);
+}
+
 /**
  * Displays the current user's avatar and optionally their name.
  */
@@ -119,6 +123,10 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
   }
 
   if (!user?.authenticated) {
+    if (!showSignIn(user)) {
+      return null;
+    }
+
     return (
       <a
         href={getSignInUrl(user?.authMode)}
@@ -202,6 +210,10 @@ export function UserMenu() {
   }
 
   if (!user?.authenticated) {
+    if (!showSignIn(user)) {
+      return null;
+    }
+
     return (
       <a
         href={getSignInUrl(user?.authMode)}

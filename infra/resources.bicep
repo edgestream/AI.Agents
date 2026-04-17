@@ -166,6 +166,11 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               value: 'http://localhost:8080'
             }
             {
+              // Hosted deployments must opt into ACA mode explicitly.
+              name: 'AUTH_MODE'
+              value: 'aca'
+            }
+            {
               // Next.js standalone server binds to the HOSTNAME env var. In Container Apps the
               // runtime sets HOSTNAME to the replica name, so Next.js would only listen on that
               // DNS name — not on 127.0.0.1. Easy Auth forwards to 127.0.0.1:3000, so we must
