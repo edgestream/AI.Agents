@@ -12,7 +12,7 @@ import { removeFullSession } from "@/app/lib/auth/serverSessionStore";
 export async function GET(request: NextRequest) {
   if (!isLocalAuth()) {
     return NextResponse.json(
-      { error: "Local auth is not enabled." },
+      { error: "Local auth is disabled because AUTH_MODE=aca." },
       { status: 404 },
     );
   }

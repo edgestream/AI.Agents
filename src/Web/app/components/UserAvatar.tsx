@@ -100,6 +100,10 @@ function getSignOutUrl(authMode: string | undefined): string {
   return authMode === "local" ? "/api/auth/logout" : "/.auth/logout";
 }
 
+function showSignIn(user: UserInfo | null | undefined): boolean {
+  return Boolean(user?.canSignIn);
+}
+
 /**
  * Displays the current user's avatar and optionally their name.
  */
@@ -119,6 +123,20 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
   }
 
   if (!user?.authenticated) {
+    if (!showSignIn(user)) {
+      return (
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div
+            className="rounded-full bg-gray-200 flex items-center justify-center text-gray-500"
+            style={{ width: size, height: size, fontSize: size * 0.4 }}
+          >
+            ?
+          </div>
+          {showName && <span>Anonymous</span>}
+        </div>
+      );
+    }
+
     return (
       <a
         href={getSignInUrl(user?.authMode)}
@@ -202,6 +220,14 @@ export function UserMenu() {
   }
 
   if (!user?.authenticated) {
+    if (!showSignIn(user)) {
+      return (
+        <span className="px-4 py-2 text-sm font-medium text-gray-500 bg-gray-100 rounded-md">
+          Anonymous
+        </span>
+      );
+    }
+
     return (
       <a
         href={getSignInUrl(user?.authMode)}

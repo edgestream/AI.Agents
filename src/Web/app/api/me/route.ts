@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getAuthMode, type AuthMode } from "@/app/lib/auth/config";
+import { canSignIn, getAuthMode, type AuthMode } from "@/app/lib/auth/config";
 import { resolveLocalSession } from "@/app/lib/auth/resolveLocalSession";
 
 /**
@@ -15,6 +15,8 @@ export interface UserInfo {
   domain?: string;
   /** Indicates the active auth mode (`"local"` or `"aca"`). */
   authMode?: AuthMode;
+  /** Whether the current process is configured to offer an interactive sign-in flow. */
+  canSignIn?: boolean;
 }
 
 function getDomainFromEmail(email: string | undefined): string | undefined {
@@ -60,6 +62,7 @@ function getTenantIdFromIdToken(idToken: string | null): string | undefined {
  */
 export async function GET(request: NextRequest) {
   const authMode = getAuthMode();
+  const signInEnabled = canSignIn();
   let principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
   let principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
   let accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
@@ -108,6 +111,7 @@ export async function GET(request: NextRequest) {
           tenantId,
           domain: getDomainFromEmail(data.email),
           authMode,
+          canSignIn: signInEnabled,
         } satisfies UserInfo);
       }
     } catch (error) {
@@ -126,6 +130,7 @@ export async function GET(request: NextRequest) {
       tenantId,
       domain: getDomainFromEmail(fallbackEmail),
       authMode,
+      canSignIn: signInEnabled,
     } satisfies UserInfo);
   }
 
@@ -133,5 +138,6 @@ export async function GET(request: NextRequest) {
   return NextResponse.json({
     authenticated: false,
     authMode,
+    canSignIn: signInEnabled,
   } satisfies UserInfo);
 }

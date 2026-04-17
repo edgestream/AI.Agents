@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isLocalAuth } from "@/app/lib/auth/config";
+import { canSignIn, isLocalAuth } from "@/app/lib/auth/config";
 import { getAuthCodeUrl } from "@/app/lib/auth/msal";
 
 /**
@@ -11,11 +11,29 @@ import { getAuthCodeUrl } from "@/app/lib/auth/msal";
 export async function GET() {
   if (!isLocalAuth()) {
     return NextResponse.json(
-      { error: "Local auth is not enabled. Set AUTH_MODE=local to use this endpoint." },
+      { error: "Local auth is disabled because AUTH_MODE=aca." },
       { status: 404 },
     );
   }
 
-  const authUrl = await getAuthCodeUrl();
-  return NextResponse.redirect(authUrl);
+  if (!canSignIn()) {
+    return NextResponse.json(
+      { error: "Local sign-in is not configured for this process." },
+      { status: 404 },
+    );
+  }
+
+  try {
+    const authUrl = await getAuthCodeUrl();
+    return NextResponse.redirect(authUrl);
+  } catch (error) {
+    console.error("Failed to start local authentication:", error);
+    return NextResponse.json(
+      {
+        error: "Local auth is not configured for this process.",
+        detail: String(error),
+      },
+      { status: 500 },
+    );
+  }
 }
