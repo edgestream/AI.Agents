@@ -33,6 +33,14 @@ services:
       - "3000:3000"
     environment:
       - BACKEND_URL=http://backend:8080/
+      - AUTH_MODE=${AUTH_MODE:-}
+      - AZURE_TENANT_ID
+      - AZURE_CLIENT_ID
+      - AZURE_CLIENT_SECRET
+      - AUTH_SESSION_SECRET=${AUTH_SESSION_SECRET:-}
+    env_file:
+      - path: .env
+        required: false
     depends_on:
       backend:
         condition: service_healthy

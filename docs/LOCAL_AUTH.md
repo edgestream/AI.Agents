@@ -8,32 +8,46 @@ When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flo
 
 | Item | Notes |
 |---|---|
-| **Azure AD app registration** | Must be configured with a **Web** redirect URI of `http://localhost:3000/api/auth/callback`. The app needs `User.Read` delegated permission for Graph profile enrichment. |
-| **Client secret** | Create one under *Certificates & secrets* in the app registration. |
+| **Existing Entra app registration** | The same app registration used for ACA Easy Auth (already in your root `.env` as `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID`). You must add `http://localhost:3000/api/auth/callback` as a **Web** redirect URI in the Azure portal. |
+| **`User.Read` delegated permission** | Already configured if you're using Graph profile enrichment in production. |
 | **Node.js 20+** | Required by the Next.js app. |
+
+## Reusing the existing app registration
+
+The repo root `.env` already contains the Entra app credentials used by `docker-compose.yml` for the backend:
+
+```env
+AZURE_TENANT_ID=<your-tenant-id>
+AZURE_CLIENT_ID=<your-client-id>
+AZURE_CLIENT_SECRET=<your-client-secret>
+```
+
+Local auth reuses the **same values**. The only one-time step is adding a redirect URI:
+
+1. Open the [Azure portal → App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and find your app.
+2. Go to **Authentication** → **Web** → **Redirect URIs**.
+3. Add `http://localhost:3000/api/auth/callback` and **Save**.
 
 ## Environment variables
 
-Create a `.env.local` file in `src/AI.AGUI.Web/` with the following variables:
+Add the following to the root `.env` file (alongside the existing credentials):
 
 ```env
-# Enable local Entra auth (omit or set to "aca" for production behavior)
+# Enable local Entra auth (omit or set to "aca" for production / ACA behavior)
 AUTH_MODE=local
-
-# Azure AD app registration
-AZURE_AD_CLIENT_ID=<your-client-id>
-AZURE_AD_CLIENT_SECRET=<your-client-secret>
-AZURE_AD_TENANT_ID=<your-tenant-id>
 
 # A random secret used to encrypt the session cookie (min. 32 characters)
 AUTH_SESSION_SECRET=<random-secret-string>
 
-# Optional: override redirect URIs (defaults shown)
-# AUTH_REDIRECT_URI=http://localhost:3000/api/auth/callback
-# AUTH_POST_LOGOUT_REDIRECT_URI=http://localhost:3000
+# These should already be present:
+# AZURE_TENANT_ID=...
+# AZURE_CLIENT_ID=...
+# AZURE_CLIENT_SECRET=...
 ```
 
 > **Tip:** Generate `AUTH_SESSION_SECRET` with `openssl rand -base64 32` or `node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"`.
+
+When running with `npm run dev` (outside Docker), create a `.env.local` in `src/AI.AGUI.Web/` with the same variables. Next.js only loads `.env*` files from the project directory.
 
 ## How it works
 
@@ -72,7 +86,7 @@ The UI components (`UserMenu`, `UserAvatar`) automatically select the correct UR
 
 ## Security notes
 
-- The session cookie is encrypted with AES-256-GCM. The key is derived from `AUTH_SESSION_SECRET` via `scrypt`.
+- The session cookie is encrypted with AES-256-GCM. The key is derived from `AUTH_SESSION_SECRET` via PBKDF2.
 - The cookie is `httpOnly`, `SameSite=Lax`, and `Secure` in production.
 - **This mode is intended for local development only.** In production, continue to use ACA Easy Auth.
 - The cookie has an 8-hour lifetime. After that the user must sign in again.
@@ -81,8 +95,9 @@ The UI components (`UserMenu`, `UserAvatar`) automatically select the correct UR
 
 | Symptom | Cause | Fix |
 |---|---|---|
-| `AUTH_SESSION_SECRET environment variable is required` | Missing env var | Add `AUTH_SESSION_SECRET` to `.env.local` |
-| `AZURE_AD_CLIENT_ID, AZURE_AD_CLIENT_SECRET, and AZURE_AD_TENANT_ID are required` | Missing app registration env vars | Add all three to `.env.local` |
+| `AUTH_SESSION_SECRET environment variable is required` | Missing env var | Add `AUTH_SESSION_SECRET` to your `.env` / `.env.local` |
+| `AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID are required` | Missing app registration env vars | Add all three (they should already be in the root `.env`) |
 | Sign in redirects but callback fails with "invalid_grant" | Authorization code reuse or clock skew | Clear cookies and try again |
+| Callback fails with "redirect_uri mismatch" | Redirect URI not registered | Add `http://localhost:3000/api/auth/callback` to the app registration |
 | Profile shows anonymous after sign-in | Middleware not matching the route | Ensure `AUTH_MODE=local` is set and restart the dev server |
 | Graph enrichment returns no photo/display name | Access token lacks `User.Read` scope | Re-consent or update the app registration's API permissions |

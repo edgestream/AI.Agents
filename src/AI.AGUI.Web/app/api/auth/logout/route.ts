@@ -17,7 +17,7 @@ export async function GET() {
   }
 
   const cookie = clearSessionCookie();
-  const tenantId = process.env.AZURE_AD_TENANT_ID;
+  const tenantId = process.env.AZURE_TENANT_ID;
   const postLogoutUri = encodeURIComponent(getPostLogoutRedirectUri());
 
   // Redirect to Entra ID logout to clear the SSO session
