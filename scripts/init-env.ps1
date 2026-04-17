@@ -5,20 +5,25 @@
 
 .PARAMETER VaultName
     Name of the Azure Key Vault holding the shared dev credentials.
-    Defaults to the AGUI_KEY_VAULT env var if set.
+    Defaults to the AI_AGENTS_KEY_VAULT env var if set.
+    Falls back to AGUI_KEY_VAULT during migration.
 
 .EXAMPLE
     ./scripts/init-env.ps1 -VaultName kv-edgestream-dev
 #>
 param(
-    [string] $VaultName = $env:AGUI_KEY_VAULT
+    [string] $VaultName = $env:AI_AGENTS_KEY_VAULT
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
 
 if (-not $VaultName) {
-    Write-Error "Provide -VaultName or set the AGUI_KEY_VAULT environment variable."
+    $VaultName = $env:AGUI_KEY_VAULT
+}
+
+if (-not $VaultName) {
+    Write-Error "Provide -VaultName or set AI_AGENTS_KEY_VAULT (legacy: AGUI_KEY_VAULT)."
 }
 
 # Verify Azure CLI is available and logged in
@@ -35,16 +40,29 @@ if (-not $account) {
 Write-Host "Fetching credentials from Key Vault '$VaultName'..."
 
 $secrets = @(
-    @{ EnvKey = 'AZURE_TENANT_ID';     VaultKey = 'AGUI-AZURE-TENANT-ID'     }
-    @{ EnvKey = 'AZURE_CLIENT_ID';     VaultKey = 'AGUI-AZURE-CLIENT-ID'     }
-    @{ EnvKey = 'AZURE_CLIENT_SECRET'; VaultKey = 'AGUI-AZURE-CLIENT-SECRET' }
+    @{ EnvKey = 'AZURE_TENANT_ID';     VaultKeys = @('AI-AGENTS-AZURE-TENANT-ID', 'AGUI-AZURE-TENANT-ID')     }
+    @{ EnvKey = 'AZURE_CLIENT_ID';     VaultKeys = @('AI-AGENTS-AZURE-CLIENT-ID', 'AGUI-AZURE-CLIENT-ID')     }
+    @{ EnvKey = 'AZURE_CLIENT_SECRET'; VaultKeys = @('AI-AGENTS-AZURE-CLIENT-SECRET', 'AGUI-AZURE-CLIENT-SECRET') }
 )
 
-$lines = foreach ($s in $secrets) {
-    $value = az keyvault secret show --vault-name $VaultName --name $s.VaultKey --query value -o tsv
-    if ($LASTEXITCODE -ne 0) {
-        Write-Error "Failed to fetch secret '$($s.VaultKey)' from vault '$VaultName'."
+function Get-SecretValue {
+    param(
+        [string] $VaultName,
+        [string[]] $SecretNames
+    )
+
+    foreach ($secretName in $SecretNames) {
+        $value = az keyvault secret show --vault-name $VaultName --name $secretName --query value -o tsv 2>$null
+        if ($LASTEXITCODE -eq 0 -and -not [string]::IsNullOrWhiteSpace($value)) {
+            return $value
+        }
     }
+
+    Write-Error "Failed to fetch any of these secrets from vault '$VaultName': $($SecretNames -join ', ')"
+}
+
+$lines = foreach ($s in $secrets) {
+    $value = Get-SecretValue -VaultName $VaultName -SecretNames $s.VaultKeys
     "$($s.EnvKey)=$value"
 }
 

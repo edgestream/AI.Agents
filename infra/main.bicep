@@ -9,11 +9,11 @@ param environmentName string
 @description('Azure region for all resources.')
 param location string
 
-@description('Container image for the backend service (e.g. ghcr.io/org/ai-agents-server:sha-abc1234).')
-param backendImage string = 'ghcr.io/edgestream/ai-agents-server:latest'
+@description('Container image for the backend service (e.g. ghcr.io/org/agents-server:sha-abc1234).')
+param backendImage string = 'ghcr.io/edgestream/agents-server:latest'
 
-@description('Container image for the frontend service (e.g. ghcr.io/org/ai-agents-web:sha-abc1234).')
-param frontendImage string = 'ghcr.io/edgestream/ai-agents-web:latest'
+@description('Container image for the frontend service (e.g. ghcr.io/org/agents-web:sha-abc1234).')
+param frontendImage string = 'ghcr.io/edgestream/agents-web:latest'
 
 @description('Azure OpenAI endpoint URL. When set, overrides the value from the mounted appsettings file.')
 param azureOpenAIEndpoint string = ''
@@ -43,13 +43,16 @@ param entraTenantId string = ''
 @description('Full SAS URL for a private blob container used by the Container Apps auth token store.')
 param tokenStoreSasUrl string = ''
 
+@description('Base name used for Azure resources. Override to ai-agui temporarily when reusing pre-rename infrastructure.')
+param resourcePrefix string = 'ai-agents'
+
 var tags = {
   'azd-env-name': environmentName
 }
 
 // Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: 'rg-ai-agui-${toLower(environmentName)}'
+  name: 'rg-${resourcePrefix}-${toLower(environmentName)}'
   location: location
   tags: tags
 }
@@ -70,6 +73,7 @@ module resources './resources.bicep' = {
     entraClientSecret: entraClientSecret
     entraTenantId: entraTenantId
     tokenStoreSasUrl: tokenStoreSasUrl
+    resourcePrefix: resourcePrefix
     tags: tags
   }
 }

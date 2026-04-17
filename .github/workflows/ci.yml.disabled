@@ -7,8 +7,8 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agents-server
-  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agents-web
+  BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
+  FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
 
 jobs:
   # ── Unit tests ──────────────────────────────────────────────────────────────
@@ -32,7 +32,7 @@ jobs:
         run: dotnet build --no-restore
 
       - name: Unit tests
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=Integration&TestCategory!=Live"
+        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=ExternalDependency&TestCategory!=Live"
 
   test-frontend:
     name: Frontend Lint & Build
@@ -151,18 +151,18 @@ jobs:
         run: timeout 90 bash -c 'until curl -sf http://localhost:3000; do sleep 2; done'
 
       - name: Build tests (E2E)
-        run: dotnet build tests/AI.AGUI.E2ETests
+        run: dotnet build tests/E2ETests
 
       - name: Install Playwright browsers
-        run: pwsh tests/AI.AGUI.E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
+        run: pwsh tests/E2ETests/bin/Debug/net10.0/playwright.ps1 install --with-deps chromium
 
       - name: Run tests (E2E)
-        run: dotnet test tests/AI.AGUI.E2ETests --no-build --verbosity normal --filter "TestCategory=Integration"
+        run: dotnet test tests/E2ETests --no-build --verbosity normal --filter "TestCategory=ExternalDependency"
         env:
           E2E_BASE_URL: http://localhost:3000
 
       - name: Run tests (Live)
-        run: dotnet test tests/AI.Agents.Server.IntegrationTests/AI.Agents.Server.IntegrationTests.csproj --verbosity normal --filter "TestCategory=Live"
+        run: dotnet test tests/Server.Tests/Server.Tests.csproj --verbosity normal --filter "TestCategory=Live"
         env:
           # Live tests use a bare WebApplicationFactory — config must come from env vars.
           # DefaultAzureCredential resolves via EnvironmentCredential when all three SP vars are set.
@@ -170,6 +170,9 @@ jobs:
           # Foundry path: DefaultAzureCredential resolves via EnvironmentCredential (SP vars).
           Foundry__Endpoint: ${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}
           Foundry__Model: ${{ secrets.FOUNDRY_MODEL }}
+
+      - name: Run tests (MealPlanner Live)
+        run: dotnet test tests/samples/MealPlanner/MealPlanner.Tests.csproj --verbosity normal --filter "TestCategory=Live"
 
       - name: Stop stack
         if: always()

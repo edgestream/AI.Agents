@@ -35,5 +35,11 @@ hooks:
 
 services:
   backend:
+    project: .
+    language: docker
     host: containerapp
-    image: ghcr.io/edgestream/ai-agents-server:latest
+    docker:
+      path: src/Server/Dockerfile
+      context: .
+      registry: ghcr.io/edgestream
+      image: agents-server

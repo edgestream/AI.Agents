@@ -31,13 +31,16 @@ param entraTenantId string = ''
 @description('Full SAS URL for a private blob container used by the Container Apps auth token store. When set, Easy Auth stores provider tokens in that container.')
 param tokenStoreSasUrl string = ''
 
+@description('Base name used for Azure resources. Override to ai-agui temporarily when reusing pre-rename infrastructure.')
+param resourcePrefix string = 'ai-agents'
+
 param tags object
 
 var tokenStoreSasSecretName = 'token-store-sas-url'
 
 // Log Analytics Workspace
 resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'log-ai-agui-${toLower(environmentName)}'
+  name: 'log-${resourcePrefix}-${toLower(environmentName)}'
   location: location
   tags: tags
   properties: {
@@ -50,7 +53,7 @@ resource logWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
 
 // Container Apps Environment (Consumption tier)
 resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
-  name: 'cae-ai-agui-${toLower(environmentName)}'
+  name: 'cae-${resourcePrefix}-${toLower(environmentName)}'
   location: location
   tags: tags
   properties: {
@@ -68,7 +71,7 @@ resource cae 'Microsoft.App/managedEnvironments@2023-05-01' = {
 // Mirrors the docker-compose single-host layout. Halves ACA billing for personal deployments
 // where independent scaling of the two containers is not required.
 resource app 'Microsoft.App/containerApps@2023-05-01' = {
-  name: 'ca-ai-agui'
+  name: 'ca-${resourcePrefix}'
   location: location
   tags: union(tags, { 'azd-service-name': 'backend' })
   identity: {

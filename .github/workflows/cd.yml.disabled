@@ -18,10 +18,10 @@ jobs:
     environment: production
 
     env:
-      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agents-server
-      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agents-web
-      RESOURCE_GROUP: rg-ai-agui-production
-      APP: ca-ai-agui
+      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
+      RESOURCE_GROUP: rg-ai-agents-production
+      APP: ca-ai-agents
 
     steps:
       - name: Compute image tag from triggering commit SHA

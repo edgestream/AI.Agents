@@ -21,7 +21,7 @@ Copy the application settings example into `appsettings.Development.json` in the
 Start the services:
 
 ```bash
-docker compose up
+docker compose up --build
 ```
 
 Open the frontend at http://localhost:3000.
@@ -87,3 +87,7 @@ When a test fails a trace zip is automatically saved next to the test assembly a
 ```bash
 npx playwright show-trace tests/E2ETests/bin/Debug/net10.0/traces/ChatPage_CanSendMessage_ReceivesResponse.zip
 ```
+
+## Deployment
+
+Deployment-specific notes, Azure rollout guidance, and the post-merge migration checklist live in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
