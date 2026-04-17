@@ -1,11 +1,10 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /repo
+COPY src/Abstractions/Abstractions.csproj src/Abstractions/
 COPY src/AI.AGUI.Auth/AI.AGUI.Auth.csproj src/AI.AGUI.Auth/
 COPY src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj src/AI.AGUI.Hosting/
-COPY src/AI.MAF.Client/AI.MAF.Client.csproj src/AI.MAF.Client/
-COPY src/AI.MAF.Skills/AI.MAF.Skills.csproj src/AI.MAF.Skills/
-COPY src/AI.MAF.Tools/AI.MAF.Tools.csproj src/AI.MAF.Tools/
+COPY src/Microsoft/Microsoft.csproj src/Microsoft/
 COPY src/AI.MCP.Client/AI.MCP.Client.csproj src/AI.MCP.Client/
 COPY src/AI.AGUI.Server/AI.AGUI.Server.csproj src/AI.AGUI.Server/
 RUN dotnet restore src/AI.AGUI.Server/AI.AGUI.Server.csproj

@@ -7,19 +7,13 @@
   <Folder Name="/src/AGUI/">
     <Project Path="src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
   </Folder>
-  <Folder Name="/src/A2A/" />
   <Folder Name="/src/Auth/">
     <Project Path="src/AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
   </Folder>
-  <Folder Name="/src/GitHub/" />
   <Folder Name="/src/MCP/">
     <Project Path="src/AI.MCP.Client/AI.MCP.Client.csproj" />
   </Folder>
-  <Folder Name="/src/Microsoft/">
-    <Project Path="src/AI.MAF.Client/AI.MAF.Client.csproj" />
-    <Project Path="src/AI.MAF.Skills/AI.MAF.Skills.csproj" />
-    <Project Path="src/AI.MAF.Tools/AI.MAF.Tools.csproj" />
-  </Folder>
+  <Project Path="src/Microsoft/Microsoft.csproj" />
   <Folder Name="/src/Server/">
     <Project Path="src/AI.AGUI.Server/AI.AGUI.Server.csproj" />
   </Folder>

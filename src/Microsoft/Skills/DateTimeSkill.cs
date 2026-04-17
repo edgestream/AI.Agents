@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.Agents.AI;
 
-namespace AI.MAF.Skills;
+namespace AI.Agents.Microsoft.Skills;
 
 #pragma warning disable MAAI001 // AgentClassSkill is marked experimental
 
@@ -67,12 +67,12 @@ public sealed class DateTimeSkill : AgentClassSkill<DateTimeSkill>
     [AgentSkillScript("now")]
     [Description("Returns the current date and time in the specified time zone.")]
     public static string Now(
-        [Description("The time zone identifier (e.g., 'UTC', 'America/New_York', 'Europe/Berlin'). Defaults to UTC.")] 
+        [Description("The time zone identifier (e.g., 'UTC', 'America/New_York', 'Europe/Berlin'). Defaults to UTC.")]
         string timeZoneId = "UTC")
     {
         var tz = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
         var now = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, tz);
-        
+
         return JsonSerializer.Serialize(new
         {
             timeZone = timeZoneId,
@@ -88,11 +88,11 @@ public sealed class DateTimeSkill : AgentClassSkill<DateTimeSkill>
     [AgentSkillScript("convert")]
     [Description("Converts a date/time from one time zone to another.")]
     public static string Convert(
-        [Description("The date/time string to convert (ISO 8601 format preferred).")] 
+        [Description("The date/time string to convert (ISO 8601 format preferred).")]
         string dateTime,
-        [Description("The source time zone identifier.")] 
+        [Description("The source time zone identifier.")]
         string fromTimeZone,
-        [Description("The target time zone identifier.")] 
+        [Description("The target time zone identifier.")]
         string toTimeZone)
     {
         var fromTz = TimeZoneInfo.FindSystemTimeZoneById(fromTimeZone);

@@ -1,4 +1,4 @@
-using AI.AGUI.Auth;
+using AI.Agents.Microsoft.Auth;
 using AI.MCP.Client;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;

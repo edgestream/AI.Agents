@@ -1,4 +1,4 @@
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Microsoft.Auth;
 
 /// <summary>
 /// Service for retrieving enriched user profile information from Microsoft Graph.

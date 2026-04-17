@@ -1,6 +1,6 @@
 using System.Net.Http.Json;
 using AI.AGUI.Server;
-using AI.MAF.Skills;
+using AI.Agents.Microsoft.Skills;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
 

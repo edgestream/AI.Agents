@@ -1,7 +1,8 @@
 using AI.AGUI.Auth;
 using AI.AGUI.Server;
-using AI.MAF.Client;
-using AI.MAF.Skills;
+using AI.Agents.Microsoft;
+using AI.Agents.Microsoft.Auth;
+using AI.Agents.Microsoft.Skills;
 using AI.MCP.Client;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;

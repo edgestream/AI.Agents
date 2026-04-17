@@ -5,11 +5,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Graph" />
-    <PackageReference Include="Microsoft.Identity.Web" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../AI.MCP.Client/AI.MCP.Client.csproj" />
   </ItemGroup>
 
