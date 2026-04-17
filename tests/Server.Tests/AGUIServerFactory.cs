@@ -5,7 +5,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 #pragma warning disable MAAI001 // AgentSkillsProvider is marked experimental
 

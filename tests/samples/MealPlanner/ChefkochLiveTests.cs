@@ -2,14 +2,15 @@ using MealPlanner.Providers;
 using Microsoft.Extensions.DependencyInjection;
 using Schema.NET;
 
-namespace MealPlanner.E2ETests;
+namespace MealPlanner.Tests;
 
 /// <summary>
 /// Live integration tests for ChefkochRecipeSource.
 /// These tests hit the real Chefkoch.de website and are excluded from normal CI runs.
-/// Run with: dotnet test --filter "TestCategory=Live"
+/// Run with: dotnet test tests/samples/MealPlanner --filter "TestCategory=Live"
 /// </summary>
 [TestClass]
+[TestCategory("ExternalDependency")]
 [TestCategory("Live")]
 public class ChefkochLiveTests
 {

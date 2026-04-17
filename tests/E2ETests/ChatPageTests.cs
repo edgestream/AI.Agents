@@ -1,9 +1,10 @@
-namespace AI.AGUI.E2ETests;
+namespace AI.Agents.E2ETests;
 
 /// <summary>
 /// End-to-end tests for the AGUIChat frontend using Playwright.
 /// </summary>
 [TestClass]
+[TestCategory("ExternalDependency")]
 [TestCategory("Integration")]
 public sealed class ChatPageTests : PageTest
 {

@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 [TestClass]
 public sealed class McpOAuthConfigurationTests

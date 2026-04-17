@@ -1,6 +1,6 @@
 using MealPlanner.Providers;
 
-namespace MealPlanner.Chefkoch.Tests;
+namespace MealPlanner.Tests;
 
 [TestClass]
 public class ChefkochRecipeParsingTests

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable MAAI001 // Agent skills types are marked experimental
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 /// <summary>
 /// Tests that verify <see cref="Microsoft.Agents.AI.AgentSkillsProvider"/> is wired into

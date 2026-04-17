@@ -2,7 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 /// <summary>
 /// Optional live integration tests that boot the real application against real cloud credentials.
@@ -11,6 +11,7 @@ namespace AI.Agents.Server.IntegrationTests;
 /// Tests are skipped when Foundry is not configured (e.g. in CI without credentials).
 /// </summary>
 [TestClass]
+[TestCategory("ExternalDependency")]
 [TestCategory("Live")]
 public sealed class LiveTests
 {

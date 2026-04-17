@@ -23,8 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="MealPlanner.Chefkoch.Tests" />
-    <InternalsVisibleTo Include="MealPlanner.E2ETests" />
+    <InternalsVisibleTo Include="MealPlanner.Tests" />
   </ItemGroup>
 
 </Project>
