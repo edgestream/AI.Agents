@@ -8,22 +8,29 @@ When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flo
 
 | Item | Notes |
 |---|---|
-| **Existing Entra app registration** | The same app registration used for ACA Easy Auth (already in your root `.env` as `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID`). You must add `http://localhost:3000/api/auth/callback` as a **Web** redirect URI in the Azure portal. |
+| **Existing Entra app registration** | The same app registration used for ACA Easy Auth (recommended in your root `.env` as `ENTRA_CLIENT_ID` / `ENTRA_CLIENT_SECRET` / `ENTRA_TENANT_ID`). You must add `http://localhost:3000/api/auth/callback` as a **Web** redirect URI in the Azure portal. |
 | **`User.Read` delegated permission** | Must be explicitly added as a **Microsoft Graph → Delegated → User.Read** permission in the app registration and granted admin consent. Without it, Graph profile enrichment (display name, photo) will fail silently. |
-| **`Azure AI User` role on AI Foundry** | The app registration's service principal must have the **Azure AI User** role on the AI Foundry resource (account scope). In local mode the backend authenticates via `EnvironmentCredential` (the `AZURE_CLIENT_ID`/`AZURE_CLIENT_SECRET` env vars), so the role must be assigned to that service principal — not to your personal user account. Without it all LLM calls fail with a `lacks the required data action` error. |
+| **`Azure AI User` role on AI Foundry** | The app registration's service principal must have the **Azure AI User** role on the AI Foundry resource (account scope). In local mode the backend authenticates via `EnvironmentCredential`, so the same Entra app credentials must also be available under the `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID` compatibility names. Without that role assignment all LLM calls fail with a `lacks the required data action` error. |
 | **Node.js 20+** | Required by the Next.js app. |
 
 ## Reusing the existing app registration
 
-The repo root `.env` already contains the Entra app credentials used by `docker-compose.yml` for the backend:
+The repo root `.env` should treat the Entra app registration as the canonical local auth identity and mirror the same values into `AZURE_*` for Azure SDK compatibility:
 
 ```env
-AZURE_TENANT_ID=<your-tenant-id>
-AZURE_CLIENT_ID=<your-client-id>
-AZURE_CLIENT_SECRET=<your-client-secret>
+ENTRA_TENANT_ID=<your-tenant-id>
+ENTRA_CLIENT_ID=<your-client-id>
+ENTRA_CLIENT_SECRET=<your-client-secret>
+
+# Azure SDK compatibility mirror for DefaultAzureCredential / EnvironmentCredential
+AZURE_TENANT_ID=<same-as-ENTRA_TENANT_ID>
+AZURE_CLIENT_ID=<same-as-ENTRA_CLIENT_ID>
+AZURE_CLIENT_SECRET=<same-as-ENTRA_CLIENT_SECRET>
 ```
 
-Local auth reuses the **same values**. The only one-time step is adding a redirect URI:
+[scripts/Get-KeyVault-Environment.ps1](scripts/Get-KeyVault-Environment.ps1) now writes both sets automatically. If you maintain the file manually, keep the values identical. The only one-time portal step is adding a redirect URI:
+
+If you use the bootstrap script, set `AGENTS_KEYVAULT` or pass `-VaultName`, and store the app registration in Key Vault as `AGENTS-ENTRA-TENANT-ID`, `AGENTS-ENTRA-CLIENT-ID`, and `AGENTS-ENTRA-CLIENT-SECRET`.
 
 1. Open the [Azure portal → App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and find your app.
 2. Go to **Authentication** → **Web** → **Redirect URIs**.
@@ -42,7 +49,12 @@ AUTH_MODE=local
 # A random secret used to encrypt the session cookie (min. 32 characters)
 AUTH_SESSION_SECRET=<random-secret-string>
 
-# These should already be present:
+# Canonical app registration variables:
+# ENTRA_TENANT_ID=...
+# ENTRA_CLIENT_ID=...
+# ENTRA_CLIENT_SECRET=...
+
+# Azure SDK compatibility mirror for local backend / dotnet test:
 # AZURE_TENANT_ID=...
 # AZURE_CLIENT_ID=...
 # AZURE_CLIENT_SECRET=...
@@ -108,7 +120,7 @@ The UI components (`UserMenu`, `UserAvatar`) automatically select the correct UR
 | Symptom | Cause | Fix |
 |---|---|---|
 | `AUTH_SESSION_SECRET environment variable is required` | Missing env var | Add `AUTH_SESSION_SECRET` to your `.env` / `.env.local` |
-| `AZURE_CLIENT_ID, AZURE_CLIENT_SECRET, and AZURE_TENANT_ID are required` | Missing app registration env vars | Add all three (they should already be in the root `.env`) |
+| `ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID are required` | Missing app registration env vars | Add all three and keep the `AZURE_*` compatibility values in sync for Azure SDK consumers |
 | Sign in redirects but callback fails with "invalid_grant" | Authorization code reuse or clock skew | Clear cookies and try again |
 | Callback fails with "redirect_uri mismatch" | Redirect URI not registered | Add `http://localhost:3000/api/auth/callback` to the app registration |
 | Profile shows anonymous after sign-in | Middleware not matching the route | Ensure `AUTH_MODE=local` is set and restart the dev server |

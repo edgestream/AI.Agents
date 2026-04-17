@@ -131,11 +131,14 @@ jobs:
         run: |
           echo '{"Foundry":{"Endpoint":"${{ secrets.FOUNDRY_PROJECT_ENDPOINT }}","Model":"${{ secrets.FOUNDRY_MODEL }}"}}' > appsettings.Development.json
 
-      - name: Export SP credentials for Docker Compose
+      - name: Export app registration credentials for local stack
         run: |
-          echo "AZURE_TENANT_ID=${{ secrets.AZURE_TENANT_ID }}" >> $GITHUB_ENV
-          echo "AZURE_CLIENT_ID=${{ secrets.AZURE_CLIENT_ID }}" >> $GITHUB_ENV
-          echo "AZURE_CLIENT_SECRET=${{ secrets.AZURE_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "ENTRA_TENANT_ID=${{ secrets.ENTRA_TENANT_ID }}" >> $GITHUB_ENV
+          echo "ENTRA_CLIENT_ID=${{ secrets.ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "ENTRA_CLIENT_SECRET=${{ secrets.ENTRA_CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "AZURE_TENANT_ID=${{ secrets.ENTRA_TENANT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_ID=${{ secrets.ENTRA_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "AZURE_CLIENT_SECRET=${{ secrets.ENTRA_CLIENT_SECRET }}" >> $GITHUB_ENV
 
       - name: Start stack
         run: docker compose up -d --no-build

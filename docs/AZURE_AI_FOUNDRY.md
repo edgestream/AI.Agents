@@ -21,10 +21,10 @@
 **2. Pull credentials from Key Vault into `.env`** (never commit it — it's in `.gitignore`):
 
 ```powershell
-# Optional: set AI_AGENTS_KEY_VAULT once so the script can omit -VaultName.
-$env:AI_AGENTS_KEY_VAULT = '<vault-name>'
+# Optional: set AGENTS_KEYVAULT once so the script can omit -VaultName.
+$env:AGENTS_KEYVAULT = '<vault-name>'
 
-./scripts/init-env.ps1 -VaultName <vault-name>
+./scripts/Get-KeyVault-Environment.ps1 -VaultName <vault-name>
 ```
 
 **3. Start the stack:**

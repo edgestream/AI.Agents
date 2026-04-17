@@ -47,10 +47,10 @@ azd up
    - `tests/E2ETests`
    - `tests/samples/MealPlanner`
 2. Create the GitHub environment named `stage` before enabling the CD workflow.
-3. Add the required GitHub environment secrets to `stage`:
-   - `AZURE_CLIENT_ID`
-   - `AZURE_TENANT_ID`
-   - `AZURE_SUBSCRIPTION_ID`
+3. Add the required GitHub deployment secrets to `stage`:
+   - `AZURE_OIDC_CLIENT_ID`
+   - `AZURE_OIDC_TENANT_ID`
+   - `AZURE_OIDC_SUBSCRIPTION_ID`
    - `FOUNDRY_PROJECT_ENDPOINT`
    - `FOUNDRY_MODEL`
 4. Create or update the Azure AD / Entra app registration used by GitHub Actions OIDC and add a federated credential with subject `repo:edgestream/AI.Agents:environment:stage`.
@@ -66,9 +66,14 @@ azd up
    - `ENTRA_CLIENT_SECRET`
    - `ENTRA_TENANT_ID`
    - `TOKEN_STORE_SAS_URL` if you use the Easy Auth token store
+   Keep the names distinct: `AZURE_OIDC_*` is the GitHub automation principal acquired through OpenID Connect, while `ENTRA_*` is the application identity exposed through ACA Easy Auth.
 9. Grant the deployed Container App managed identity the `Azure AI User` role on the AI Foundry / Azure AI resource used by the backend.
-10. Prefer `AI_AGENTS_KEY_VAULT` for local bootstrap automation. The script still falls back to `AGUI_KEY_VAULT` during migration.
-11. Optionally rename the Key Vault secrets from `AGUI-AZURE-*` to `AI-AGENTS-AZURE-*`. The script supports both names, so this can happen after the merge.
+10. Set `AGENTS_KEYVAULT` for local bootstrap automation if you want [scripts/Get-KeyVault-Environment.ps1](scripts/Get-KeyVault-Environment.ps1) to omit `-VaultName`.
+11. Store the Entra app registration in Key Vault as:
+   - `AGENTS-ENTRA-TENANT-ID`
+   - `AGENTS-ENTRA-CLIENT-ID`
+   - `AGENTS-ENTRA-CLIENT-SECRET`
+   The bootstrap script mirrors those values into local `AZURE_*` variables for Azure SDK compatibility.
 12. Authenticate to GHCR (`docker login ghcr.io`) on any machine or pipeline that will run `azd deploy` / `azd up` against the external registry.
 13. Replace the published GHCR packages with the renamed images:
    - `ghcr.io/edgestream/agents-server:latest`
