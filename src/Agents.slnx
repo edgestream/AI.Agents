@@ -1,0 +1,16 @@
+<Solution>
+  <Project Path="Abstractions/Abstractions.csproj" />
+  <Project Path="AGUI/AGUI.csproj" />
+  <Project Path="MCP/MCP.csproj" />
+  <Project Path="Microsoft/Microsoft.csproj" />
+  <Project Path="OAuth/OAuth.csproj" />
+  <Project Path="Server/Server.csproj" />
+  <Folder Name="/tests/">
+    <Project Path="../tests/Server.Tests/Server.Tests.csproj" />
+    <Project Path="../tests/E2ETests/E2ETests.csproj" />
+    <Project Path="../tests/samples/MealPlanner/MealPlanner.Tests.csproj" />
+  </Folder>
+  <Folder Name="/samples/">
+    <Project Path="../samples/MealPlanner/MealPlanner.csproj" />
+  </Folder>
+</Solution>
