@@ -1,4 +1,4 @@
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Microsoft.Extensions.Options;
 
 namespace AI.AGUI.Auth;
@@ -22,7 +22,7 @@ public interface IMcpAuthorizationService
     /// </summary>
     /// <param name="mcpServerName">The MCP server name.</param>
     /// <returns>The OAuth options, or null if the server doesn't require OAuth.</returns>
-    McpOAuthOptions? GetOAuthOptions(string mcpServerName);
+    MCPOAuthOptions? GetOAuthOptions(string mcpServerName);
 
     /// <summary>
     /// Generates a consent required response for an MCP server.
@@ -48,11 +48,11 @@ public interface IMcpAuthorizationService
 public sealed class McpAuthorizationService : IMcpAuthorizationService
 {
     private readonly IOAuthTokenStore _tokenStore;
-    private readonly IOptions<McpClientOptions> _mcpOptions;
+    private readonly IOptions<MCPClientOptions> _mcpOptions;
 
     public McpAuthorizationService(
         IOAuthTokenStore tokenStore,
-        IOptions<McpClientOptions> mcpOptions)
+        IOptions<MCPClientOptions> mcpOptions)
     {
         _tokenStore = tokenStore;
         _mcpOptions = mcpOptions;
@@ -72,7 +72,7 @@ public sealed class McpAuthorizationService : IMcpAuthorizationService
     }
 
     /// <inheritdoc />
-    public McpOAuthOptions? GetOAuthOptions(string mcpServerName)
+    public MCPOAuthOptions? GetOAuthOptions(string mcpServerName)
     {
         if (!_mcpOptions.Value.Servers.TryGetValue(mcpServerName, out var serverOptions))
         {

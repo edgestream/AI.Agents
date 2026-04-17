@@ -3,7 +3,7 @@ using AI.AGUI.Server;
 using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Auth;
 using AI.Agents.Microsoft.Skills;
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;

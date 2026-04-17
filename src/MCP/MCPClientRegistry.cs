@@ -1,7 +1,7 @@
 using System.Collections.Concurrent;
 using ModelContextProtocol.Client;
 
-namespace AI.MCP.Client;
+namespace AI.Agents.MCP;
 
 /// <summary>
 /// Owns the lifecycle of all live <see cref="McpClient"/> instances and the
@@ -14,7 +14,7 @@ namespace AI.MCP.Client;
 /// guarded by <see cref="_toolsLock"/>. <see cref="Tools"/> returns a snapshot
 /// so callers enumerate a stable copy.
 /// </remarks>
-public sealed class McpClientRegistry : IAsyncDisposable
+public sealed class MCPClientRegistry : IAsyncDisposable
 {
     private readonly ConcurrentDictionary<string, McpClient> _clients = new();
     private readonly Lock _toolsLock = new();

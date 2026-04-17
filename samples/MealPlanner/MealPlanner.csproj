@@ -8,9 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../../src/AI.AGUI.Hosting/AI.AGUI.Hosting.csproj" />
     <ProjectReference Include="../../src/Microsoft/Microsoft.csproj" />
-    <ProjectReference Include="../../src/AI.MCP.Client/AI.MCP.Client.csproj" />
+    <ProjectReference Include="../../src/MCP/MCP.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +17,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting" Version="1.0.0-preview.260402.1" />
+    <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" Version="1.0.0-preview.260330.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.12.2" />
     <PackageReference Include="Schema.NET" Version="13.0.0" />
   </ItemGroup>

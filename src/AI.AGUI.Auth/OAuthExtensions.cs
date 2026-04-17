@@ -1,4 +1,4 @@
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -66,7 +66,7 @@ public static class OAuthExtensions
             HttpContext context,
             IOAuthService oauthService,
             IUserContextAccessor userContextAccessor,
-            IOptions<McpClientOptions> mcpOptions,
+            IOptions<MCPClientOptions> mcpOptions,
             string mcpServerName,
             string? redirectUri) =>
         {
@@ -110,7 +110,7 @@ public static class OAuthExtensions
             HttpContext context,
             IOAuthService oauthService,
             IOAuthStateStore stateStore,
-            IOptions<McpClientOptions> mcpOptions,
+            IOptions<MCPClientOptions> mcpOptions,
             string? code,
             string? state,
             string? error,

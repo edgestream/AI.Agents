@@ -1,5 +1,5 @@
 using AI.AGUI.Auth;
-using AI.MCP.Client;
+using AI.Agents.MCP;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -255,11 +255,11 @@ public sealed class AuthenticationTests
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
-        var mcpOptions = Options.Create(new McpClientOptions
+        var mcpOptions = Options.Create(new MCPClientOptions
         {
-            Servers = new Dictionary<string, McpServerOptions>
+            Servers = new Dictionary<string, MCPServerOptions>
             {
-                ["filesystem"] = new McpServerOptions { Type = "stdio", Command = "npx" }
+                ["filesystem"] = new MCPServerOptions { Type = "stdio", Command = "npx" }
             }
         });
         var service = new McpAuthorizationService(tokenStore, mcpOptions);
@@ -274,15 +274,15 @@ public sealed class AuthenticationTests
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
-        var mcpOptions = Options.Create(new McpClientOptions
+        var mcpOptions = Options.Create(new MCPClientOptions
         {
-            Servers = new Dictionary<string, McpServerOptions>
+            Servers = new Dictionary<string, MCPServerOptions>
             {
-                ["github"] = new McpServerOptions
+                ["github"] = new MCPServerOptions
                 {
                     Type = "stdio",
                     Command = "npx",
-                    Auth = new McpOAuthOptions
+                    Auth = new MCPOAuthOptions
                     {
                         ClientId = "test-client",
                         AuthorizationUrl = "https://github.com/login/oauth/authorize",
@@ -303,15 +303,15 @@ public sealed class AuthenticationTests
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
-        var mcpOptions = Options.Create(new McpClientOptions
+        var mcpOptions = Options.Create(new MCPClientOptions
         {
-            Servers = new Dictionary<string, McpServerOptions>
+            Servers = new Dictionary<string, MCPServerOptions>
             {
-                ["github"] = new McpServerOptions
+                ["github"] = new MCPServerOptions
                 {
                     Type = "stdio",
                     Command = "npx",
-                    Auth = new McpOAuthOptions
+                    Auth = new MCPOAuthOptions
                     {
                         ClientId = "test-client",
                         AuthorizationUrl = "https://github.com/login/oauth/authorize",
@@ -339,15 +339,15 @@ public sealed class AuthenticationTests
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
-        var mcpOptions = Options.Create(new McpClientOptions
+        var mcpOptions = Options.Create(new MCPClientOptions
         {
-            Servers = new Dictionary<string, McpServerOptions>
+            Servers = new Dictionary<string, MCPServerOptions>
             {
-                ["github"] = new McpServerOptions
+                ["github"] = new MCPServerOptions
                 {
                     Type = "stdio",
                     Command = "npx",
-                    Auth = new McpOAuthOptions
+                    Auth = new MCPOAuthOptions
                     {
                         ClientId = "test-client",
                         AuthorizationUrl = "https://github.com/login/oauth/authorize",
@@ -373,11 +373,11 @@ public sealed class AuthenticationTests
     {
         var cache = new MemoryCache(new MemoryCacheOptions());
         var tokenStore = new InMemoryOAuthTokenStore(cache, Options.Create(new OAuthTokenStoreOptions()));
-        var mcpOptions = Options.Create(new McpClientOptions
+        var mcpOptions = Options.Create(new MCPClientOptions
         {
-            Servers = new Dictionary<string, McpServerOptions>
+            Servers = new Dictionary<string, MCPServerOptions>
             {
-                ["filesystem"] = new McpServerOptions { Type = "stdio", Command = "npx" }
+                ["filesystem"] = new MCPServerOptions { Type = "stdio", Command = "npx" }
             }
         });
         var service = new McpAuthorizationService(tokenStore, mcpOptions);

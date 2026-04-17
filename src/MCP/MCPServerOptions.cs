@@ -1,4 +1,4 @@
-namespace AI.MCP.Client;
+namespace AI.Agents.MCP;
 
 /// <summary>
 /// Strongly-typed configuration for a single MCP server entry.
@@ -9,7 +9,7 @@ namespace AI.MCP.Client;
 /// <para>
 /// Configuration is read from the <c>McpServers</c> section of <c>appsettings.json</c>
 /// (or any other registered <see cref="Microsoft.Extensions.Configuration.IConfiguration"/>
-/// source) as a dictionary of <c>string → McpServerOptions</c>:
+/// source) as a dictionary of <c>string → MCPServerOptions</c>:
 /// </para>
 /// <code>
 /// "McpServers": {
@@ -26,7 +26,7 @@ namespace AI.MCP.Client;
 /// }
 /// </code>
 /// </remarks>
-public sealed class McpServerOptions
+public sealed class MCPServerOptions
 {
     /// <summary>
     /// Gets or sets the transport type used to connect to the MCP server.
@@ -128,13 +128,13 @@ public sealed class McpServerOptions
     /// }
     /// </code>
     /// </example>
-    public McpOAuthOptions? Auth { get; set; }
+    public MCPOAuthOptions? Auth { get; set; }
 }
 
 /// <summary>
 /// OAuth 2.0 authentication configuration for an MCP server that requires per-user authorization.
 /// </summary>
-public sealed class McpOAuthOptions
+public sealed class MCPOAuthOptions
 {
     /// <summary>
     /// Gets or sets the authentication type. Must be "OAuth" for OAuth 2.0 flows.

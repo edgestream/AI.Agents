@@ -5,7 +5,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../AI.MCP.Client/AI.MCP.Client.csproj" />
+    <ProjectReference Include="../MCP/MCP.csproj" />
   </ItemGroup>
 
 </Project>

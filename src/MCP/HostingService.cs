@@ -4,22 +4,22 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using ModelContextProtocol.Client;
 
-namespace AI.MCP.Client;
+namespace AI.Agents.MCP;
 
 /// <summary>
 /// Hosted service that reads MCP server configuration, creates transports,
-/// establishes client connections, and registers them into <see cref="McpClientRegistry"/>.
+/// establishes client connections, and registers them into <see cref="MCPClientRegistry"/>.
 /// For each connected client a <see cref="ToolDiscoveryService"/> instance is resolved
 /// from a dedicated DI scope, run concurrently, and disposed with its scope on completion.
 /// </summary>
 /// <remarks>
-/// Client lifecycle is owned by <see cref="McpClientRegistry"/>, which is disposed
+/// Client lifecycle is owned by <see cref="MCPClientRegistry"/>, which is disposed
 /// by the DI container on shutdown.
 /// </remarks>
 public sealed class HostingService(
-    McpClientRegistry registry,
+    MCPClientRegistry registry,
     IServiceProvider serviceProvider,
-    IOptions<McpClientOptions> options,
+    IOptions<MCPClientOptions> options,
     ILogger<HostingService> logger) : IHostedService
 {
     public async Task StartAsync(CancellationToken cancellationToken)
@@ -63,7 +63,7 @@ public sealed class HostingService(
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-    private static IClientTransport CreateTransport(string name, McpServerOptions serverOptions)
+    private static IClientTransport CreateTransport(string name, MCPServerOptions serverOptions)
     {
         if (string.IsNullOrEmpty(serverOptions.Type))
             throw new InvalidOperationException(
