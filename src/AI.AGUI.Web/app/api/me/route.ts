@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
   // If we have Easy Auth headers (or local-auth injected headers), forward to backend
   if (principalId || principalName || accessToken || idToken) {
-    const backendUrl = (process.env.BACKEND_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+    const backendUrl = (process.env.BACKEND_URL || "http://localhost:8000").replace(/\/+$/, "");
     try {
       const backendHeaders: HeadersInit = {};
 

@@ -13,7 +13,7 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
  * Creates an HttpAgent with forwarded authentication headers.
  */
 async function createAuthenticatedAgent(request: NextRequest): Promise<HttpAgent> {
-  const backendUrl = (process.env.BACKEND_URL || "http://127.0.0.1:8000").replace(/\/+$/, "");
+  const backendUrl = (process.env.BACKEND_URL || "http://localhost:8000").replace(/\/+$/, "");
   const authHeaders: Record<string, string> = {};
 
   let principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
