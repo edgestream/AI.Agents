@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthMode, type AuthMode } from "@/app/lib/auth/config";
+import { resolveLocalSession } from "@/app/lib/auth/resolveLocalSession";
 
 /**
  * User info response shape matching the backend /api/me endpoint.
@@ -11,6 +13,8 @@ export interface UserInfo {
   picture?: string;
   tenantId?: string;
   domain?: string;
+  /** Indicates the active auth mode (`"local"` or `"aca"`). */
+  authMode?: AuthMode;
 }
 
 function getDomainFromEmail(email: string | undefined): string | undefined {
@@ -47,20 +51,36 @@ function getTenantIdFromIdToken(idToken: string | null): string | undefined {
 /**
  * GET /api/me - Proxies user info from backend or returns info from Easy Auth headers.
  * 
- * In development: Returns anonymous user.
+ * In local auth mode the Next.js middleware injects X-MS-* headers from the
+ * encrypted session cookie, so this handler works identically for both modes.
+ *
+ * In development without auth: Returns anonymous user.
  * In production (ACA with Easy Auth): Extracts identity from X-MS-* headers
  * and forwards to backend for validation.
  */
 export async function GET(request: NextRequest) {
-  const principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
-  const principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
-  const accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
-  const idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
+  const authMode = getAuthMode();
+  let principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
+  let principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
+  let accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
+  let idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
+
+  // In local auth mode, headers come from the route handler itself (not middleware)
+  // because middleware runs in a separate worker and cannot share in-memory state.
+  if (!principalId && !principalName) {
+    const localSession = await resolveLocalSession(request);
+    if (localSession) {
+      principalId = localSession.principalId;
+      principalName = localSession.principalName;
+      accessToken = localSession.accessToken;
+      idToken = localSession.idToken;
+    }
+  }
   const tenantId = getTenantIdFromIdToken(idToken);
 
-  // If we have Easy Auth headers, forward to backend
+  // If we have Easy Auth headers (or local-auth injected headers), forward to backend
   if (principalId || principalName || accessToken || idToken) {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = (process.env.BACKEND_URL || "http://localhost:8080").replace(/\/+$/, "");
     try {
       const backendHeaders: HeadersInit = {};
 
@@ -87,6 +107,7 @@ export async function GET(request: NextRequest) {
           ...data,
           tenantId,
           domain: getDomainFromEmail(data.email),
+          authMode,
         } satisfies UserInfo);
       }
     } catch (error) {
@@ -95,19 +116,22 @@ export async function GET(request: NextRequest) {
 
     const fallbackEmail = principalName?.includes("@") ? principalName : undefined;
 
-    // Fallback: return info from headers directly
+    // Fallback: return info from headers directly.
+    // displayName is intentionally omitted — it must come from Graph via the backend.
+    // principalName is a UPN / email, not a human-readable display name.
     return NextResponse.json({
       authenticated: true,
       userId: principalId || undefined,
-      displayName: principalName || undefined,
       email: fallbackEmail,
       tenantId,
       domain: getDomainFromEmail(fallbackEmail),
+      authMode,
     } satisfies UserInfo);
   }
 
-  // No Easy Auth headers - return anonymous
+  // No auth headers - return anonymous with auth mode info
   return NextResponse.json({
     authenticated: false,
+    authMode,
   } satisfies UserInfo);
 }

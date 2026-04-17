@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@ag-ui/client": "^0.0.52",
+    "@azure/msal-node": "^5.1.2",
     "@copilotkit/react-core": "https://pkg.pr.new/@copilotkit/react-core@022a546",
     "@copilotkit/react-ui": "https://pkg.pr.new/@copilotkit/react-ui@022a546",
     "@copilotkit/runtime": "https://pkg.pr.new/@copilotkit/runtime@022a546",

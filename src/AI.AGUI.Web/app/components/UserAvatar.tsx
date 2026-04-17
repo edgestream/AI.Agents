@@ -17,13 +17,21 @@ interface UserAvatarProps {
 }
 
 /**
- * Generates initials from a display name.
+ * Generates initials from a display name or email address.
+ * For a real display name ("Mario Schmidt") → "MS".
+ * For an email address fallback ("mario@example.com") → first two chars of the local part ("MA").
  */
 function getInitials(name: string | undefined): string {
   if (!name) return "?";
-  const parts = name.split(/[\s@]+/);
+  // Email fallback: use first two characters of the local part
+  const atIndex = name.indexOf("@");
+  if (atIndex > 0) {
+    return name.substring(0, Math.min(2, atIndex)).toUpperCase();
+  }
+  // Display name: first char of first word + first char of last word
+  const parts = name.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length > 2 ? 1 : parts.length - 1][0]).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
   return name.substring(0, 2).toUpperCase();
 }
@@ -81,6 +89,24 @@ function getProfileDetails(user: UserInfo): Array<{ label: string; value: string
 }
 
 /**
+ * Returns the sign-in URL based on the auth mode.
+ * - Local mode: `/api/auth/login` (MSAL flow handled by our route handler)
+ * - ACA mode: `/.auth/login/aad` (handled by Azure Container Apps Easy Auth)
+ */
+function getSignInUrl(authMode: string | undefined): string {
+  return authMode === "local" ? "/api/auth/login" : "/.auth/login/aad";
+}
+
+/**
+ * Returns the sign-out URL based on the auth mode.
+ * - Local mode: `/api/auth/logout` (clears session cookie)
+ * - ACA mode: `/.auth/logout` (handled by Azure Container Apps Easy Auth)
+ */
+function getSignOutUrl(authMode: string | undefined): string {
+  return authMode === "local" ? "/api/auth/logout" : "/.auth/logout";
+}
+
+/**
  * Displays the current user's avatar and optionally their name.
  */
 export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
@@ -101,7 +127,7 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
   if (!user?.authenticated) {
     return (
       <a
-        href="/.auth/login/aad"
+        href={getSignInUrl(user?.authMode)}
         className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900"
       >
         <div
@@ -168,7 +194,7 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
 }
 
 /**
- * Displays user menu with sign out option.
+ * Displays user menu with sign in/sign out option.
  */
 export function UserMenu() {
   const { user, loading } = useUser();
@@ -184,7 +210,7 @@ export function UserMenu() {
   if (!user?.authenticated) {
     return (
       <a
-        href="/.auth/login/aad"
+        href={getSignInUrl(user?.authMode)}
         className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
       >
         Sign in
@@ -193,8 +219,14 @@ export function UserMenu() {
   }
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-3">
       <UserAvatar size={44} />
+      <a
+        href={getSignOutUrl(user.authMode)}
+        className="text-xs text-gray-500 hover:text-gray-700"
+      >
+        Sign out
+      </a>
     </div>
   );
 }
