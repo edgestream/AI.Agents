@@ -2,7 +2,7 @@ using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.Extensions.AI;
 
-namespace AI.AGUI.Server;
+namespace AI.Agents.Server;
 
 internal static class A2UITestCardFunction
 {
@@ -22,7 +22,7 @@ internal static class A2UITestCardFunction
 
     private static object GenerateTestCard(
         [Description("Title text displayed as a heading in the card")] string title = "A2UI Test Card",
-        [Description("Body text displayed below the title")] string description = "Hello from AI.AGUI! This card was rendered via the A2UI declarative UI protocol.")
+        [Description("Body text displayed below the title")] string description = "Hello from AI.Agents! This card was rendered via the A2UI declarative UI protocol.")
     {
         var surfaceId = Guid.NewGuid().ToString("N")[..12];
 

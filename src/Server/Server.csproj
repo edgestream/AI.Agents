@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
+    <AssemblyName>AI.Agents.Server</AssemblyName>
+    <RootNamespace>AI.Agents.Server</RootNamespace>
     <UserSecretsId>746abc99-1475-4734-9142-89f797a85d99</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="AI.AGUI.Server.IntegrationTests" />
+    <InternalsVisibleTo Include="AI.Agents.Server.IntegrationTests" />
   </ItemGroup>
 
   <ItemGroup>

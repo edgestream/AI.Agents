@@ -1,12 +1,12 @@
 using System.Net.Http.Json;
-using AI.AGUI.Server;
+using AI.Agents.Server;
 using AI.Agents.Microsoft.Skills;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
 
 #pragma warning disable MAAI001 // Agent skills types are marked experimental
 
-namespace AI.AGUI.Server.IntegrationTests;
+namespace AI.Agents.Server.IntegrationTests;
 
 /// <summary>
 /// Tests that verify <see cref="Microsoft.Agents.AI.AgentSkillsProvider"/> is wired into

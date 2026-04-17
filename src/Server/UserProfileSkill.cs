@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.Agents.AI;
 
-namespace AI.AGUI.Server;
+namespace AI.Agents.Server;
 
 #pragma warning disable MAAI001 // AgentClassSkill is marked experimental
 

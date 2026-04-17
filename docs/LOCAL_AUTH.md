@@ -31,7 +31,7 @@ Local auth reuses the **same values**. The only one-time step is adding a redire
 
 ## Environment variables
 
-The root `.env` is the **single source of truth** for all local development credentials. It is already read by `docker-compose.yml`, and a symlink at `src/AI.AGUI.Web/.env` makes the same file available to `npm run dev`.
+The root `.env` is the **single source of truth** for all local development credentials. It is already read by `docker-compose.yml`, and a symlink at `src/Web/.env` makes the same file available to `npm run dev`.
 
 Add the following to the root `.env` (alongside the existing credentials):
 
@@ -52,11 +52,11 @@ AUTH_SESSION_SECRET=<random-secret-string>
 
 ### Symlinking for `npm run dev`
 
-Next.js only loads `.env*` files from its own project directory (`src/AI.AGUI.Web/`). A symlink keeps things in sync without duplicating secrets:
+Next.js only loads `.env*` files from its own project directory (`src/Web/`). A symlink keeps things in sync without duplicating secrets:
 
 ```powershell
 # Run once from the repo root (requires Developer Mode or an elevated terminal on Windows)
-New-Item -ItemType SymbolicLink -Path src\AI.AGUI.Web\.env -Target ..\..\.env
+New-Item -ItemType SymbolicLink -Path src\Web\.env -Target ..\..\.env
 ```
 
 After that, `docker compose up` and `npm run dev` both read the same file. Do **not** create a separate `.env.local` — it would shadow the symlink and become a second source of truth.

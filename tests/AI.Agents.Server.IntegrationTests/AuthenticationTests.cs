@@ -5,7 +5,7 @@ using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
-namespace AI.AGUI.Server.IntegrationTests;
+namespace AI.Agents.Server.IntegrationTests;
 
 [TestClass]
 public sealed class AuthenticationTests

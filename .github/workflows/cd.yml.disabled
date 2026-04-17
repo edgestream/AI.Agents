@@ -18,8 +18,8 @@ jobs:
     environment: production
 
     env:
-      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agui-server
-      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agui-web
+      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agents-server
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/ai-agents-web
       RESOURCE_GROUP: rg-ai-agui-production
       APP: ca-ai-agui
 

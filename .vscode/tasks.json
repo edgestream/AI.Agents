@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/AI.AGUI.Server/AI.AGUI.Server.csproj",
+                "${workspaceFolder}/src/Server/Server.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -26,11 +26,11 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "npm install (AGUIChat)",
+            "label": "npm install (Web)",
             "type": "shell",
             "command": "npm install",
             "options": {
-                "cwd": "${workspaceFolder}/src/AI.AGUI.Web"
+                "cwd": "${workspaceFolder}/src/Web"
             },
             "problemMatcher": []
         },
