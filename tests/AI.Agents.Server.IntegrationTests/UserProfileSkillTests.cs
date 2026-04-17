@@ -1,6 +1,6 @@
 using System.Text.Json;
 using AI.Agents.Abstractions;
-using AI.Agents.Auth;
+using AI.Agents.Microsoft.Auth;
 using AI.Agents.Server;
 
 namespace AI.Agents.Server.IntegrationTests;

@@ -11,6 +11,18 @@ namespace AI.Agents.Microsoft.Auth;
 public static class ServiceCollectionExtensions
 {
     /// <summary>
+    /// Registers the user context services for extracting and accessing user identity.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddUserContext(this IServiceCollection services)
+    {
+        services.AddHttpContextAccessor();
+        services.TryAddSingleton<IUserContextAccessor, UserContextAccessor>();
+        return services;
+    }
+
+    /// <summary>
     /// Registers the Microsoft Graph profile service for enriching user identity with Graph data.
     /// </summary>
     /// <param name="services">The service collection.</param>
