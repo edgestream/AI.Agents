@@ -1,14 +1,20 @@
 # Azure AI Foundry
 
+This document covers the Azure AI Foundry and Azure OpenAI configuration used by AI.Agents.
+
 ## Prerequisites
 
 - Docker Desktop running
 - Azure CLI logged in (`az login`)
-- `Key Vault Secrets User` role on the shared dev vault (request from a team owner)
+- `Key Vault Secrets User` role on the shared dev vault if you use the bootstrap script
 
-## Setup
+## Local Setup
 
-**1. Create `appsettings.Development.json` at the repository root:**
+### 1. Create `appsettings.Development.json`
+
+Start from `appsettings.json.example` and add your AI configuration in the repository root.
+
+Minimal Foundry example:
 
 ```json
 {
@@ -18,7 +24,21 @@
 }
 ```
 
-**2. Pull credentials from Key Vault into `.env`** (never commit it — it's in `.gitignore`):
+Alternative Azure OpenAI example:
+
+```json
+{
+  "AzureOpenAI": {
+    "Endpoint": "https://<your-resource>.openai.azure.com/",
+    "DeploymentName": "<deployment-name>",
+    "ApiKey": "<api-key>"
+  }
+}
+```
+
+### 2. Pull Entra credentials from Key Vault into `.env`
+
+Never commit `.env`.
 
 ```powershell
 # Optional: set AGENTS_KEYVAULT once so the script can omit -VaultName.
@@ -27,32 +47,44 @@ $env:AGENTS_KEYVAULT = '<vault-name>'
 ./scripts/Get-KeyVault-Environment.ps1 -VaultName <vault-name>
 ```
 
-**3. Start the stack:**
+### 3. Start the local stack
 
 ```bash
 docker compose up -d --build
 ```
 
-Open **http://localhost:3000** once all containers are healthy.
+Open `http://localhost:3000` once all containers are healthy.
 
-## Azure deployment
+## Hosted Configuration
 
-The Azure deployment uses the strict naming pattern `<prefix>-agents-<environment>`. For the shared stage environment this means:
+The hosted Container Apps environment loads `appsettings.Stage.json` during `azd provision` and `azd up`.
 
-- `rg-agents-stage`
-- `log-agents-stage`
-- `cae-agents-stage`
-- `ca-agents-stage`
+Minimal Foundry example:
 
-Because the backend service is published through GHCR, authenticate to GitHub Container Registry before `azd deploy` / `azd up` if you are pushing from a fresh machine.
-
-```powershell
-# Optional when publishing to GHCR from a fresh machine
-docker login ghcr.io
-
-# Create or select the stage environment
-azd env new Stage
-azd up
+```json
+{
+  "Foundry": {
+    "Endpoint": "https://<ai-services-name>.services.ai.azure.com/api/projects/<project-name>"
+  }
+}
 ```
 
-Make sure `appsettings.Stage.json` exists in the repo root before running `azd up`. The combined Container App still runs both `backend` and `frontend` containers; `azd` packages the backend image from source and the frontend image continues to be managed through the `frontendImage` infrastructure parameter and rollout workflow.
+If you prefer Azure OpenAI environment variables over a mounted settings file, set:
+
+```powershell
+azd env set AZURE_OPENAI_ENDPOINT https://<your-resource>.openai.azure.com/
+azd env set AZURE_OPENAI_DEPLOYMENT_NAME <deployment-name>
+azd env set AZURE_OPENAI_API_KEY <api-key>
+```
+
+See [AZURE_CONTAINER_APPS.md](AZURE_CONTAINER_APPS.md) for the actual rollout flow.
+
+## Role Assignment
+
+The deployed Container App managed identity must have the `Azure AI User` role on the Azure AI Foundry or Azure AI resource used by the backend. Without that role, hosted requests to the model endpoint fail even when the app is otherwise configured correctly.
+
+## Related Docs
+
+- [AZURE_CONTAINER_APPS.md](AZURE_CONTAINER_APPS.md)
+- [AZURE_ENTRA_APP_REGISTRATION.md](AZURE_ENTRA_APP_REGISTRATION.md)
+- [AZURE_ENTRA_LOCAL_AUTH.md](AZURE_ENTRA_LOCAL_AUTH.md)

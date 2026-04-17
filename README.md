@@ -90,4 +90,9 @@ npx playwright show-trace tests/E2ETests/bin/Debug/net10.0/traces/ChatPage_CanSe
 
 ## Deployment
 
-Deployment-specific notes, Azure rollout guidance, and the post-merge migration checklist live in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+Deployment documentation is split by service:
+
+- [docs/AZURE_CONTAINER_APPS.md](docs/AZURE_CONTAINER_APPS.md)
+- [docs/AZURE_AI_FOUNDRY.md](docs/AZURE_AI_FOUNDRY.md)
+- [docs/AZURE_ENTRA_APP_REGISTRATION.md](docs/AZURE_ENTRA_APP_REGISTRATION.md)
+- [docs/GITHUB_REPOSITORY.md](docs/GITHUB_REPOSITORY.md)

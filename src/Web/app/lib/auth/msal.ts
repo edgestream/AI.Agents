@@ -12,7 +12,7 @@ function getMsalConfig(): Configuration {
     throw new Error(
       "ENTRA_CLIENT_ID, ENTRA_CLIENT_SECRET, and ENTRA_TENANT_ID " +
       "are required for local auth mode. AZURE_* is still accepted as a compatibility fallback. " +
-      "See docs/LOCAL_AUTH.md."
+      "See docs/AZURE_ENTRA_LOCAL_AUTH.md."
     );
   }
 
