@@ -3,7 +3,7 @@ using AI.Agents.Abstractions;
 using AI.Agents.Microsoft.Auth;
 using AI.Agents.Server;
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="UserProfileSkill"/>.

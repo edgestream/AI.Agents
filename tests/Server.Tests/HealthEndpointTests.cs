@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 [TestClass]
 public sealed class HealthEndpointTests

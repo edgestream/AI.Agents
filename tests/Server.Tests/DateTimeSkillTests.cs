@@ -1,7 +1,7 @@
 using System.Text.Json;
 using AI.Agents.Microsoft.Skills;
 
-namespace AI.Agents.Server.IntegrationTests;
+namespace AI.Agents.Server.Tests;
 
 /// <summary>
 /// Unit tests for <see cref="DateTimeSkill"/>.
