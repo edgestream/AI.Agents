@@ -4,6 +4,7 @@
   <Project Path="src/Auth/Auth.csproj" />
   <Project Path="src/MCP/MCP.csproj" />
   <Project Path="src/Microsoft/Microsoft.csproj" />
+  <Project Path="src/OAuth/OAuth.csproj" />
   <Project Path="src/Server/Server.csproj" />
   <Folder Name="/tests/">
     <Project Path="tests/AI.Agents.Server.IntegrationTests/AI.Agents.Server.IntegrationTests.csproj" />

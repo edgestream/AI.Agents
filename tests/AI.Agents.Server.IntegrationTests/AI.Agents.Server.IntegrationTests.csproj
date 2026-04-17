@@ -18,6 +18,7 @@
   <ItemGroup>
     <ProjectReference Include="../../src/Server/Server.csproj" />
     <ProjectReference Include="../../src/Microsoft/Microsoft.csproj" />
+    <ProjectReference Include="../../src/OAuth/OAuth.csproj" />
   </ItemGroup>
 
 </Project>

@@ -21,6 +21,7 @@
     <ProjectReference Include="../Auth/Auth.csproj" />
     <ProjectReference Include="../Microsoft/Microsoft.csproj" />
     <ProjectReference Include="../MCP/MCP.csproj" />
+    <ProjectReference Include="../OAuth/OAuth.csproj" />
   </ItemGroup>
 
   <ItemGroup>

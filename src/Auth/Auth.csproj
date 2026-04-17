@@ -11,6 +11,7 @@
   <ItemGroup>
     <ProjectReference Include="../Abstractions/Abstractions.csproj" />
     <ProjectReference Include="../MCP/MCP.csproj" />
+    <ProjectReference Include="../OAuth/OAuth.csproj" />
   </ItemGroup>
 
 </Project>
