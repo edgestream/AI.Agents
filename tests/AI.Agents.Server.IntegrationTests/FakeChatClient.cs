@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Extensions.AI;
 
-namespace AI.AGUI.Server.IntegrationTests;
+namespace AI.Agents.Server.IntegrationTests;
 
 /// <summary>
 /// A minimal hand-written fake for <see cref="IChatClient"/> that returns

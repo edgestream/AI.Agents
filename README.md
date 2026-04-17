@@ -1,4 +1,4 @@
-# AI.AGUI
+# AI.Agents
 
 > Conversational [AG-UI](https://docs.ag-ui.com/introduction) web interface and backend server
 
@@ -36,16 +36,16 @@ docker compose down
 
 ### Running local
 
-Copy `appsettings.Development.json` from the repository root into `src/AI.AGUI.Server/` then start the backend:
+Copy `appsettings.Development.json` from the repository root into `src/Server/` then start the backend:
 
 ```bash
-dotnet run --project src/AI.AGUI.Server
+dotnet run --project src/Server
 ```
 
 Open another console and start the frontend:
 
 ```bash
-cd src/AI.AGUI.Web
+cd src/Web
 npm run dev
 ```
 

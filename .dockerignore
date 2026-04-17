@@ -2,5 +2,5 @@
 **/bin/
 **/.git/
 **/.gitignore
-src/AI.AGUI.Web/node_modules/
-src/AI.AGUI.Web/.next/
+src/Web/node_modules/
+src/Web/.next/

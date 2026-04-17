@@ -9,11 +9,11 @@ param environmentName string
 @description('Azure region for all resources.')
 param location string
 
-@description('Container image for the backend service (e.g. ghcr.io/org/ai-agui-server:sha-abc1234).')
-param backendImage string = 'ghcr.io/edgestream/ai-agui-server:latest'
+@description('Container image for the backend service (e.g. ghcr.io/org/ai-agents-server:sha-abc1234).')
+param backendImage string = 'ghcr.io/edgestream/ai-agents-server:latest'
 
-@description('Container image for the frontend service (e.g. ghcr.io/org/ai-agui-web:sha-abc1234).')
-param frontendImage string = 'ghcr.io/edgestream/ai-agui-web:latest'
+@description('Container image for the frontend service (e.g. ghcr.io/org/ai-agents-web:sha-abc1234).')
+param frontendImage string = 'ghcr.io/edgestream/ai-agents-web:latest'
 
 @description('Azure OpenAI endpoint URL. When set, overrides the value from the mounted appsettings file.')
 param azureOpenAIEndpoint string = ''

@@ -2,11 +2,11 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "AGUI.Web",
+            "name": "Agents.Web",
             "type": "node-terminal",
             "request": "launch",
-            "preLaunchTask": "npm install (AGUIChat)",
-            "cwd": "${workspaceFolder}/src/AI.AGUI.Web",
+            "preLaunchTask": "npm install (Web)",
+            "cwd": "${workspaceFolder}/src/Web",
             "command": "npm run dev",
             "env": {
                 "LOG_LEVEL": "debug",
@@ -24,10 +24,10 @@
             }
         },
         {
-            "name": "AGUI.Server",
+            "name": "Agents.Server",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/src/AI.AGUI.Server/AI.AGUI.Server.csproj",
+            "projectPath": "${workspaceFolder}/src/Server/Server.csproj",
             "preLaunchTask": "build"
         },
         {
@@ -48,7 +48,7 @@
     "compounds": [
         {
             "name": "Fullstack (Server + Web)",
-            "configurations": ["AGUI.Server", "AGUI.Web", "Local browser"],
+            "configurations": ["Agents.Server", "Agents.Web", "Local browser"],
             "stopAll": true
         }
     ]

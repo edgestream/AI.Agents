@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace AI.AGUI.Server.IntegrationTests;
+namespace AI.Agents.Server.IntegrationTests;
 
 /// <summary>
 /// Tests that verify the direct hosting model where agents are registered via

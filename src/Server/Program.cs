@@ -1,5 +1,5 @@
 using AI.Agents.Auth;
-using AI.AGUI.Server;
+using AI.Agents.Server;
 using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Auth;
 using AI.Agents.Microsoft.Skills;

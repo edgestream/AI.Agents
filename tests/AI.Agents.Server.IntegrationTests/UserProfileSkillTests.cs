@@ -1,9 +1,9 @@
 using System.Text.Json;
 using AI.Agents.Abstractions;
 using AI.Agents.Auth;
-using AI.AGUI.Server;
+using AI.Agents.Server;
 
-namespace AI.AGUI.Server.IntegrationTests;
+namespace AI.Agents.Server.IntegrationTests;
 
 /// <summary>
 /// Unit tests for <see cref="UserProfileSkill"/>.

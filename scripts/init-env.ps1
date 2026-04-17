@@ -1,7 +1,7 @@
 #Requires -Version 7
 <#
 .SYNOPSIS
-    Pulls AI.AGUI.Server service principal credentials from Azure Key Vault into a local .env file.
+    Pulls AI.Agents.Server service principal credentials from Azure Key Vault into a local .env file.
 
 .PARAMETER VaultName
     Name of the Azure Key Vault holding the shared dev credentials.

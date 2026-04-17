@@ -1,0 +1,5 @@
+@Server_HostAddress = http://localhost:8000
+
+### Health check — expect 200 OK with body "OK"
+GET {{Server_HostAddress}}/health
+Accept: text/plain
