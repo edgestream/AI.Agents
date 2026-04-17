@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Json;
-using AI.AGUI.Auth;
+using AI.Agents.Abstractions;
+using AI.Agents.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -1,4 +1,6 @@
-namespace AI.AGUI.Auth;
+using AI.Agents.Abstractions;
+
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Default implementation of <see cref="IUserContext"/> for the current HTTP request.

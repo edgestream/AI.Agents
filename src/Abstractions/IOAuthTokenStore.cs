@@ -1,4 +1,4 @@
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Abstractions;
 
 /// <summary>
 /// Provides storage and retrieval of OAuth tokens for external MCP tools on a per-user basis.

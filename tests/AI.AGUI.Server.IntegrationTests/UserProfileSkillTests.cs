@@ -1,5 +1,6 @@
 using System.Text.Json;
-using AI.AGUI.Auth;
+using AI.Agents.Abstractions;
+using AI.Agents.Auth;
 using AI.AGUI.Server;
 
 namespace AI.AGUI.Server.IntegrationTests;

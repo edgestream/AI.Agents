@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Abstractions;
 
 /// <summary>
 /// Represents the state of an ongoing OAuth authorization flow.

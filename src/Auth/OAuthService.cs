@@ -1,10 +1,11 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
 using System.Web;
+using AI.Agents.Abstractions;
 using AI.Agents.MCP;
 using Microsoft.Extensions.Logging;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Service that manages OAuth authorization flows for external MCP tools.

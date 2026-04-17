@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using AI.Agents.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;

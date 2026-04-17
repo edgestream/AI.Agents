@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <ProjectReference Include="../AGUI/AGUI.csproj" />
-    <ProjectReference Include="../AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
+    <ProjectReference Include="../Auth/Auth.csproj" />
     <ProjectReference Include="../Microsoft/Microsoft.csproj" />
     <ProjectReference Include="../MCP/MCP.csproj" />
   </ItemGroup>

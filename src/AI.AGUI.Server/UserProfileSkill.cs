@@ -1,4 +1,4 @@
-using AI.AGUI.Auth;
+using AI.Agents.Auth;
 using System.ComponentModel;
 using System.Text.Json;
 using Microsoft.Agents.AI;

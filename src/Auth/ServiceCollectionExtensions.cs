@@ -1,7 +1,8 @@
+using AI.Agents.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Extension methods for registering authentication services.

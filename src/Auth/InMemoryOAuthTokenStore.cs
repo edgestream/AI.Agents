@@ -1,8 +1,9 @@
 using System.Collections.Concurrent;
+using AI.Agents.Abstractions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// In-memory implementation of <see cref="IOAuthTokenStore"/> for development and single-instance deployments.

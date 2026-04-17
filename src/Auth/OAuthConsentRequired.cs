@@ -1,4 +1,4 @@
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Response returned when an MCP tool requires OAuth authorization that the user has not yet granted.

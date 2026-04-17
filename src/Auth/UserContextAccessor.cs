@@ -1,6 +1,7 @@
+using AI.Agents.Abstractions;
 using Microsoft.AspNetCore.Http;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Provides access to <see cref="IUserContext"/> from the current HTTP context.
@@ -35,7 +36,7 @@ public sealed class UserContextAccessor : IUserContextAccessor
             {
                 return (IUserContext)userContext!;
             }
-            return Auth.UserContext.Anonymous;
+            return global::AI.Agents.Auth.UserContext.Anonymous;
         }
     }
 }

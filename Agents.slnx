@@ -8,7 +8,7 @@
     <Project Path="src/AGUI/AGUI.csproj" />
   </Folder>
   <Folder Name="/src/Auth/">
-    <Project Path="src/AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
+    <Project Path="src/Auth/Auth.csproj" />
   </Folder>
   <Folder Name="/src/MCP/">
     <Project Path="src/MCP/MCP.csproj" />

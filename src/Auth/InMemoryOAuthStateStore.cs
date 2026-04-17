@@ -1,6 +1,7 @@
 using Microsoft.Extensions.Caching.Memory;
+using AI.Agents.Abstractions;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// In-memory implementation of <see cref="IOAuthStateStore"/> for storing OAuth authorization state.
