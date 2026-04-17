@@ -32,7 +32,7 @@ jobs:
         run: dotnet build src/Agents.slnx --no-restore
 
       - name: Unit tests
-        run: dotnet test --no-build --verbosity normal --filter "TestCategory!=ExternalDependency&TestCategory!=Live"
+        run: dotnet test src/Agents.slnx --no-build --verbosity normal --filter "TestCategory!=ExternalDependency&TestCategory!=Live"
 
   test-frontend:
     name: Frontend Lint & Build
