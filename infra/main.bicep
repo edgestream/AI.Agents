@@ -2,7 +2,7 @@ targetScope = 'subscription'
 
 @minLength(1)
 @maxLength(64)
-@description('Name of the environment (e.g. Development, Production). Used to name all resources.')
+@description('Name of the environment (for example Development or stage). Used to name all resources.')
 param environmentName string
 
 @minLength(1)
@@ -43,8 +43,7 @@ param entraTenantId string = ''
 @description('Full SAS URL for a private blob container used by the Container Apps auth token store.')
 param tokenStoreSasUrl string = ''
 
-@description('Base name used for Azure resources. Override to ai-agui temporarily when reusing pre-rename infrastructure.')
-param resourcePrefix string = 'ai-agents'
+var environmentSuffix = 'agents-${toLower(environmentName)}'
 
 var tags = {
   'azd-env-name': environmentName
@@ -52,7 +51,7 @@ var tags = {
 
 // Resource Group
 resource rg 'Microsoft.Resources/resourceGroups@2022-09-01' = {
-  name: 'rg-${resourcePrefix}-${toLower(environmentName)}'
+  name: 'rg-${environmentSuffix}'
   location: location
   tags: tags
 }
@@ -73,7 +72,6 @@ module resources './resources.bicep' = {
     entraClientSecret: entraClientSecret
     entraTenantId: entraTenantId
     tokenStoreSasUrl: tokenStoreSasUrl
-    resourcePrefix: resourcePrefix
     tags: tags
   }
 }

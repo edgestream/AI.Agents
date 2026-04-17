@@ -15,13 +15,13 @@ jobs:
     name: Deploy to Azure Container Apps
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    environment: production
+    environment: stage
 
     env:
       BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
       FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
-      RESOURCE_GROUP: rg-ai-agents-production
-      APP: ca-ai-agents
+      RESOURCE_GROUP: rg-agents-stage
+      APP: ca-agents-stage
 
     steps:
       - name: Compute image tag from triggering commit SHA
