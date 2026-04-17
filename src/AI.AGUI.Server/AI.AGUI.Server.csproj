@@ -11,13 +11,11 @@
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" />
     <PackageReference Include="Azure.Identity" />
-    <PackageReference Include="Microsoft.Agents.AI" />
-    <PackageReference Include="Microsoft.Agents.AI.Hosting" />
-    <PackageReference Include="Microsoft.Agents.AI.Hosting.AGUI.AspNetCore" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="../AGUI/AGUI.csproj" />
     <ProjectReference Include="../AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
     <ProjectReference Include="../Microsoft/Microsoft.csproj" />
     <ProjectReference Include="../MCP/MCP.csproj" />
