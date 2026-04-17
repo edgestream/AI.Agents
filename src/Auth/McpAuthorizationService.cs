@@ -1,7 +1,8 @@
+using AI.Agents.Abstractions;
 using AI.Agents.MCP;
 using Microsoft.Extensions.Options;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Service for checking MCP OAuth authorization requirements and generating consent prompts.

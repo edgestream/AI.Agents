@@ -1,4 +1,4 @@
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Abstractions;
 
 /// <summary>
 /// Service for retrieving enriched user profile information from Microsoft Graph.

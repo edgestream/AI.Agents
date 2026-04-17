@@ -1,3 +1,4 @@
+using AI.Agents.Abstractions;
 using AI.Agents.MCP;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -6,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Auth;
 
 /// <summary>
 /// Extension methods for registering OAuth service and endpoints.

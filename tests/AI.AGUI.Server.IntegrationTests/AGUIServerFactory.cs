@@ -1,4 +1,4 @@
-using AI.Agents.Microsoft.Auth;
+using AI.Agents.Abstractions;
 using AI.Agents.MCP;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;

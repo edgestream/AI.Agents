@@ -1,4 +1,4 @@
-using AI.AGUI.Auth;
+using AI.Agents.Auth;
 using AI.AGUI.Server;
 using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Auth;

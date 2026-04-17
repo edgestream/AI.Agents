@@ -1,4 +1,5 @@
-using AI.AGUI.Auth;
+using AI.Agents.Abstractions;
+using AI.Agents.Auth;
 using AI.Agents.MCP;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;

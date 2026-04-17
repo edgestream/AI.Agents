@@ -1,4 +1,4 @@
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Abstractions;
 
 /// <summary>
 /// Represents an OAuth 2.0 token for an external MCP tool.

@@ -1,4 +1,4 @@
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Abstractions;
 
 /// <summary>
 /// Provides storage and retrieval of OAuth authorization state during the OAuth flow.

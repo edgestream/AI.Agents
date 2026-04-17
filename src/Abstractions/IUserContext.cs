@@ -1,4 +1,4 @@
-namespace AI.AGUI.Auth;
+namespace AI.Agents.Abstractions;
 
 /// <summary>
 /// Represents the authenticated user context for the current request.
