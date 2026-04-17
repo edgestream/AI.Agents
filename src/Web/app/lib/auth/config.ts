@@ -19,9 +19,9 @@ export type AuthMode = "local" | "aca";
 
 function hasLocalAuthAppRegistration(): boolean {
   return Boolean(
-    process.env.ENTRA_CLIENT_ID
-    && process.env.ENTRA_CLIENT_SECRET
-    && process.env.ENTRA_TENANT_ID,
+    (process.env.ENTRA_CLIENT_ID || process.env.AZURE_CLIENT_ID)
+    && (process.env.ENTRA_CLIENT_SECRET || process.env.AZURE_CLIENT_SECRET)
+    && (process.env.ENTRA_TENANT_ID || process.env.AZURE_TENANT_ID),
   );
 }
 
@@ -43,9 +43,8 @@ export function isLocalAuth(): boolean {
  * Returns whether interactive sign-in is configured for the current process.
  *
  * Local mode allows anonymous usage without Entra app-registration settings.
- * Interactive sign-in is only available once explicit ENTRA_* settings and the
- * session secret are configured. AZURE_* values remain backend credential inputs
- * and must not implicitly enable browser sign-in.
+ * Interactive sign-in is available once either ENTRA_* or AZURE_* app-registration
+ * settings and the session secret are configured.
  */
 export function canSignIn(): boolean {
   if (getAuthMode() === "aca") {
