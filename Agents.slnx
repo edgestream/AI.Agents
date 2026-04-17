@@ -4,6 +4,9 @@
   </Folder>
   <Folder Name="/src/" />
   <Project Path="src/Abstractions/Abstractions.csproj" />
+  <Folder Name="/src/AGUI/">
+    <Project Path="src/AGUI/AGUI.csproj" />
+  </Folder>
   <Folder Name="/src/Auth/">
     <Project Path="src/AI.AGUI.Auth/AI.AGUI.Auth.csproj" />
   </Folder>
