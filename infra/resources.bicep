@@ -243,6 +243,8 @@ resource appAuthConfig 'Microsoft.App/containerApps/authConfigs@2024-03-01' = if
         login: {
           // Request Graph User.Read scope so the access token can be used
           // to retrieve the user's display name and profile photo from Microsoft Graph.
+          // The paired Entra app registration must have ID token issuance enabled
+          // for web hybrid flows, or login fails with AADSTS700054.
           // See: https://learn.microsoft.com/azure/app-service/scenario-secure-app-access-microsoft-graph-as-user
           loginParameters: [
             'response_type=code id_token'

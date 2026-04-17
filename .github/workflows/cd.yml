@@ -1,0 +1,60 @@
+name: CD
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy to Azure Container Apps
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    environment: stage
+
+    env:
+      BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
+      FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
+      RESOURCE_GROUP: rg-agents-stage
+      APP: ca-agents-stage
+
+    steps:
+      - name: Compute image tag from triggering commit SHA
+        id: image-tag
+        run: |
+          SHA="${{ github.event.workflow_run.head_sha }}"
+          echo "tag=sha-${SHA::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_OIDC_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_OIDC_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_OIDC_SUBSCRIPTION_ID }}
+
+      - name: Update backend container image
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az containerapp update \
+              --name "${{ env.APP }}" \
+              --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --container-name backend \
+              --image "${{ env.BACKEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}"
+
+      - name: Update frontend container image
+        uses: azure/cli@v2
+        with:
+          azcliversion: latest
+          inlineScript: |
+            az containerapp update \
+              --name "${{ env.APP }}" \
+              --resource-group "${{ env.RESOURCE_GROUP }}" \
+              --container-name frontend \
+              --image "${{ env.FRONTEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}"

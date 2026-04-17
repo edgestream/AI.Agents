@@ -4,10 +4,10 @@ This document covers the GitHub-side CI/CD configuration for AI.Agents.
 
 ## Workflow Files
 
-The repository currently carries workflow templates here:
+The repository uses these workflow files:
 
-- `.github/workflows/ci.yml.disabled`
-- `.github/workflows/cd.yml.disabled`
+- `.github/workflows/ci.yml`
+- `.github/workflows/cd.yml`
 
 The CI workflow builds images, runs tests, and publishes the container tags. The CD workflow updates the hosted stage Container App to the matching image SHA tags.
 
@@ -20,8 +20,6 @@ Environment secrets required by the CD workflow:
 - `AZURE_OIDC_CLIENT_ID`
 - `AZURE_OIDC_TENANT_ID`
 - `AZURE_OIDC_SUBSCRIPTION_ID`
-- `FOUNDRY_PROJECT_ENDPOINT`
-- `FOUNDRY_MODEL`
 
 The Azure side of that OIDC identity is described in [AZURE_ENTRA_APP_REGISTRATION.md](AZURE_ENTRA_APP_REGISTRATION.md).
 
@@ -43,6 +41,8 @@ Published package names:
 
 - `ghcr.io/edgestream/agents-server`
 - `ghcr.io/edgestream/agents-web`
+
+The current hosted Stage rollout assumes these packages are public. The Container App deployment no longer injects registry credentials for GHCR.
 
 The CD workflow updates the hosted app to `sha-<7>` tags derived from CI. On fresh developer or automation machines outside GitHub Actions, authenticate with:
 

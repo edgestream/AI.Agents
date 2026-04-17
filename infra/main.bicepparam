@@ -26,5 +26,6 @@ param entraClientSecret = readEnvironmentVariable('ENTRA_CLIENT_SECRET', '')
 param entraTenantId = readEnvironmentVariable('ENTRA_TENANT_ID', '')
 
 // Container Apps token store – set this to a full SAS URL for a private blob container.
+// Format: https://<storage-account>.blob.core.windows.net/<container>?<sas-query-string>
 // azd env set TOKEN_STORE_SAS_URL <full-container-sas-url>
 param tokenStoreSasUrl = readEnvironmentVariable('TOKEN_STORE_SAS_URL', '')

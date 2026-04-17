@@ -17,23 +17,17 @@ interface UserAvatarProps {
 }
 
 /**
- * Generates initials from a display name or email address.
- * For a real display name ("Mario Schmidt") → "MS".
- * For an email address fallback ("mario@example.com") → first two chars of the local part ("MA").
+ * Generates initials from a display name only.
  */
-function getInitials(name: string | undefined): string {
-  if (!name) return "?";
-  // Email fallback: use first two characters of the local part
-  const atIndex = name.indexOf("@");
-  if (atIndex > 0) {
-    return name.substring(0, Math.min(2, atIndex)).toUpperCase();
-  }
-  // Display name: first char of first word + first char of last word
-  const parts = name.split(/\s+/).filter(Boolean);
+function getInitials(displayName: string | undefined): string {
+  if (!displayName) return "?";
+
+  const parts = displayName.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
     return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
-  return name.substring(0, 2).toUpperCase();
+
+  return displayName.substring(0, 2).toUpperCase();
 }
 
 /**
@@ -141,8 +135,8 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
     );
   }
 
-  const initials = getInitials(user.displayName || user.email);
-  const bgColor = stringToColor(user.userId || user.email || "user");
+  const initials = getInitials(user.displayName);
+  const bgColor = stringToColor(user.userId || "user");
   const profileDetails = getProfileDetails(user);
 
   const avatarContent = user.picture ? (
@@ -184,9 +178,9 @@ export function UserAvatar({ size = 32, showName = false }: UserAvatarProps) {
           </div>
         ) : null}
       </div>
-      {showName && (
+      {showName && user.displayName && (
         <span className="text-sm text-gray-700">
-          {user.displayName || user.email}
+          {user.displayName}
         </span>
       )}
     </div>

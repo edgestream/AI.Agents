@@ -81,7 +81,23 @@ See [AZURE_CONTAINER_APPS.md](AZURE_CONTAINER_APPS.md) for the actual rollout fl
 
 ## Role Assignment
 
-The deployed Container App managed identity must have the `Azure AI User` role on the Azure AI Foundry or Azure AI resource used by the backend. Without that role, hosted requests to the model endpoint fail even when the app is otherwise configured correctly.
+The deployed Container App managed identity must have the `Azure AI User` role on the Azure AI Foundry project used by the backend. Without that role, hosted requests fail with a data-action error similar to `Microsoft.CognitiveServices/accounts/AIServices/agents/write`.
+
+For the current shared Stage setup, assign the role on the Foundry project scope:
+
+```text
+/subscriptions/<subscription-id>/resourceGroups/rg-edgestream-ai/providers/Microsoft.CognitiveServices/accounts/edgestream/projects/edgestream
+```
+
+Example:
+
+```powershell
+az role assignment create \
+  --assignee-object-id <container-app-managed-identity-principal-id> \
+  --assignee-principal-type ServicePrincipal \
+  --role "Azure AI User" \
+  --scope /subscriptions/<subscription-id>/resourceGroups/rg-edgestream-ai/providers/Microsoft.CognitiveServices/accounts/edgestream/projects/edgestream
+```
 
 ## Related Docs
 

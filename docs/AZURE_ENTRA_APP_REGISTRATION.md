@@ -39,15 +39,34 @@ Create or reuse a web app registration for the hosted application.
 
 Required configuration:
 
-1. Add the hosted redirect URI:
+1. After the first successful Stage deployment, add the hosted redirect URI that matches the deployed Container App hostname:
 
 ```text
 https://<stage-app-fqdn>/.auth/login/aad/callback
 ```
 
-2. Create a client secret.
-3. Add Microsoft Graph delegated permission `User.Read`.
-4. Grant admin consent.
+2. If you also use local auth, add this localhost redirect URI as a separate entry on the same app registration:
+
+```text
+http://localhost:3000/api/auth/callback
+```
+
+3. Enable `ID tokens` under `Authentication` -> `Implicit grant and hybrid flows`.
+4. Create a client secret.
+5. Add Microsoft Graph delegated permission `User.Read`.
+6. Grant admin consent if your tenant policy requires it. Running `az ad app permission admin-consent` requires tenant-admin rights and returns `Authorization_RequestDenied` for non-admin accounts.
+
+Because the Container Apps Easy Auth configuration in [infra/resources.bicep](../infra/resources.bicep) requests `response_type=code id_token` to obtain a usable Graph token, disabling ID token issuance breaks sign-in with `AADSTS700054`.
+
+CLI example for the runtime app registration:
+
+```powershell
+az ad app update --id <client-id> \
+	--web-redirect-uris \
+		https://<stage-app-fqdn>/.auth/login/aad/callback \
+		http://localhost:3000/api/auth/callback \
+	--enable-id-token-issuance true
+```
 
 Store the values in the azd environment:
 
@@ -59,11 +78,7 @@ azd env set ENTRA_TENANT_ID <tenant-id>
 
 ## Local Auth Reuse
 
-If you use the local auth flow in [AZURE_ENTRA_LOCAL_AUTH.md](AZURE_ENTRA_LOCAL_AUTH.md), add this redirect URI to the same app registration:
-
-```text
-http://localhost:3000/api/auth/callback
-```
+If you use the local auth flow in [AZURE_ENTRA_LOCAL_AUTH.md](AZURE_ENTRA_LOCAL_AUTH.md), keep both the hosted callback URI and the localhost callback URI on the same app registration as separate redirect URI entries.
 
 The local bootstrap script writes the same credential values into both `ENTRA_*` and `AZURE_*` environment variables because `DefaultAzureCredential` still expects the `AZURE_*` names.
 
