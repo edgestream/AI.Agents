@@ -1,10 +1,14 @@
 # Build stage
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /repo
+COPY global.json ./
+COPY src/Directory.Build.props src/
+COPY src/Directory.Packages.props src/
 COPY src/Abstractions/Abstractions.csproj src/Abstractions/
-COPY src/Auth/Auth.csproj src/Auth/
+COPY src/AGUI/AGUI.csproj src/AGUI/
 COPY src/Microsoft/Microsoft.csproj src/Microsoft/
 COPY src/MCP/MCP.csproj src/MCP/
+COPY src/OAuth/OAuth.csproj src/OAuth/
 COPY src/Server/Server.csproj src/Server/
 RUN dotnet restore src/Server/Server.csproj
 COPY . .

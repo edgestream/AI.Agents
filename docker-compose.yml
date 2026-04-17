@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: src/Server/Dockerfile
-    image: ghcr.io/edgestream/ai-agents-server:latest
+    image: ghcr.io/edgestream/agents-server:latest
     ports:
       - "8080:8080"
     environment:
@@ -28,7 +28,7 @@ services:
     build:
       context: src/Web
       dockerfile: Dockerfile
-    image: ghcr.io/edgestream/ai-agents-web:latest
+    image: ghcr.io/edgestream/agents-web:latest
     ports:
       - "3000:3000"
     environment:

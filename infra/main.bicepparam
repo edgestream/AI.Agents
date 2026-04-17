@@ -3,9 +3,9 @@ using './main.bicep'
 param environmentName = readEnvironmentVariable('AZURE_ENV_NAME', 'Development')
 param location = readEnvironmentVariable('AZURE_LOCATION', 'eastus2')
 
-// Override image tags for CD: azd env set BACKEND_IMAGE ghcr.io/edgestream/ai-agents-server:sha-<7-char-SHA>
-param backendImage = readEnvironmentVariable('BACKEND_IMAGE', 'ghcr.io/edgestream/ai-agents-server:latest')
-param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestream/ai-agents-web:latest')
+// Override image tags for CD: azd env set BACKEND_IMAGE ghcr.io/edgestream/agents-server:sha-<7-char-SHA>
+param backendImage = readEnvironmentVariable('BACKEND_IMAGE', 'ghcr.io/edgestream/agents-server:latest')
+param frontendImage = readEnvironmentVariable('FRONTEND_IMAGE', 'ghcr.io/edgestream/agents-web:latest')
 
 // Azure OpenAI configuration – CD override via: azd env set AZURE_OPENAI_ENDPOINT <value>
 // When set, these values override the corresponding keys from the mounted appsettings file.
@@ -14,7 +14,7 @@ param azureOpenAIDeploymentName = readEnvironmentVariable('AZURE_OPENAI_DEPLOYME
 param azureOpenAIApiKey = readEnvironmentVariable('AZURE_OPENAI_API_KEY', '')
 
 // Appsettings for this environment – auto-loaded from appsettings.{AZURE_ENV_NAME}.json by the preprovision hook.
-// e.g. 'azd env new Development' reads appsettings.Development.json; 'azd env new Production' reads appsettings.Production.json.
+// e.g. 'azd env new Development' reads appsettings.Development.json; 'azd env new Stage' reads appsettings.Stage.json.
 param appSettingsJson = readEnvironmentVariable('APPSETTINGS_JSON', '')
 
 // Microsoft Entra authentication – set these to enable Easy Auth on the Container App ingress.

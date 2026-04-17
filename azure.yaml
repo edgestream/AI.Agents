@@ -1,6 +1,6 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
 
-name: ai-agents
+name: agents
 
 infra:
   provider: bicep
@@ -35,5 +35,11 @@ hooks:
 
 services:
   backend:
+    project: .
+    language: docker
     host: containerapp
-    image: ghcr.io/edgestream/ai-agents-server:latest
+    docker:
+      path: src/Server/Dockerfile
+      context: .
+      registry: ghcr.io/edgestream
+      image: agents-server
