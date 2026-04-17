@@ -80,7 +80,7 @@ export async function GET(request: NextRequest) {
 
   // If we have Easy Auth headers (or local-auth injected headers), forward to backend
   if (principalId || principalName || accessToken || idToken) {
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:8080";
+    const backendUrl = (process.env.BACKEND_URL || "http://localhost:8080").replace(/\/+$/, "");
     try {
       const backendHeaders: HeadersInit = {};
 
@@ -116,11 +116,12 @@ export async function GET(request: NextRequest) {
 
     const fallbackEmail = principalName?.includes("@") ? principalName : undefined;
 
-    // Fallback: return info from headers directly
+    // Fallback: return info from headers directly.
+    // displayName is intentionally omitted — it must come from Graph via the backend.
+    // principalName is a UPN / email, not a human-readable display name.
     return NextResponse.json({
       authenticated: true,
       userId: principalId || undefined,
-      displayName: principalName || undefined,
       email: fallbackEmail,
       tenantId,
       domain: getDomainFromEmail(fallbackEmail),

@@ -32,7 +32,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - BACKEND_URL=http://backend:8080/
+      - BACKEND_URL=http://backend:8080
       - AUTH_MODE=${AUTH_MODE:-}
       - AZURE_TENANT_ID
       - AZURE_CLIENT_ID

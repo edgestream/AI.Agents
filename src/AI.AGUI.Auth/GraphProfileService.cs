@@ -54,7 +54,7 @@ public sealed class GraphProfileService : IGraphProfileService
         }
         catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
         {
-            _logger.LogDebug(ex, "Graph access denied. Token may not have User.Read scope.");
+            _logger.LogWarning(ex, "Graph access denied fetching profile (HTTP {StatusCode}). The app registration is missing the Microsoft Graph User.Read delegated permission or admin consent has not been granted.", ex.ResponseStatusCode);
             return null;
         }
         catch (Exception ex)
@@ -108,7 +108,7 @@ public sealed class GraphProfileService : IGraphProfileService
         }
         catch (Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
         {
-            _logger.LogDebug(ex, "Graph photo access denied. Token may not have User.Read scope.");
+            _logger.LogWarning(ex, "Graph access denied fetching photo (HTTP {StatusCode}). The app registration is missing the Microsoft Graph User.Read delegated permission or admin consent has not been granted.", ex.ResponseStatusCode);
             return null;
         }
         catch (Exception ex)

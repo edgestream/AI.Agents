@@ -17,13 +17,21 @@ interface UserAvatarProps {
 }
 
 /**
- * Generates initials from a display name.
+ * Generates initials from a display name or email address.
+ * For a real display name ("Mario Schmidt") → "MS".
+ * For an email address fallback ("mario@example.com") → first two chars of the local part ("MA").
  */
 function getInitials(name: string | undefined): string {
   if (!name) return "?";
-  const parts = name.split(/[\s@]+/);
+  // Email fallback: use first two characters of the local part
+  const atIndex = name.indexOf("@");
+  if (atIndex > 0) {
+    return name.substring(0, Math.min(2, atIndex)).toUpperCase();
+  }
+  // Display name: first char of first word + first char of last word
+  const parts = name.split(/\s+/).filter(Boolean);
   if (parts.length >= 2) {
-    return (parts[0][0] + parts[parts.length > 2 ? 1 : parts.length - 1][0]).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   }
   return name.substring(0, 2).toUpperCase();
 }

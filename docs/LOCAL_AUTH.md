@@ -9,7 +9,8 @@ When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flo
 | Item | Notes |
 |---|---|
 | **Existing Entra app registration** | The same app registration used for ACA Easy Auth (already in your root `.env` as `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID`). You must add `http://localhost:3000/api/auth/callback` as a **Web** redirect URI in the Azure portal. |
-| **`User.Read` delegated permission** | Already configured if you're using Graph profile enrichment in production. |
+| **`User.Read` delegated permission** | Must be explicitly added as a **Microsoft Graph → Delegated → User.Read** permission in the app registration and granted admin consent. Without it, Graph profile enrichment (display name, photo) will fail silently. |
+| **`Azure AI User` role on AI Foundry** | The app registration's service principal must have the **Azure AI User** role on the AI Foundry resource (account scope). In local mode the backend authenticates via `EnvironmentCredential` (the `AZURE_CLIENT_ID`/`AZURE_CLIENT_SECRET` env vars), so the role must be assigned to that service principal — not to your personal user account. Without it all LLM calls fail with a `lacks the required data action` error. |
 | **Node.js 20+** | Required by the Next.js app. |
 
 ## Reusing the existing app registration
