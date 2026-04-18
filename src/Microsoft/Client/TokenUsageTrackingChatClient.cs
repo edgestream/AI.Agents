@@ -4,23 +4,20 @@ using Microsoft.Extensions.AI;
 namespace AI.Agents.Microsoft.Client;
 
 /// <summary>
-/// A delegating chat client that tracks token usage and makes it available via AsyncLocal context.
+/// A delegating chat client that tracks token usage and records it in a usage store.
 /// </summary>
 public sealed class TokenUsageTrackingChatClient : DelegatingChatClient
 {
-    private static readonly AsyncLocal<UsageDetails?> _currentUsage = new();
-
-    /// <summary>
-    /// Gets the current token usage for the active request, if available.
-    /// </summary>
-    public static UsageDetails? CurrentUsage => _currentUsage.Value;
+    private readonly TokenUsageStore _usageStore;
 
     /// <summary>
     /// Initializes a new instance of <see cref="TokenUsageTrackingChatClient"/>.
     /// </summary>
     /// <param name="innerClient">The inner chat client to delegate to.</param>
-    public TokenUsageTrackingChatClient(IChatClient innerClient) : base(innerClient)
+    /// <param name="usageStore">The store to record usage in.</param>
+    public TokenUsageTrackingChatClient(IChatClient innerClient, TokenUsageStore usageStore) : base(innerClient)
     {
+        _usageStore = usageStore;
     }
 
     /// <inheritdoc />
@@ -31,10 +28,10 @@ public sealed class TokenUsageTrackingChatClient : DelegatingChatClient
     {
         var response = await base.GetResponseAsync(chatMessages, options, cancellationToken);
         
-        // Store usage in AsyncLocal for the current context
+        // Record usage
         if (response.Usage != null)
         {
-            _currentUsage.Value = response.Usage;
+            _usageStore.Record(response.Usage);
         }
         
         return response;
@@ -46,23 +43,11 @@ public sealed class TokenUsageTrackingChatClient : DelegatingChatClient
         ChatOptions? options = null,
         [EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        UsageDetails? accumulatedUsage = null;
-        
+        // Note: ChatResponseUpdate doesn't expose Usage in the current version of Microsoft.Extensions.AI
+        // We'll track usage from non-streaming calls only for now
         await foreach (var update in base.GetStreamingResponseAsync(chatMessages, options, cancellationToken))
         {
-            // Accumulate usage from streaming updates
-            if (update.Usage != null)
-            {
-                accumulatedUsage = update.Usage;
-            }
-            
             yield return update;
-        }
-        
-        // Store final usage in AsyncLocal for the current context
-        if (accumulatedUsage != null)
-        {
-            _currentUsage.Value = accumulatedUsage;
         }
     }
 }

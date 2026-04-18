@@ -57,6 +57,9 @@ public static class ServiceCollectionExtensions
 
         services.AddOptions<AzureOpenAISettings>().BindConfiguration(sectionName);
 
+        // Register token usage store as singleton
+        services.AddSingleton<Client.TokenUsageStore>();
+
         services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<AzureOpenAISettings>>().Value;
@@ -92,8 +95,9 @@ public static class ServiceCollectionExtensions
         {
             var openAIChatClient = sp.GetRequiredService<ChatClient>();
             var innerClient = openAIChatClient.AsIChatClient();
+            var usageStore = sp.GetRequiredService<Client.TokenUsageStore>();
             // Wrap with token usage tracking
-            return new Client.TokenUsageTrackingChatClient(innerClient);
+            return new Client.TokenUsageTrackingChatClient(innerClient, usageStore);
         });
 
         return services;

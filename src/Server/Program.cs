@@ -16,6 +16,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
+builder.Services.AddControllers();
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddAIProjectClient();
 builder.Services.AddAIAgentSkill<UserProfileSkill>();
@@ -45,6 +46,7 @@ var app = builder.Build();
 
 app.UseEntraAuthMiddleware();
 
+app.MapControllers();
 app.MapGraphProfileEndpoint("/api/me");
 app.MapOAuthEndpoints();
 app.MapGet("/health", () => "OK");
