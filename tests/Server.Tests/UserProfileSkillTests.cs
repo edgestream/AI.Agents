@@ -32,8 +32,8 @@ public sealed class UserProfileSkillTests
         Assert.AreEqual("Mario Rossi", json.RootElement.GetProperty("displayName").GetString());
         Assert.AreEqual("mario@example.com", json.RootElement.GetProperty("email").GetString());
         Assert.IsTrue(json.RootElement.GetProperty("isAuthenticated").GetBoolean());
-        Assert.IsFalse(json.RootElement.TryGetProperty("Picture", out _));
-        Assert.IsFalse(json.RootElement.TryGetProperty("AccessToken", out _));
+        Assert.IsFalse(json.RootElement.TryGetProperty("picture", out _));
+        Assert.IsFalse(json.RootElement.TryGetProperty("accessToken", out _));
     }
 
     [TestMethod]
@@ -47,8 +47,8 @@ public sealed class UserProfileSkillTests
         Assert.AreEqual(string.Empty, json.RootElement.GetProperty("userId").GetString());
         Assert.AreEqual(JsonValueKind.Null, json.RootElement.GetProperty("displayName").ValueKind);
         Assert.IsFalse(json.RootElement.GetProperty("isAuthenticated").GetBoolean());
-        Assert.IsFalse(json.RootElement.TryGetProperty("Picture", out _));
-        Assert.IsFalse(json.RootElement.TryGetProperty("AccessToken", out _));
+        Assert.IsFalse(json.RootElement.TryGetProperty("picture", out _));
+        Assert.IsFalse(json.RootElement.TryGetProperty("accessToken", out _));
     }
 
     [TestMethod]
