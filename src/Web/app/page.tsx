@@ -8,6 +8,7 @@ import {
 } from "@copilotkit/react-ui";
 import { useRenderActivityMessage } from "@copilotkit/react-core/v2";
 import { UserMenu } from "./components/UserAvatar";
+import { TokenUsageDisplay } from "./components/TokenUsageDisplay";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function ActivityAwareRenderMessage(props: any) {
@@ -93,6 +94,9 @@ export default function Page() {
           }}
         />
       </main>
+      
+      {/* Token usage display */}
+      <TokenUsageDisplay />
     </>
   );
 }
