@@ -11,9 +11,7 @@ namespace AI.Agents.Microsoft.Auth;
 /// </summary>
 /// <remarks>
 /// <para>
-/// When deployed to Azure Container Apps with Easy Auth enabled, the ingress
-/// forwards identity information via <c>X-MS-TOKEN-AAD-*</c> headers after
-/// successful authentication.
+/// Initializes a new instance of the <see cref="EntraAuthMiddleware"/> class.
 /// </para>
 /// <para>
 /// Supported headers:
@@ -22,9 +20,6 @@ namespace AI.Agents.Microsoft.Auth;
 ///   <item><c>X-MS-CLIENT-PRINCIPAL-ID</c>: The user's unique object ID</item>
 /// </list>
 /// </para>
-/// </remarks>
-/// <remarks>
-/// Initializes a new instance of the <see cref="EntraAuthMiddleware"/> class.
 /// </remarks>
 /// <param name="next">The next middleware in the pipeline.</param>
 /// <param name="logger">The logger instance.</param>
@@ -85,19 +80,19 @@ public sealed class EntraAuthMiddleware(RequestDelegate next, IUserProfileServic
         if (string.IsNullOrEmpty(principalId))
         {
             _logger.LogTrace("No MS_CLIENT_PRINCIPAL_ID header found. User will be treated as anonymous.");
-            return new UnauthenticatedUserContext();
+            return UnauthenticatedUserContext.Anonymous;
         }
         if (string.IsNullOrEmpty(accessToken))
         {
             _logger.LogTrace("No MS_TOKEN_AAD_ACCESS_TOKEN header found. User will be treated as anonymous.");
-            return new UnauthenticatedUserContext();
+            return UnauthenticatedUserContext.Anonymous;
         }
 
         var userProfile = await _userProfileService.GetCurrentUserProfileAsync(accessToken, context.RequestAborted);
         if (userProfile is null)
         {
             _logger.LogWarning("No user profile retrieved but access token is present. User will be treated as anonymous.");
-            return new UnauthenticatedUserContext();
+            return UnauthenticatedUserContext.Anonymous;
         }
         return userProfile;
     }

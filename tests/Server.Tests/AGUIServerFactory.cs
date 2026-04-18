@@ -24,7 +24,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
     /// Sets a custom Graph profile service to be used during tests.
     /// Call this before <see cref="WebApplicationFactory{TEntryPoint}.CreateClient"/>.
     /// </summary>
-    public AGUIServerFactory WithGraphService(IUserProfileService graphService)
+    public AGUIServerFactory WithUserProfileService(IUserProfileService graphService)
     {
         _graphService = graphService;
         return this;

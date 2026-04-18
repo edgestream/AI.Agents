@@ -33,20 +33,15 @@ public sealed class UserProfileSkill(IUserContextAccessor userContextAccessor) :
     public string GetUserProfile()
     {
         var userContext = userContextAccessor.UserContext;
-        var profile = new UserProfileToolResult(
-            UserId: userContext.IsAuthenticated ? userContext.UserId : null,
-            DisplayName: userContext.DisplayName,
-            Email: userContext.Email,
-            IsAuthenticated: userContext.IsAuthenticated);
-
-        return JsonSerializer.Serialize(profile);
+        
+        return JsonSerializer.Serialize(new
+        {
+            userId = userContext.UserId,
+            displayName = userContext.DisplayName,
+            email = userContext.Email,
+            isAuthenticated = userContext.IsAuthenticated
+        });
     }
-
-    private sealed record UserProfileToolResult(
-        string? UserId,
-        string? DisplayName,
-        string? Email,
-        bool IsAuthenticated);
 }
 
 #pragma warning restore MAAI001

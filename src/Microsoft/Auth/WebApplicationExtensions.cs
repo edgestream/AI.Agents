@@ -20,7 +20,7 @@ public static class WebApplicationExtensions
     /// </summary>
     /// <param name="app">The <see cref="WebApplication"/> to add the endpoint to.</param>
     /// <param name="endpoint">The endpoint path.</param>
-    public static void MapGraphProfileEndpoint(this WebApplication app, string endpoint)
+    public static WebApplication MapGraphProfileEndpoint(this WebApplication app, string endpoint)
     {
         app.MapGet(endpoint, (IUserContextAccessor userContextAccessor) =>
         {
@@ -41,5 +41,6 @@ public static class WebApplicationExtensions
                 picture = userContext.Picture
             });
         });
+        return app;
     }
 }

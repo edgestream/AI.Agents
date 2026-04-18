@@ -32,13 +32,19 @@ public sealed class AuthenticationTests
     [TestMethod]
     public void UserContext_Anonymous_IsNotAuthenticated()
     {
-        var context = new UnauthenticatedUserContext();
+        var context = UnauthenticatedUserContext.Anonymous;
 
         Assert.IsFalse(context.IsAuthenticated);
         Assert.AreEqual(string.Empty, context.UserId);
         Assert.IsNull(context.DisplayName);
         Assert.IsNull(context.Email);
         Assert.IsNull(context.AccessToken);
+    }
+
+    [TestMethod]
+    public void UserContext_Anonymous_UsesSharedInstance()
+    {
+        Assert.AreSame(UnauthenticatedUserContext.Anonymous, UnauthenticatedUserContext.Anonymous);
     }
 
     [TestMethod]

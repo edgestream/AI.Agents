@@ -6,7 +6,7 @@ namespace AI.Agents.Abstractions;
 public interface IUserContextAccessor
 {
     /// <summary>
-    /// Gets the current user context, or <see cref="UnauthenticatedUserContext"/> if not available.
+    /// Gets the current user context, or <see cref="UnauthenticatedUserContext.Anonymous"/> if not available.
     /// </summary>
     IUserContext UserContext { get; }
 }
