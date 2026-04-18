@@ -19,7 +19,9 @@ public sealed class UserProfileSkillTests
                 new GraphUserContext(
                     userId: "user-123",
                     displayName: "Mario Rossi",
-                    email: "mario@example.com")
+                    email: "mario@example.com",
+                    picture: "data:image/jpeg;base64,large-payload",
+                    accessToken: "secret-token")
                 )
             );
 
@@ -30,6 +32,8 @@ public sealed class UserProfileSkillTests
         Assert.AreEqual("Mario Rossi", json.RootElement.GetProperty("DisplayName").GetString());
         Assert.AreEqual("mario@example.com", json.RootElement.GetProperty("Email").GetString());
         Assert.IsTrue(json.RootElement.GetProperty("IsAuthenticated").GetBoolean());
+        Assert.IsFalse(json.RootElement.TryGetProperty("Picture", out _));
+        Assert.IsFalse(json.RootElement.TryGetProperty("AccessToken", out _));
     }
 
     [TestMethod]
@@ -40,8 +44,11 @@ public sealed class UserProfileSkillTests
         var result = skill.GetUserProfile();
 
         var json = JsonDocument.Parse(result);
+        Assert.AreEqual(JsonValueKind.Null, json.RootElement.GetProperty("UserId").ValueKind);
         Assert.AreEqual(JsonValueKind.Null, json.RootElement.GetProperty("DisplayName").ValueKind);
         Assert.IsFalse(json.RootElement.GetProperty("IsAuthenticated").GetBoolean());
+        Assert.IsFalse(json.RootElement.TryGetProperty("Picture", out _));
+        Assert.IsFalse(json.RootElement.TryGetProperty("AccessToken", out _));
     }
 
     [TestMethod]

@@ -32,8 +32,21 @@ public sealed class UserProfileSkill(IUserContextAccessor userContextAccessor) :
     [Description("Returns the current authenticated user's profile from the current request identity.")]
     public string GetUserProfile()
     {
-        return JsonSerializer.Serialize(userContextAccessor.UserContext);
+        var userContext = userContextAccessor.UserContext;
+        var profile = new UserProfileToolResult(
+            UserId: userContext.IsAuthenticated ? userContext.UserId : null,
+            DisplayName: userContext.DisplayName,
+            Email: userContext.Email,
+            IsAuthenticated: userContext.IsAuthenticated);
+
+        return JsonSerializer.Serialize(profile);
     }
+
+    private sealed record UserProfileToolResult(
+        string? UserId,
+        string? DisplayName,
+        string? Email,
+        bool IsAuthenticated);
 }
 
 #pragma warning restore MAAI001
