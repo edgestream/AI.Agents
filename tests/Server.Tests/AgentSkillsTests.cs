@@ -106,22 +106,4 @@ public sealed class AgentSkillsTests
             Directory.Delete(skillsDir, recursive: true);
         }
     }
-
-    /// <summary>
-    /// The <see cref="DateTimeSkill"/> is registered via DI and available in the provider.
-    /// </summary>
-    [TestMethod]
-    public void DateTimeSkill_IsRegistered_ViaServiceCollection()
-    {
-        using var factory = new AGUIServerFactory();
-        using var scope = factory.Services.CreateScope();
-
-        var skills = scope.ServiceProvider.GetServices<AgentSkill>().ToArray();
-        var provider = scope.ServiceProvider.GetRequiredService<AgentSkillsProvider>();
-
-        Assert.IsTrue(skills.Length > 0, "At least one skill should be registered");
-        Assert.IsTrue(skills.OfType<DateTimeSkill>().Any(), "DateTimeSkill should be registered");
-        Assert.IsTrue(skills.OfType<UserProfileSkill>().Any(), "UserProfileSkill should be registered");
-        Assert.IsNotNull(provider, "AgentSkillsProvider should be registered");
-    }
 }

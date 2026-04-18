@@ -1,4 +1,3 @@
-using System.Net.Http.Headers;
 using AI.Agents.Abstractions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
@@ -8,77 +7,46 @@ using Microsoft.Kiota.Http.HttpClientLibrary;
 namespace AI.Agents.Microsoft.Auth;
 
 /// <summary>
-/// Implementation of <see cref="IGraphProfileService"/> using the Microsoft Graph SDK.
+/// Implementation of <see cref="IUserProfileService"/> using the Microsoft Graph SDK.
 /// </summary>
-public sealed class GraphProfileService : IGraphProfileService
+public sealed class GraphUserProfileService : IUserProfileService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ILogger<GraphProfileService> _logger;
+    private readonly ILogger<GraphUserProfileService> _logger;
 
-    public GraphProfileService(IHttpClientFactory httpClientFactory, ILogger<GraphProfileService> logger)
+    public GraphUserProfileService(IHttpClientFactory httpClientFactory, ILogger<GraphUserProfileService> logger)
     {
         _httpClientFactory = httpClientFactory;
         _logger = logger;
     }
 
     /// <inheritdoc />
-    public async Task<GraphUserProfile?> GetCurrentUserProfileAsync(string accessToken, CancellationToken cancellationToken = default)
+    public async Task<IUserContext?> GetCurrentUserProfileAsync(string accessToken, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(accessToken))
-        {
-            return null;
-        }
-
-        try
-        {
-            var graphClient = CreateGraphClient(accessToken);
-
-            var user = await graphClient.Me.GetAsync(
-                requestConfiguration =>
-                {
-                    requestConfiguration.QueryParameters.Select = ["id", "displayName", "mail", "userPrincipalName", "givenName", "surname"];
-                },
-                cancellationToken);
-
-            if (user is null)
-            {
-                return null;
-            }
-
-            return new GraphUserProfile(
-                DisplayName: user.DisplayName,
-                Mail: user.Mail,
-                UserPrincipalName: user.UserPrincipalName,
-                GivenName: user.GivenName,
-                Surname: user.Surname,
-                Id: user.Id);
-        }
-        catch (global::Microsoft.Graph.Models.ODataErrors.ODataError ex) when (ex.ResponseStatusCode == 401 || ex.ResponseStatusCode == 403)
-        {
-            _logger.LogWarning(ex, "Graph access denied fetching profile (HTTP {StatusCode}). The app registration is missing the Microsoft Graph User.Read delegated permission or admin consent has not been granted.", ex.ResponseStatusCode);
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogWarning(ex, "Failed to retrieve Graph profile.");
-            return null;
-        }
+        var authProvider = new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken));
+        var httpClient = _httpClientFactory.CreateClient("MicrosoftGraph");
+        var requestAdapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient);
+        var serviceClient = new GraphServiceClient(requestAdapter);
+        var user = await serviceClient.Me.GetAsync(requestConfiguration => { requestConfiguration.QueryParameters.Select = ["id", "displayName", "mail", "userPrincipalName", "givenName", "surname"]; }, cancellationToken);
+        if (user is null) return null;
+        var picture = await GetCurrentUserPhotoAsDataUrlAsync(serviceClient, accessToken, cancellationToken);
+        return new GraphUserContext(
+            userId: user.Id!,
+            displayName: user.DisplayName,
+            email: user.Mail,
+            picture: picture,
+            accessToken: accessToken);
     }
 
-    /// <inheritdoc />
-    public async Task<string?> GetCurrentUserPhotoAsDataUrlAsync(string accessToken, CancellationToken cancellationToken = default)
+    internal async Task<string?> GetCurrentUserPhotoAsDataUrlAsync(GraphServiceClient client, string accessToken, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(accessToken))
         {
             return null;
         }
-
         try
         {
-            var graphClient = CreateGraphClient(accessToken);
-
-            await using var photoStream = await graphClient.Me.Photo.Content.GetAsync(cancellationToken: cancellationToken);
-
+            await using var photoStream = await client.Me.Photo.Content.GetAsync(cancellationToken: cancellationToken);
             if (photoStream is null)
             {
                 return null;
@@ -113,14 +81,6 @@ public sealed class GraphProfileService : IGraphProfileService
             _logger.LogWarning(ex, "Failed to retrieve Graph photo.");
             return null;
         }
-    }
-
-    private GraphServiceClient CreateGraphClient(string accessToken)
-    {
-        var authProvider = new BaseBearerTokenAuthenticationProvider(new StaticAccessTokenProvider(accessToken));
-        var httpClient = _httpClientFactory.CreateClient("MicrosoftGraph");
-        var requestAdapter = new HttpClientRequestAdapter(authProvider, httpClient: httpClient);
-        return new GraphServiceClient(requestAdapter);
     }
 
     private static string DetectImageMimeType(byte[] imageBytes)

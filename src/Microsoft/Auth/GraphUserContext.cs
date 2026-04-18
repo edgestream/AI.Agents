@@ -3,14 +3,14 @@ using AI.Agents.Abstractions;
 namespace AI.Agents.Microsoft.Auth;
 
 /// <summary>
-/// Default implementation of <see cref="IUserContext"/> for the current HTTP request.
+/// Graph implementation of <see cref="IUserContext"/> for the current HTTP request.
 /// </summary>
-public sealed class UserContext : IUserContext
+public sealed class GraphUserContext : IUserContext
 {
     /// <summary>
-    /// Initializes a new instance of <see cref="UserContext"/> for an authenticated user.
+    /// Initializes a new instance of <see cref="GraphUserContext"/> for an authenticated user.
     /// </summary>
-    public UserContext(
+    public GraphUserContext(
         string userId,
         string? displayName = null,
         string? email = null,
@@ -27,9 +27,9 @@ public sealed class UserContext : IUserContext
     }
 
     /// <summary>
-    /// Initializes a new instance of <see cref="UserContext"/> for an anonymous user.
+    /// Initializes a new instance of <see cref="GraphUserContext"/> for an anonymous user.
     /// </summary>
-    private UserContext()
+    private GraphUserContext()
     {
         UserId = string.Empty;
         IsAuthenticated = false;
@@ -52,9 +52,4 @@ public sealed class UserContext : IUserContext
 
     /// <inheritdoc />
     public bool IsAuthenticated { get; }
-
-    /// <summary>
-    /// Returns a singleton representing an anonymous (unauthenticated) user context.
-    /// </summary>
-    public static IUserContext Anonymous { get; } = new UserContext();
 }

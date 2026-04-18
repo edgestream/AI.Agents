@@ -18,13 +18,13 @@ namespace AI.Agents.Server.Tests;
 /// </summary>
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
-    private IGraphProfileService? _graphService;
+    private IUserProfileService? _graphService;
 
     /// <summary>
     /// Sets a custom Graph profile service to be used during tests.
     /// Call this before <see cref="WebApplicationFactory{TEntryPoint}.CreateClient"/>.
     /// </summary>
-    public AGUIServerFactory WithGraphService(IGraphProfileService graphService)
+    public AGUIServerFactory WithUserProfileService(IUserProfileService graphService)
     {
         _graphService = graphService;
         return this;
@@ -84,7 +84,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             if (_graphService is not null)
             {
                 var graphDescriptor = services.SingleOrDefault(
-                    d => d.ServiceType == typeof(IGraphProfileService));
+                    d => d.ServiceType == typeof(IUserProfileService));
                 if (graphDescriptor is not null)
                 {
                     services.Remove(graphDescriptor);
