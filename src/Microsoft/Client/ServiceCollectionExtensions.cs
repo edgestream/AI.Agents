@@ -91,7 +91,9 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(sp =>
         {
             var openAIChatClient = sp.GetRequiredService<ChatClient>();
-            return openAIChatClient.AsIChatClient();
+            var innerClient = openAIChatClient.AsIChatClient();
+            // Wrap with token usage tracking
+            return new Client.TokenUsageTrackingChatClient(innerClient);
         });
 
         return services;
