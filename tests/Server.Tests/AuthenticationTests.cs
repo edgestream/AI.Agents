@@ -1,3 +1,4 @@
+using AI.Agents.Abstractions;
 using AI.Agents.MCP;
 using AI.Agents.Microsoft.Auth;
 using AI.Agents.OAuth;
@@ -13,7 +14,7 @@ public sealed class AuthenticationTests
     [TestMethod]
     public void UserContext_Authenticated_HasProperties()
     {
-        var context = new UserContext(
+        var context = new GraphUserContext(
             userId: "user-123",
             displayName: "Test User",
             email: "test@example.com",
@@ -31,7 +32,7 @@ public sealed class AuthenticationTests
     [TestMethod]
     public void UserContext_Anonymous_IsNotAuthenticated()
     {
-        var context = UserContext.Anonymous;
+        var context = new UnauthenticatedUserContext();
 
         Assert.IsFalse(context.IsAuthenticated);
         Assert.AreEqual(string.Empty, context.UserId);

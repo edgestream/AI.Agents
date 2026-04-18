@@ -16,17 +16,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
-// Add authentication services
-builder.Services.AddUserContext();
-builder.Services.AddGraphProfileService();
-builder.Services.AddMcpOAuth();
-builder.Services.AddMCPAuthorizationService();
-
-// Add MCP client for OAuth configuration lookup
-builder.Services.AddMCPClient();
-
+builder.Services.AddGraphUserProfileService();
 builder.Services.AddAIProjectClient();
-builder.Services.AddAIAgentSkill<DateTimeSkill>();
 builder.Services.AddAIAgentSkill<UserProfileSkill>();
 builder.Services.AddAIAgent("agui-agent", (sp, key) =>
 {
@@ -46,38 +37,17 @@ builder.Services.AddAIAgent("agui-agent", (sp, key) =>
         },
         services: sp);
 });
+builder.Services.AddMCPClient();
+builder.Services.AddMCPOAuth();
+builder.Services.AddMCPAuthorizationService();
 
 var app = builder.Build();
 
-// Add user context middleware early in the pipeline
-app.UseUserContext();
+app.UseEntraAuthMiddleware();
 
-app.MapGet("/health", () => "OK");
-
-// Map user info endpoint for frontend
-app.MapGet("/api/me", (IUserContextAccessor userContextAccessor) =>
-{
-    var userContext = userContextAccessor.UserContext;
-    if (!userContext.IsAuthenticated)
-    {
-        return Results.Json(new
-        {
-            authenticated = false
-        });
-    }
-    return Results.Json(new
-    {
-        authenticated = true,
-        userId = userContext.UserId,
-        displayName = userContext.DisplayName,
-        email = userContext.Email,
-        picture = userContext.Picture
-    });
-});
-
-// Map OAuth endpoints
+app.MapGraphProfileEndpoint("/api/me");
 app.MapOAuthEndpoints();
-
+app.MapGet("/health", () => "OK");
 app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("agui-agent"));
 
 await app.RunAsync();

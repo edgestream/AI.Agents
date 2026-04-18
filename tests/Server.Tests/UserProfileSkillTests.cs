@@ -14,39 +14,40 @@ public sealed class UserProfileSkillTests
     [TestMethod]
     public void GetUserFullName_ReturnsDisplayName_ForAuthenticatedUser()
     {
-        var skill = new UserProfileSkill(new TestUserContextAccessor(
-            new UserContext(
-                userId: "user-123",
-                displayName: "Mario Rossi",
-                email: "mario@example.com")));
+        var skill = new UserProfileSkill(
+            new TestUserContextAccessor(
+                new GraphUserContext(
+                    userId: "user-123",
+                    displayName: "Mario Rossi",
+                    email: "mario@example.com")
+                )
+            );
 
         var result = skill.GetUserProfile();
 
         var json = JsonDocument.Parse(result);
-        Assert.IsTrue(json.RootElement.GetProperty("available").GetBoolean());
-        Assert.AreEqual("Mario Rossi", json.RootElement.GetProperty("fullName").GetString());
-        Assert.AreEqual("mario@example.com", json.RootElement.GetProperty("email").GetString());
-        Assert.AreEqual("user-123", json.RootElement.GetProperty("userId").GetString());
-        Assert.IsTrue(json.RootElement.GetProperty("isAuthenticated").GetBoolean());
+        Assert.AreEqual("user-123", json.RootElement.GetProperty("UserId").GetString());
+        Assert.AreEqual("Mario Rossi", json.RootElement.GetProperty("DisplayName").GetString());
+        Assert.AreEqual("mario@example.com", json.RootElement.GetProperty("Email").GetString());
+        Assert.IsTrue(json.RootElement.GetProperty("IsAuthenticated").GetBoolean());
     }
 
     [TestMethod]
     public void GetUserFullName_ReturnsUnavailable_WhenUserIsAnonymous()
     {
-        var skill = new UserProfileSkill(new TestUserContextAccessor(UserContext.Anonymous));
+        var skill = new UserProfileSkill(new TestUserContextAccessor(new UnauthenticatedUserContext()));
 
         var result = skill.GetUserProfile();
 
         var json = JsonDocument.Parse(result);
-        Assert.IsFalse(json.RootElement.GetProperty("available").GetBoolean());
-        Assert.AreEqual(JsonValueKind.Null, json.RootElement.GetProperty("fullName").ValueKind);
-        Assert.IsFalse(json.RootElement.GetProperty("isAuthenticated").GetBoolean());
+        Assert.AreEqual(JsonValueKind.Null, json.RootElement.GetProperty("DisplayName").ValueKind);
+        Assert.IsFalse(json.RootElement.GetProperty("IsAuthenticated").GetBoolean());
     }
 
     [TestMethod]
     public void Frontmatter_HasExpectedValues()
     {
-        var skill = new UserProfileSkill(new TestUserContextAccessor(UserContext.Anonymous));
+        var skill = new UserProfileSkill(new TestUserContextAccessor(new UnauthenticatedUserContext()));
 
         Assert.AreEqual("user-profile", skill.Frontmatter.Name);
         Assert.IsTrue(skill.Frontmatter.Description.Contains("user", StringComparison.OrdinalIgnoreCase));

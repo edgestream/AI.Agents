@@ -19,7 +19,7 @@ public static class OAuthExtensions
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <returns>The service collection for chaining.</returns>
-    public static IServiceCollection AddMcpOAuth(this IServiceCollection services)
+    public static IServiceCollection AddMCPOAuth(this IServiceCollection services)
     {
         services.AddMemoryCache();
         services.AddHttpClient<IOAuthService, OAuthService>();

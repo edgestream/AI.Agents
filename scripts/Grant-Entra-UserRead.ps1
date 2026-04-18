@@ -9,10 +9,10 @@
     Defaults to Production.
 
 .EXAMPLE
-    ./scripts/grant-graph-userread-admin-consent.ps1
+    ./scripts/Grant-Entra-UserRead.ps1
 
 .EXAMPLE
-    ./scripts/grant-graph-userread-admin-consent.ps1 -EnvironmentName Production
+    ./scripts/Grant-Entra-UserRead.ps1 -EnvironmentName Production
 #>
 param(
     [string] $EnvironmentName = 'Production'
