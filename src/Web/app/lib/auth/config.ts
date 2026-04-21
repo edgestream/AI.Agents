@@ -63,9 +63,16 @@ export function getRedirectUri(): string {
 }
 
 /**
+ * Application root derived from the configured redirect URI.
+ */
+export function getAppRootUri(): string {
+  return new URL("/", getRedirectUri()).toString();
+}
+
+/**
  * Post-logout redirect URI.
- * Defaults to `http://localhost:3000`.
+ * Defaults to the application root derived from `AUTH_REDIRECT_URI`.
  */
 export function getPostLogoutRedirectUri(): string {
-  return process.env.AUTH_POST_LOGOUT_REDIRECT_URI ?? "http://localhost:3000";
+  return process.env.AUTH_POST_LOGOUT_REDIRECT_URI ?? getAppRootUri();
 }

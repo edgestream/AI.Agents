@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { canSignIn, isLocalAuth, getPostLogoutRedirectUri } from "@/app/lib/auth/config";
+import { canSignIn, isLocalAuth, getAppRootUri } from "@/app/lib/auth/config";
 import { acquireTokenByCode } from "@/app/lib/auth/msal";
 import { type AuthSession } from "@/app/lib/auth/session";
 import { storeNonce } from "@/app/lib/auth/nonceStore";
@@ -58,12 +58,11 @@ export async function GET(request: NextRequest) {
       principalName,
     };
 
-    // Chrome blocks Set-Cookie on cross-site responses (HTTPS Entra → HTTP localhost).
-    // Fix: redirect the browser to /api/auth/commit?nonce=... which is a same-site
-    // HTTP→HTTP request. Chrome accepts Set-Cookie on that same-site response.
+    // Chrome can reject Set-Cookie on the cross-site Entra callback response.
+    // Redirect to a same-site commit URL first, then set the cookie there.
     const nonce = crypto.randomUUID();
     storeNonce(nonce, session);
-    const commitUrl = new URL("/api/auth/commit", getPostLogoutRedirectUri());
+    const commitUrl = new URL("/api/auth/commit", getAppRootUri());
     commitUrl.searchParams.set("nonce", nonce);
     return NextResponse.redirect(commitUrl.toString());
   } catch (error) {
