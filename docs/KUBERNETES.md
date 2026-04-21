@@ -2,6 +2,8 @@
 
 The directory `deploy/k8s` contains a minimal Kustomize base for running AI.Agents on a Kubernetes cluster.
 
+The base is pinned to the `development` namespace.
+
 The base creates:
 
 - a backend deployment and service on port `8080`
@@ -30,13 +32,13 @@ The frontend auth secret is optional. Without it, the web app still runs in anon
 
 An example is provided in `frontend-auth-secret.example.yaml`.
 
-## Creating namespace
+## Creating the development namespace
 
-Create and switch to the newly created namespace first, so secrets can be added before the workloads are scheduled:
+Create the `development` namespace first so the required secrets exist before the workloads are scheduled:
 
 ```bash
-kubectl create namespace agents
-kubectl config set-context --current --namespace=agents
+kubectl create namespace development
+kubectl config set-context --current --namespace=development
 ```
 
 ## Creating secrets
@@ -49,23 +51,25 @@ cp deploy/k8s/backend-azure-identity-secret.example.yaml deploy/k8s/backend-azur
 cp deploy/k8s/frontend-auth-secret.example.yaml deploy/k8s/frontend-auth-secret.yaml
 ```
 
-Edit the secret settings and apply them to the current namespace:
+Edit the secret settings and apply them to the `development` namespace:
 
 ```bash
-kubectl apply -f deploy/k8s/backend-appsettings-secret.yaml
-kubectl apply -f deploy/k8s/backend-azure-identity-secret.yaml
-kubectl apply -f deploy/k8s/frontend-auth-secret.yaml
+kubectl apply -n development -f deploy/k8s/backend-appsettings-secret.yaml
+kubectl apply -n development -f deploy/k8s/backend-azure-identity-secret.yaml
+kubectl apply -n development -f deploy/k8s/frontend-auth-secret.yaml
 ```
 
 Or you may create them directly from local configuration files:
 
 ```bash
 kubectl create secret generic agents-backend-appsettings \
+  -n development \
   --from-file=appsettings.Production.json=appsettings.Production.json
 ```
 
 ```bash
 kubectl create secret generic agents-backend-azure-identity \
+  -n development \
   --from-literal=AZURE_TENANT_ID=<tenant-id> \
   --from-literal=AZURE_CLIENT_ID=<client-id> \
   --from-literal=AZURE_CLIENT_SECRET=<client-secret>
@@ -78,6 +82,8 @@ If you want frontend sign-in enabled, add the optional frontend auth secret too.
 ```bash
 kubectl apply -k deploy/k8s
 ```
+
+The base declares the Service selector labels directly in the workload manifests, and `deploy/k8s/kustomization.yaml` sets `namespace: development`, so `kubectl apply -k deploy/k8s` always deploys these resources into the `development` namespace.
 
 ## Ingress Notes
 
