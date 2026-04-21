@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agents-backend
+  labels:
+    app.kubernetes.io/name: agents-backend
+    app.kubernetes.io/part-of: development
+spec:
+  selector:
+    app.kubernetes.io/name: agents-backend
+    app.kubernetes.io/part-of: development
+  ports:
+    - name: http
+      port: 8080
+      targetPort: http

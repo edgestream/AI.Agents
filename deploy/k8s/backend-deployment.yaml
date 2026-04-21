@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agents-backend
+  labels:
+    app.kubernetes.io/name: agents-backend
+    app.kubernetes.io/part-of: development
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: agents-backend
+      app.kubernetes.io/part-of: development
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: agents-backend
+        app.kubernetes.io/part-of: development
+    spec:
+      containers:
+        - name: backend
+          image: ghcr.io/edgestream/agents-server:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Production
+            - name: ASPNETCORE_URLS
+              value: http://0.0.0.0:8080
+          envFrom:
+            - secretRef:
+                name: agents-backend-azure-identity
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+          volumeMounts:
+            - name: appsettings
+              mountPath: /run/secrets/appsettings.Production.json
+              subPath: appsettings.Production.json
+              readOnly: true
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            failureThreshold: 30
+            periodSeconds: 5
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: appsettings
+          secret:
+            secretName: agents-backend-appsettings

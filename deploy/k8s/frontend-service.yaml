@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agents-frontend
+  labels:
+    app.kubernetes.io/name: agents-frontend
+    app.kubernetes.io/part-of: development
+spec:
+  selector:
+    app.kubernetes.io/name: agents-frontend
+    app.kubernetes.io/part-of: development
+  ports:
+    - name: http
+      port: 3000
+      targetPort: http
