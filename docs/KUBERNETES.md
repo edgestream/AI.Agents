@@ -32,6 +32,19 @@ The frontend auth secret is optional. Without it, the web app still runs in anon
 
 An example is provided in `frontend-auth-secret.example.yaml`.
 
+If you enable `agents-frontend-auth`, the frontend uses this repo's built-in Entra authorization-code flow behind your Kubernetes ingress. That means the shared Entra app registration must contain a **Web** redirect URI that exactly matches the `AUTH_REDIRECT_URI` value you deploy.
+
+Keep these redirect URI entries on the same app registration when you reuse it across environments:
+
+- `http://localhost:3000/api/auth/callback` for local development
+- `https://<your-host>/api/auth/callback` for each Kubernetes ingress host you configure in `AUTH_REDIRECT_URI`
+
+Set `AUTH_POST_LOGOUT_REDIRECT_URI` to `https://<your-host>/` if you want an explicit logout landing page. If it is omitted, the frontend now derives the app root from `AUTH_REDIRECT_URI` so hosted sign-in and sign-out do not fall back to `localhost`.
+
+If the same app registration is also used by Azure Container Apps Easy Auth, keep those `https://<aca-host>/.auth/login/aad/callback` entries too.
+
+If the value sent by the frontend and the app registration differ, Microsoft Entra returns `AADSTS50011`.
+
 ## Creating the development namespace
 
 Create the `development` namespace first so the required secrets exist before the workloads are scheduled:
@@ -76,6 +89,17 @@ kubectl create secret generic agents-backend-azure-identity \
 ```
 
 If you want frontend sign-in enabled, add the optional frontend auth secret too.
+
+Before you apply `frontend-auth-secret.yaml`, add the matching Kubernetes callback URI to the shared app registration in **Authentication** -> **Web**. If you use Azure CLI, include every existing redirect URI in the update command because `az ad app update --web-redirect-uris` replaces the full list.
+
+Example:
+
+```powershell
+az ad app update --id <client-id> \
+  --web-redirect-uris \
+    http://localhost:3000/api/auth/callback \
+    https://<your-host>/api/auth/callback
+```
 
 ## Apply the base
 

@@ -76,9 +76,15 @@ azd env set ENTRA_CLIENT_SECRET <client-secret>
 azd env set ENTRA_TENANT_ID <tenant-id>
 ```
 
-## Local Auth Reuse
+## Local Auth and Kubernetes Reuse
 
-If you use the local auth flow in [AZURE_ENTRA_LOCAL_AUTH.md](AZURE_ENTRA_LOCAL_AUTH.md), keep both the hosted callback URI and the localhost callback URI on the same app registration as separate redirect URI entries.
+If you reuse the runtime app registration for the local auth flow in [AZURE_ENTRA_LOCAL_AUTH.md](AZURE_ENTRA_LOCAL_AUTH.md) or for the optional Kubernetes frontend auth secret in [KUBERNETES.md](KUBERNETES.md), keep separate redirect URI entries for each deployed host:
+
+- `http://localhost:3000/api/auth/callback`
+- `https://<k8s-ingress-host>/api/auth/callback` for each Kubernetes ingress host that sets `AUTH_REDIRECT_URI`
+- any Azure Container Apps Easy Auth callback such as `https://<stage-app-fqdn>/.auth/login/aad/callback`
+
+The redirect URI sent by the app must exactly match one of those registered entries or sign-in fails with `AADSTS50011`.
 
 The local bootstrap script writes the same credential values into both `ENTRA_*` and `AZURE_*` environment variables because `DefaultAzureCredential` still expects the `AZURE_*` names.
 
