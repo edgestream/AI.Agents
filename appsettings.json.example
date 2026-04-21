@@ -6,5 +6,12 @@
   },
   "Foundry": {
     "Endpoint": ""
+  },
+  "OpenAI": {
+    "ApiKey": "",
+    "ModelId": "",
+    "Endpoint": "",
+    "OrganizationId": "",
+    "ProjectId": ""
   }
 }

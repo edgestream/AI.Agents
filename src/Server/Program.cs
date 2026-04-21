@@ -16,21 +16,26 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
+var defaultModelId = builder.Configuration["OpenAI:ModelId"]
+    ?? builder.Configuration["AzureOpenAI:DeploymentName"]
+    ?? builder.Configuration["Foundry:ModelId"]
+    ?? "gpt-5.3-chat";
+
 builder.Services.AddGraphUserProfileService();
-builder.Services.AddAIProjectClient();
+builder.Services.AddAIClient(builder.Configuration);
 builder.Services.AddAIAgentSkill<UserProfileSkill>();
 builder.Services.AddAIAgent("agui-agent", (sp, key) =>
 {
-    var projectClient = sp.GetRequiredService<AIProjectClient>();
+    var chatClient = sp.GetRequiredService<IChatClient>();
     var skillsProvider = sp.GetRequiredService<AgentSkillsProvider>();
-    return projectClient.AsAIAgent(
+    return chatClient.AsAIAgent(
         new ChatClientAgentOptions
         {
             Name = key,
             Description = "Generic Agent",
             ChatOptions = new()
             {
-                ModelId = "gpt-5.3-chat",
+                ModelId = defaultModelId,
                 Instructions = """You are a helpful assistant."""
             },
             AIContextProviders = [skillsProvider]
