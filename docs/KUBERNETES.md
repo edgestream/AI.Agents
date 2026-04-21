@@ -1,28 +1,20 @@
-# Kubernetes Deployment
+# Kubernetes
 
-This directory contains a minimal Kustomize base for running AI.Agents on a Kubernetes cluster with the already-built container images.
+The directory `deploy/k8s` contains a minimal Kustomize base for running AI.Agents on a Kubernetes cluster.
 
 The base creates:
 
-- a namespace named `ai-agents`
 - a backend deployment and service on port `8080`
 - a frontend deployment and service on port `3000`
 - an ingress that routes traffic to the frontend service
 
-The backend and frontend images default to:
-
-- `ghcr.io/edgestream/agents-server:latest`
-- `ghcr.io/edgestream/agents-web:latest`
-
-Update the `images` block in `kustomization.yaml` if you want to pin a different tag.
-
 ## Required Secrets
 
-The backend will not start until these secrets exist in the `ai-agents` namespace:
+The backend will not start until these secrets exist:
 
-- `ai-agents-backend-appsettings`
+- `agents-backend-appsettings`
   - must contain a file key named `appsettings.Production.json`
-- `ai-agents-backend-azure-identity`
+- `agents-backend-azure-identity`
   - must contain `AZURE_TENANT_ID`, `AZURE_CLIENT_ID`, and `AZURE_CLIENT_SECRET`
 
 Example manifests are provided in:
@@ -32,29 +24,48 @@ Example manifests are provided in:
 
 The frontend auth secret is optional. Without it, the web app still runs in anonymous local-auth mode.
 
-- `ai-agents-frontend-auth`
+- `agents-frontend-auth`
   - optional
   - useful when you want interactive Entra sign-in in front of the cluster ingress
 
 An example is provided in `frontend-auth-secret.example.yaml`.
 
-## Apply Order
+## Creating namespace
 
-Create the namespace first so secrets can be added before the workloads are scheduled:
+Create and switch to the newly created namespace first, so secrets can be added before the workloads are scheduled:
 
 ```bash
-kubectl apply -f deploy/k8s/namespace.yaml
+kubectl create namespace agents
+kubectl config set-context --current --namespace=agents
 ```
 
-Create the required secrets in that namespace, either from the example manifests or directly from local files. For example:
+## Creating secrets
+
+Create the required secrets by copying the example manifests:
 
 ```bash
-kubectl create secret generic ai-agents-backend-appsettings \
-  --namespace ai-agents \
-  --from-file=appsettings.Production.json=appsettings.Production.json
+cp deploy/k8s/backend-appsettings-secret.example.yaml deploy/k8s/backend-appsettings-secret.yaml
+cp deploy/k8s/backend-azure-identity-secret.example.yaml deploy/k8s/backend-azure-identity-secret.yaml
+cp deploy/k8s/frontend-auth-secret.example.yaml deploy/k8s/frontend-auth-secret.yaml
+```
 
-kubectl create secret generic ai-agents-backend-azure-identity \
-  --namespace ai-agents \
+Edit the secret settings and apply them to the current namespace:
+
+```bash
+kubectl apply -f deploy/k8s/backend-appsettings-secret.yaml
+kubectl apply -f deploy/k8s/backend-azure-identity-secret.yaml
+kubectl apply -f deploy/k8s/frontend-auth-secret.yaml
+```
+
+Or you may create them directly from local configuration files:
+
+```bash
+kubectl create secret generic agents-backend-appsettings \
+  --from-file=appsettings.Production.json=appsettings.Production.json
+```
+
+```bash
+kubectl create secret generic agents-backend-azure-identity \
   --from-literal=AZURE_TENANT_ID=<tenant-id> \
   --from-literal=AZURE_CLIENT_ID=<client-id> \
   --from-literal=AZURE_CLIENT_SECRET=<client-secret>
@@ -62,7 +73,7 @@ kubectl create secret generic ai-agents-backend-azure-identity \
 
 If you want frontend sign-in enabled, add the optional frontend auth secret too.
 
-Apply the base:
+## Apply the base
 
 ```bash
 kubectl apply -k deploy/k8s
@@ -83,5 +94,5 @@ If your ingress controller is not nginx, the nginx buffering annotation in `ingr
 ## Runtime Notes
 
 - The backend mounts `/run/secrets/appsettings.Production.json` because the server explicitly loads that path when `ASPNETCORE_ENVIRONMENT=Production`.
-- The frontend talks to the backend through the in-cluster service URL `http://ai-agents-backend:8080`.
+- The frontend talks to the backend through the in-cluster service URL `http://agents-backend:8080`.
 - The frontend readiness probe uses `/api/me` so it exercises the Next.js server without requiring a signed-in user.

@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ai-agents-backend
+  name: agents-backend
   labels:
-    app.kubernetes.io/name: ai-agents-backend
+    app.kubernetes.io/name: agents-backend
 spec:
   selector:
-    app.kubernetes.io/name: ai-agents-backend
+    app.kubernetes.io/name: agents-backend
   ports:
     - name: http
       port: 8080

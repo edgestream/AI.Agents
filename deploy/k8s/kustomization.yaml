@@ -1,10 +1,9 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: ai-agents
+namespace: development
 
 resources:
-  - namespace.yaml
   - backend-deployment.yaml
   - backend-service.yaml
   - frontend-deployment.yaml
@@ -23,4 +22,4 @@ labels:
   - includeSelectors: true
     includeTemplates: true
     pairs:
-      app.kubernetes.io/part-of: ai-agents
+      app.kubernetes.io/part-of: development
