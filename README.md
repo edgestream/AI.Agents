@@ -6,14 +6,13 @@
 
 ## Quickstart
 
-Copy the application settings example into `appsettings.Development.json` in the repository root and fill in your Azure OpenAI credentials:
+Copy the application settings example into `appsettings.Development.json` in the repository root and configure exactly one provider:
 
 ```appsettings.Development.json
 {
-  "AzureOpenAI": {
-    "Endpoint": "https://<your-resource>.openai.azure.com/",
-    "DeploymentName": "<your-deployment-name>",
-    "ApiKey": "<your-api-key>"
+  "OpenAI": {
+    "ApiKey": "<your-api-key>",
+    "ModelId": "<your-model-id>"
   }
 }
 ```
