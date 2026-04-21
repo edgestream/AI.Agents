@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { isLocalAuth, getPostLogoutRedirectUri } from "@/app/lib/auth/config";
+import { isLocalAuth, getAppRootUri } from "@/app/lib/auth/config";
 import { retrieveAndDeleteNonce } from "@/app/lib/auth/nonceStore";
 import { storeFullSession } from "@/app/lib/auth/serverSessionStore";
 import { COOKIE_NAME, COOKIE_MAX_AGE, isCookieSecure, encrypt, type SessionRef } from "@/app/lib/auth/session";
@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     ...(isCookieSecure() ? ["Secure"] : []),
   ].join("; ");
 
-  const appRoot = getPostLogoutRedirectUri();
+  const appRoot = getAppRootUri();
   const safeAppRoot = encodeURI(appRoot);
   const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${safeAppRoot}"><title>Signing in\u2026</title></head><body></body></html>`;
   return new Response(html, {
