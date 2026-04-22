@@ -183,10 +183,20 @@ public static class ServiceCollectionExtensions
         services.AddSingleton(sp =>
         {
             var options = sp.GetRequiredService<IOptions<OpenAISettings>>().Value;
-            //var responsesClient = sp.GetRequiredService<ResponsesClient>();
-            //return responsesClient.AsIChatClient(options.ModelId);
-            var chatClient = sp.GetRequiredService<ChatClient>();
-            return chatClient.AsIChatClient();
+            if (options.Protocol == OpenAIPProtocolSettings.Completions)
+            {
+                var chatClient = sp.GetRequiredService<ChatClient>();
+                return chatClient.AsIChatClient();
+            }
+            else if (options.Protocol == OpenAIPProtocolSettings.Responses)
+            {
+                var responsesClient = sp.GetRequiredService<ResponsesClient>();
+                return responsesClient.AsIChatClient(options.ModelId);
+            }
+            else
+            {
+                throw new Exception("Unsupported wire API protocol.");
+            }
         });
         return services;
     }
