@@ -12,6 +12,7 @@
     "ModelId": "",
     "Endpoint": "",
     "OrganizationId": "",
-    "ProjectId": ""
+    "ProjectId": "",
+    "Protocol": "responses"
   }
 }
