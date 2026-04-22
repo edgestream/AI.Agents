@@ -5,12 +5,20 @@ metadata:
   labels:
     app.kubernetes.io/name: agents-frontend
   annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    external-dns.alpha.kubernetes.io/cloudflare-proxied: "false"
+    external-dns.alpha.kubernetes.io/hostname: agents.dev.edgestream.cloud
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
 spec:
   ingressClassName: nginx
+  tls:
+    - hosts:
+        - agents.dev.edgestream.cloud
+      secretName: agents-frontend-tls
   rules:
-    - http:
+    - host: agents.dev.edgestream.cloud
+      http:
         paths:
           - path: /
             pathType: Prefix
