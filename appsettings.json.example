@@ -1,4 +1,7 @@
 {
+  "Auth": {
+    "RequireAuthenticationForAgent": false
+  },
   "AzureOpenAI": {
     "Endpoint": "",
     "DeploymentName": "",
