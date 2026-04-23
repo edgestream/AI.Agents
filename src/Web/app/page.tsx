@@ -71,7 +71,7 @@ export default function Page() {
     <>
       {/* Header with user info */}
       <header className="flex-none border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-end px-4 py-2">
+        <div className="flex items-center justify-start px-4 py-2">
           <UserMenu />
         </div>
       </header>

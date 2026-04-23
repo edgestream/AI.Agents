@@ -4,7 +4,7 @@ import "./globals.css";
 import "@copilotkit/react-ui/styles.css";
 
 export const metadata: Metadata = {
-  title: "AGUIChat",
+  title: "Agents",
   description: "AGUIChat is an AI-powered conversational interface for your applications.",
 };
 
