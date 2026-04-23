@@ -1,5 +1,6 @@
 using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Auth;
+using AI.Agents.Microsoft.Configuration;
 using AI.Agents.Microsoft.Skills;
 using AI.Agents.MCP;
 using AI.Agents.OAuth;
@@ -21,6 +22,7 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["Foundry:ModelId"]
     ?? "gpt-5.3-chat";
 
+builder.Services.AddOptions<AgentAccessSettings>().BindConfiguration("Auth");
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddAIClient(builder.Configuration);
 builder.Services.AddAIAgentSkill<UserProfileSkill>();
@@ -49,6 +51,7 @@ builder.Services.AddMCPAuthorizationService();
 var app = builder.Build();
 
 app.UseEntraAuthMiddleware();
+app.UseAgentAccessMiddleware();
 
 app.MapGraphProfileEndpoint("/api/me");
 app.MapOAuthEndpoints();
