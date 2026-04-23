@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { canSignIn, isLocalAuth, getAppRootUri } from "@/app/lib/auth/config";
+import { canSignIn, isLocalAuth, getAppRootUri, getRedirectUri } from "@/app/lib/auth/config";
 import { acquireTokenByCode } from "@/app/lib/auth/msal";
 import { type AuthSession } from "@/app/lib/auth/session";
 import { storeNonce } from "@/app/lib/auth/nonceStore";
@@ -36,7 +36,8 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await acquireTokenByCode(code);
+    const redirectUri = getRedirectUri(request);
+    const result = await acquireTokenByCode(code, redirectUri);
 
     if (!result) {
       return NextResponse.json({ error: "Token acquisition failed" }, { status: 500 });
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest) {
     // Redirect to a same-site commit URL first, then set the cookie there.
     const nonce = crypto.randomUUID();
     storeNonce(nonce, session);
-    const commitUrl = new URL("/api/auth/commit", getAppRootUri());
+    const commitUrl = new URL("/api/auth/commit", getAppRootUri(request));
     commitUrl.searchParams.set("nonce", nonce);
     return NextResponse.redirect(commitUrl.toString());
   } catch (error) {

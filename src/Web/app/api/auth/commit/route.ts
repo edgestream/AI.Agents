@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     ...(isCookieSecure() ? ["Secure"] : []),
   ].join("; ");
 
-  const appRoot = getAppRootUri();
+  const appRoot = getAppRootUri(request);
   const safeAppRoot = encodeURI(appRoot);
   const html = `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0; url=${safeAppRoot}"><title>Signing in\u2026</title></head><body></body></html>`;
   return new Response(html, {
