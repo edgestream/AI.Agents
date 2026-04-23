@@ -32,12 +32,14 @@ The frontend auth secret is optional. Without it, the web app still runs in anon
 
 An example is provided in `frontend-auth-secret.example.yaml`.
 
-If you enable `agents-frontend-auth`, the frontend uses this repo's built-in Entra authorization-code flow behind your Kubernetes ingress. That means the shared Entra app registration must contain a **Web** redirect URI that exactly matches the `AUTH_REDIRECT_URI` value you deploy.
+If you enable `agents-frontend-auth`, the frontend uses this repo's built-in Entra authorization-code flow behind your Kubernetes ingress. Ingress-hosted requests still use the deployed `AUTH_REDIRECT_URI`, but loopback requests such as `kubectl port-forward` now use the active localhost origin instead of bouncing through the ingress host. The shared Entra app registration must therefore contain a **Web** redirect URI for each hosted ingress host and for each localhost port you actually use.
 
 Keep these redirect URI entries on the same app registration when you reuse it across environments:
 
 - `http://localhost:3000/api/auth/callback` for local development
 - `https://<your-host>/api/auth/callback` for each Kubernetes ingress host you configure in `AUTH_REDIRECT_URI`
+
+If you use a different local port while port-forwarding, register that exact localhost callback URI too, or forward the service to `3000` so the default localhost registration continues to match.
 
 Set `AUTH_POST_LOGOUT_REDIRECT_URI` to `https://<your-host>/` if you want an explicit logout landing page. If it is omitted, the frontend now derives the app root from `AUTH_REDIRECT_URI` so hosted sign-in and sign-out do not fall back to `localhost`.
 
