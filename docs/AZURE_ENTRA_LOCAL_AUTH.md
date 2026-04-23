@@ -14,7 +14,7 @@ These prerequisites apply when you want interactive local sign-in. They are not 
 
 | Item | Notes |
 |---|---|
-| **Existing Entra app registration** | The same app registration used for ACA Easy Auth (recommended in your root `.env` as `ENTRA_CLIENT_ID` / `ENTRA_CLIENT_SECRET` / `ENTRA_TENANT_ID`). You must add `http://localhost:3000/api/auth/callback` as a **Web** redirect URI in the Azure portal. |
+| **Existing Entra app registration** | The same app registration used for ACA Easy Auth (recommended in your root `.env` as `ENTRA_CLIENT_ID` / `ENTRA_CLIENT_SECRET` / `ENTRA_TENANT_ID`). You must add the exact localhost callback URI you use during development as a **Web** redirect URI in the Azure portal, for example `http://localhost:3000/api/auth/callback`. |
 | **`User.Read` delegated permission** | Must be explicitly added as a **Microsoft Graph → Delegated → User.Read** permission in the app registration and granted admin consent. Without it, Graph profile enrichment (display name, photo) will fail silently. |
 | **`Azure AI User` role on AI Foundry** | The app registration's service principal must have the **Azure AI User** role on the AI Foundry resource (account scope). In local mode the backend authenticates via `EnvironmentCredential`, so the same Entra app credentials must also be available under the `AZURE_CLIENT_ID` / `AZURE_CLIENT_SECRET` / `AZURE_TENANT_ID` compatibility names. Without that role assignment all LLM calls fail with a `lacks the required data action` error. |
 | **Node.js 20+** | Required by the Next.js app. |
@@ -40,7 +40,9 @@ If you use the bootstrap script, set `AGENTS_KEYVAULT` or pass `-VaultName`, and
 
 1. Open the [Azure portal → App registrations](https://portal.azure.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) and find your app.
 2. Go to **Authentication** → **Web** → **Redirect URIs**.
-3. Add `http://localhost:3000/api/auth/callback` and **Save**.
+3. Add the localhost callback URI you use for sign-in, such as `http://localhost:3000/api/auth/callback`, and **Save**.
+
+If you access the frontend through `kubectl port-forward`, the local auth flow now uses the live browser origin for loopback requests. In practice that means the callback stays on `localhost` instead of bouncing to the hosted ingress URL, but the exact localhost port must still be registered in the app registration. Using `kubectl -n development port-forward svc/agents-frontend 3000:3000` keeps the default `http://localhost:3000/api/auth/callback` registration valid.
 
 ## Environment Variables
 

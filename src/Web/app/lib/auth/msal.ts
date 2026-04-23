@@ -1,5 +1,4 @@
 import { ConfidentialClientApplication, type Configuration } from "@azure/msal-node";
-import { getRedirectUri } from "./config";
 
 let msalInstance: ConfidentialClientApplication | null = null;
 
@@ -45,10 +44,10 @@ export const DEFAULT_SCOPES = ["openid", "profile", "email", "User.Read"];
 /**
  * Generates the Entra ID authorization URL for the sign-in redirect.
  */
-export async function getAuthCodeUrl(state?: string): Promise<string> {
+export async function getAuthCodeUrl(redirectUri: string, state?: string): Promise<string> {
   const client = getMsalClient();
   return client.getAuthCodeUrl({
-    redirectUri: getRedirectUri(),
+    redirectUri,
     scopes: DEFAULT_SCOPES,
     state,
   });
@@ -57,11 +56,11 @@ export async function getAuthCodeUrl(state?: string): Promise<string> {
 /**
  * Exchanges an authorization code for tokens.
  */
-export async function acquireTokenByCode(code: string) {
+export async function acquireTokenByCode(code: string, redirectUri: string) {
   const client = getMsalClient();
   return client.acquireTokenByCode({
     code,
-    redirectUri: getRedirectUri(),
+    redirectUri,
     scopes: DEFAULT_SCOPES,
   });
 }
