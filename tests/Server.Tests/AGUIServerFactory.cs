@@ -19,6 +19,7 @@ namespace AI.Agents.Server.Tests;
 internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 {
     private IUserProfileService? _graphService;
+    private bool? _requireAuthenticationForAgent;
 
     /// <summary>
     /// Sets a custom Graph profile service to be used during tests.
@@ -30,9 +31,24 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
         return this;
     }
 
+    /// <summary>
+    /// Overrides the <c>Auth:RequireAuthenticationForAgent</c> setting for tests.
+    /// </summary>
+    public AGUIServerFactory WithRequireAuthenticationForAgent(bool requireAuthentication)
+    {
+        _requireAuthenticationForAgent = requireAuthentication;
+        return this;
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting("Foundry:Endpoint", "https://fake.foundry.endpoint/");
+
+        // Default to false in tests so existing AGUI endpoint tests continue to work
+        // unless explicitly overridden via WithRequireAuthenticationForAgent.
+        builder.UseSetting(
+            "Auth:RequireAuthenticationForAgent",
+            (_requireAuthenticationForAgent ?? false).ToString().ToLowerInvariant());
 
         builder.ConfigureServices(services =>
         {
