@@ -25,11 +25,10 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
 builder.Services.AddOptions<AgentAccessSettings>().BindConfiguration("Auth");
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddAIClient(builder.Configuration);
-builder.Services.AddAIAgentSkill<UserProfileSkill>();
+builder.Services.AddSingleton<CopilotKitAIContextProvider>();
 builder.Services.AddAIAgent("agui-agent", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
-    var skillsProvider = sp.GetRequiredService<AgentSkillsProvider>();
     return chatClient.AsAIAgent(
         new ChatClientAgentOptions
         {
@@ -38,9 +37,16 @@ builder.Services.AddAIAgent("agui-agent", (sp, key) =>
             ChatOptions = new()
             {
                 ModelId = defaultModelId,
-                Instructions = """You are a helpful assistant."""
+                Instructions = """You are a helpful assistant.""",
+                Tools =
+                [
+                    UserProfileFunctionFactory.Create(sp),
+                ]
             },
-            AIContextProviders = [skillsProvider]
+            AIContextProviders =
+            [
+                sp.GetRequiredService<CopilotKitAIContextProvider>(),
+            ]
         },
         services: sp);
 });
@@ -52,6 +58,7 @@ var app = builder.Build();
 
 app.UseEntraAuthMiddleware();
 app.UseAgentAccessMiddleware();
+app.UseMiddleware<CopilotKitRequestContextMiddleware>();
 
 app.MapGraphProfileEndpoint("/api/me");
 app.MapOAuthEndpoints();
