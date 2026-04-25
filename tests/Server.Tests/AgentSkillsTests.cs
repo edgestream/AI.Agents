@@ -27,7 +27,7 @@ public sealed class AgentSkillsTests
             .WithWebHostBuilder(b => b.UseSetting("Skills:Path", "nonexistent-skills-dir"));
         using var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/health");
+        var response = await client.GetAsync("/api/health");
 
         Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
     }
@@ -47,7 +47,7 @@ public sealed class AgentSkillsTests
                 .WithWebHostBuilder(b => b.UseSetting("Skills:Path", emptySkillsDir));
             using var client = factory.CreateClient();
 
-            var response = await client.GetAsync("/health");
+            var response = await client.GetAsync("/api/health");
 
             Assert.AreEqual(System.Net.HttpStatusCode.OK, response.StatusCode);
         }
