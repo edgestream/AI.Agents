@@ -25,7 +25,7 @@ public sealed class HealthEndpointTests
     [TestMethod]
     public async Task Health_ReturnsOk()
     {
-        var response = await _client.GetAsync("/health");
+        var response = await _client.GetAsync("/api/health");
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
@@ -33,7 +33,7 @@ public sealed class HealthEndpointTests
     [TestMethod]
     public async Task Health_ReturnsOKBody()
     {
-        var response = await _client.GetAsync("/health");
+        var response = await _client.GetAsync("/api/health");
         var content = await response.Content.ReadAsStringAsync();
 
         Assert.AreEqual("OK", content);

@@ -55,7 +55,7 @@ app.UseAgentAccessMiddleware();
 
 app.MapGraphProfileEndpoint("/api/me");
 app.MapOAuthEndpoints();
-app.MapGet("/health", () => "OK");
+app.MapGet("/api/health", () => "OK");
 app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("agui-agent"));
 
 await app.RunAsync();

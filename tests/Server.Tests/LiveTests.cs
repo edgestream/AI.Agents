@@ -39,7 +39,7 @@ public sealed class LiveTests
         using var factory = new WebApplicationFactory<Program>();
         using var client = factory.CreateClient();
 
-        var response = await client.GetAsync("/health");
+        var response = await client.GetAsync("/api/health");
 
         Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
     }
