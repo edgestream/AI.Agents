@@ -37,19 +37,12 @@
             "request": "launch",
             "projectPath": "${workspaceFolder}/samples/MealPlanner/MealPlanner.csproj",
             "preLaunchTask": "build (MealPlanner)"
-        },
-        {
-            "name": "Local browser",
-            "type": "editor-browser",
-            "request": "launch",
-            "url": "http://localhost:3000",
-            "preLaunchTask": "wait-for-web"
         }
     ],
     "compounds": [
         {
             "name": "Fullstack (Server + Web)",
-            "configurations": ["Agents.Server", "Agents.Web", "Local browser"],
+            "configurations": ["Agents.Server", "Agents.Web"],
             "stopAll": true
         }
     ]
