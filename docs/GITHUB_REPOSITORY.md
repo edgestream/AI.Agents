@@ -9,19 +9,19 @@ The repository uses these workflow files:
 - `.github/workflows/ci.yml`
 - `.github/workflows/cd.yml`
 
-The CI workflow builds images, runs tests, and publishes the container tags. The CD workflow updates the hosted stage Container App to the matching image SHA tags.
+The CI workflow builds images, runs tests, and publishes the container tags. The CD workflow now applies `deploy/k8s` and rolls the `development` namespace deployments to the matching image SHA tags.
 
 ## GitHub Environment
 
-Create the GitHub environment named `stage` before enabling the CD workflow.
+Create the GitHub environment named `development` before enabling the CD workflow.
 
 Environment secrets required by the CD workflow:
 
-- `AZURE_OIDC_CLIENT_ID`
-- `AZURE_OIDC_TENANT_ID`
-- `AZURE_OIDC_SUBSCRIPTION_ID`
+- `KUBE_CONFIG`
 
-The Azure side of that OIDC identity is described in [AZURE_ENTRA_APP_REGISTRATION.md](AZURE_ENTRA_APP_REGISTRATION.md).
+Store the full kubeconfig content for the deployment identity in that secret. The Kubernetes-side service account and RBAC setup is described in [KUBERNETES.md](KUBERNETES.md).
+
+If you use environment protection rules, attach them to `development` so the rollout secret stays isolated to the deployment environment.
 
 ## CI Secrets
 
@@ -42,9 +42,9 @@ Published package names:
 - `ghcr.io/edgestream/agents-server`
 - `ghcr.io/edgestream/agents-web`
 
-The current hosted Stage rollout assumes these packages are public. The Container App deployment no longer injects registry credentials for GHCR.
+The current Kubernetes rollout assumes these packages are pullable by the cluster. If your GHCR packages are private, configure image pull credentials or a pull secret in the cluster before enabling CD.
 
-The CD workflow updates the hosted app to `sha-<7>` tags derived from CI. On fresh developer or automation machines outside GitHub Actions, authenticate with:
+The CD workflow updates the `agents-backend` and `agents-frontend` deployments to `sha-<7>` tags derived from CI. On fresh developer or automation machines outside GitHub Actions, authenticate with:
 
 ```powershell
 docker login ghcr.io

@@ -97,3 +97,4 @@ Deployment documentation is split by service:
 - [docs/AZURE_AI_FOUNDRY.md](docs/AZURE_AI_FOUNDRY.md)
 - [docs/AZURE_ENTRA_APP_REGISTRATION.md](docs/AZURE_ENTRA_APP_REGISTRATION.md)
 - [docs/GITHUB_REPOSITORY.md](docs/GITHUB_REPOSITORY.md)
+- [docs/KUBERNETES.md](docs/KUBERNETES.md)
