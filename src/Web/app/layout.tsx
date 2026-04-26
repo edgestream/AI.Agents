@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { CopilotKit } from "@copilotkit/react-core";
+import { CopilotKitShell } from "./components/CopilotKitShell";
 import "./globals.css";
 import "@copilotkit/react-ui/styles.css";
 
@@ -13,10 +13,14 @@ export default function RootLayout({ children }: {
 }) {
   return (
     <html lang="en">
+      <head>
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
+        />
+      </head>
       <body className="antialiased flex flex-col h-screen">
-        <CopilotKit runtimeUrl="/api/copilotkit" agent="my_agent">
-          {children}
-        </CopilotKit>
+        <CopilotKitShell>{children}</CopilotKitShell>
       </body>
     </html>
   );

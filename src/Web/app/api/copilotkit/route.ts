@@ -49,7 +49,9 @@ export const POST = async (req: NextRequest) => {
     agents: {
       my_agent: await createAuthenticatedAgent(req),
     },
-    a2ui: {},
+    a2ui: {
+      injectA2UITool: true,
+    },
   });
 
   const { handleRequest } = copilotRuntimeNextJSAppRouterEndpoint({

@@ -7,8 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace AI.Agents.Server.Tests;
 
-#pragma warning disable MAAI001 // AgentSkillsProvider is marked experimental
-
 /// <summary>
 /// Custom <see cref="WebApplicationFactory{TEntryPoint}"/> that injects
 /// dummy Foundry configuration and replaces the production keyed agent with a
@@ -73,7 +71,6 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             {
                 var chatClient = sp.GetRequiredService<IChatClient>();
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-                var skillsProvider = sp.GetRequiredService<AgentSkillsProvider>();
 
                 return new ChatClientAgent(
                     chatClient,
@@ -83,9 +80,13 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
                         Description = "Test Agent",
                         ChatOptions = new()
                         {
-                            Instructions = "You are a test assistant."
+                            Instructions = "You are a test assistant.",
+                            Tools =
+                            [
+                                UserProfileFunctionFactory.Create(sp)
+                            ]
                         },
-                        AIContextProviders = [skillsProvider]
+                        AIContextProviders = [sp.GetRequiredService<CopilotKitAIContextProvider>()]
                     },
                     loggerFactory,
                     services: sp);
@@ -110,5 +111,3 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
         });
     }
 }
-
-#pragma warning restore MAAI001
