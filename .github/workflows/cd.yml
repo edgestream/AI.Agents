@@ -7,54 +7,58 @@ on:
     types: [completed]
 
 permissions:
-  id-token: write
   contents: read
 
 jobs:
   deploy:
-    name: Deploy to Azure Container Apps
+    name: Deploy to Kubernetes development
     runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    environment: stage
+    environment: development
 
     env:
       BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
       FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
-      RESOURCE_GROUP: rg-agents-stage
-      APP: ca-agents-stage
+      K8S_NAMESPACE: development
 
     steps:
+      - uses: actions/checkout@v4
+
       - name: Compute image tag from triggering commit SHA
         id: image-tag
         run: |
           SHA="${{ github.event.workflow_run.head_sha }}"
           echo "tag=sha-${SHA::7}" >> "$GITHUB_OUTPUT"
 
-      - name: Azure login (OIDC)
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZURE_OIDC_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_OIDC_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_OIDC_SUBSCRIPTION_ID }}
+      - name: Configure kubeconfig
+        env:
+          KUBE_CONFIG_CONTENT: ${{ secrets.KUBE_CONFIG }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/.kube"
+          printf '%s' "$KUBE_CONFIG_CONTENT" > "$RUNNER_TEMP/.kube/config"
+          chmod 600 "$RUNNER_TEMP/.kube/config"
+          echo "KUBECONFIG=$RUNNER_TEMP/.kube/config" >> "$GITHUB_ENV"
 
-      - name: Update backend container image
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az containerapp update \
-              --name "${{ env.APP }}" \
-              --resource-group "${{ env.RESOURCE_GROUP }}" \
-              --container-name backend \
-              --image "${{ env.BACKEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}"
+      - name: Apply Kubernetes base
+        run: kubectl apply -k deploy/k8s
 
-      - name: Update frontend container image
-        uses: azure/cli@v2
-        with:
-          azcliversion: latest
-          inlineScript: |
-            az containerapp update \
-              --name "${{ env.APP }}" \
-              --resource-group "${{ env.RESOURCE_GROUP }}" \
-              --container-name frontend \
-              --image "${{ env.FRONTEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}"
+      - name: Update backend image
+        run: |
+          kubectl set image deployment/agents-backend \
+            backend="${{ env.BACKEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}" \
+            --namespace "${{ env.K8S_NAMESPACE }}"
+
+      - name: Update frontend image
+        run: |
+          kubectl set image deployment/agents-frontend \
+            frontend="${{ env.FRONTEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}" \
+            --namespace "${{ env.K8S_NAMESPACE }}"
+
+      - name: Wait for rollout
+        run: |
+          kubectl rollout status deployment/agents-backend \
+            --namespace "${{ env.K8S_NAMESPACE }}" \
+            --timeout=5m
+          kubectl rollout status deployment/agents-frontend \
+            --namespace "${{ env.K8S_NAMESPACE }}" \
+            --timeout=5m

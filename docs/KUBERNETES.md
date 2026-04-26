@@ -111,6 +111,109 @@ kubectl apply -k deploy/k8s
 
 The base declares the Service selector labels directly in the workload manifests, and `deploy/k8s/kustomization.yaml` sets `namespace: development`, so `kubectl apply -k deploy/k8s` always deploys these resources into the `development` namespace.
 
+## GitHub CD Rollout
+
+The CD workflow in `.github/workflows/cd.yml` deploys the images built by CI into the `development` namespace.
+
+Workflow behavior:
+
+- loads a kubeconfig from the GitHub `development` environment secret
+- validates that the credential can patch deployments and read pods in the namespace
+- applies `deploy/k8s`
+- updates `agents-backend` and `agents-frontend` to the CI tag `sha-<7>` derived from the triggering commit
+- waits for both rollouts to complete
+
+Create the GitHub environment named `development` and configure:
+
+- secrets: `KUBE_CONFIG`
+
+## Security Rights for GitHub CD
+
+Create a dedicated service account in the `development` namespace and bind only the permissions required by the workflow.
+
+Example manifest:
+
+```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: github-cd-deployer
+  namespace: development
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: github-cd-deployer
+  namespace: development
+rules:
+  - apiGroups: ["apps"]
+    resources: ["deployments", "replicasets"]
+    verbs: ["get", "list", "watch", "create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["services"]
+    verbs: ["get", "list", "watch", "create", "patch", "update"]
+  - apiGroups: ["networking.k8s.io"]
+    resources: ["ingresses"]
+    verbs: ["get", "list", "watch", "create", "patch", "update"]
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: github-cd-deployer
+  namespace: development
+subjects:
+  - kind: ServiceAccount
+    name: github-cd-deployer
+    namespace: development
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: github-cd-deployer
+```
+
+Apply it:
+
+```bash
+kubectl apply -f github-cd-rbac.yaml
+```
+
+Then create a kubeconfig for that service account and store the full file content as the GitHub environment secret `KUBE_CONFIG`.
+
+Example:
+
+```bash
+CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[0].name}')
+SERVER=$(kubectl config view --minify -o jsonpath='{.clusters[0].cluster.server}')
+CA_DATA=$(kubectl config view --raw --minify -o jsonpath='{.clusters[0].cluster.certificate-authority-data}')
+TOKEN=$(kubectl -n development create token github-cd-deployer --duration=8760h)
+
+cat > github-cd-kubeconfig.yaml <<EOF
+apiVersion: v1
+kind: Config
+clusters:
+- name: ${CLUSTER_NAME}
+  cluster:
+    server: ${SERVER}
+    certificate-authority-data: ${CA_DATA}
+contexts:
+- name: github-cd-deployer@${CLUSTER_NAME}
+  context:
+    cluster: ${CLUSTER_NAME}
+    namespace: development
+    user: github-cd-deployer
+current-context: github-cd-deployer@${CLUSTER_NAME}
+users:
+- name: github-cd-deployer
+  user:
+    token: ${TOKEN}
+EOF
+```
+
+That token is time-bound. Rotate the `KUBE_CONFIG` GitHub secret before the token expires, or recreate it immediately if the credential is exposed.
+
 ## Ingress Notes
 
 The ingress is intentionally hostless so it can work on a cluster with a default ingress controller without needing an immediate DNS choice.
