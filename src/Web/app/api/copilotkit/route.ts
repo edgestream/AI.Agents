@@ -50,7 +50,6 @@ export const POST = async (req: NextRequest) => {
       my_agent: await createAuthenticatedAgent(req),
     },
     a2ui: {
-      enabled: true,
       injectA2UITool: true,
     },
   });

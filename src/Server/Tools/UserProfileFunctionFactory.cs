@@ -12,10 +12,10 @@ public class UserProfileFunctionFactory
         /// </summary>
         /// [Description("Get the weather for a given location.")]
         [Description("Returns the current authenticated user's profile.")]
-        public string GetUserProfile()
+        public JsonElement GetUserProfile()
         {
             var userContext = userContextAccessor.UserContext;
-            return JsonSerializer.Serialize(new
+            return JsonSerializer.SerializeToElement(new
             {
                 userId = userContext.UserId,
                 displayName = userContext.DisplayName,
