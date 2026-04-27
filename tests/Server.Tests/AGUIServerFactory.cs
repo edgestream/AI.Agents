@@ -1,4 +1,5 @@
 using AI.Agents.Abstractions;
+using AI.Agents.AGUI;
 using AI.Agents.MCP;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
@@ -50,6 +51,8 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
+            services.AddSingleton<AGUIAIContextProvider>();
+
             var agentDescriptors = services
                 .Where(d => d.ServiceType == typeof(AIAgent))
                 .ToArray();
@@ -86,7 +89,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
                                 UserProfileFunctionFactory.Create(sp)
                             ]
                         },
-                        AIContextProviders = [sp.GetRequiredService<CopilotKitAIContextProvider>()]
+                        AIContextProviders = [sp.GetRequiredService<AGUIAIContextProvider>()]
                     },
                     loggerFactory,
                     services: sp);

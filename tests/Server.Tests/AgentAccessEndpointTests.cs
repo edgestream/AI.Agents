@@ -36,7 +36,7 @@ public sealed class AgentAccessEndpointTests
 
         var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cts.Token));
         Assert.IsTrue(json.RootElement.TryGetProperty("error", out var errorProp));
-        StringAssert.Contains(errorProp.GetString(), "sign in", StringComparison.OrdinalIgnoreCase);
+        StringAssert.Contains(errorProp.GetString(), "Authentication required", StringComparison.OrdinalIgnoreCase);
 
         factory.Dispose();
     }

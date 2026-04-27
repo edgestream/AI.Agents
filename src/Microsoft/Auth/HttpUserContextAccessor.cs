@@ -25,7 +25,6 @@ public sealed class HttpUserContextAccessor : IUserContextAccessor
             {
                 return (IUserContext)userContext!;
             }
-
             return UnauthenticatedUserContext.Anonymous;
         }
     }
