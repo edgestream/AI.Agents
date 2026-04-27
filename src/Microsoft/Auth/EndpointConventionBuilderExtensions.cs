@@ -18,7 +18,10 @@ public static class EndpointConventionBuilderExtensions
         {
             var userContext = invocationContext.HttpContext.Items[typeof(IUserContext)] as IUserContext;
             if (userContext is not null && userContext.IsAuthenticated) return await next(invocationContext);
-            else return Results.Unauthorized();
+            else return Results.Json(
+                new { error = "Authentication required." },
+                statusCode: StatusCodes.Status401Unauthorized
+            );
         });
         return builder;
     }

@@ -1,4 +1,4 @@
-namespace AI.Agents.Microsoft.Configuration;
+namespace AI.Agents.Server.Configuration;
 
 /// <summary>
 /// Configuration settings controlling access to the AI agent endpoint.
