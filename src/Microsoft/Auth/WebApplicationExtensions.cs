@@ -14,17 +14,7 @@ public static class WebApplicationExtensions
     {
         app.UseMiddleware<EntraAuthMiddleware>();
     }
-
-    /// <summary>
-    /// Adds the AgentAccessMiddleware to the application's request pipeline.
-    /// Must be called after <see cref="UseEntraAuthMiddleware"/>.
-    /// </summary>
-    /// <param name="app">The <see cref="WebApplication"/> to add the middleware to.</param>
-    public static void UseAgentAccessMiddleware(this WebApplication app)
-    {
-        app.UseMiddleware<AgentAccessMiddleware>();
-    }
-
+    
     /// <summary>
     /// Maps a GET endpoint that returns the current user's profile information as JSON.
     /// </summary>

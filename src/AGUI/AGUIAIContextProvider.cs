@@ -1,18 +1,19 @@
 using System.Text;
 using Microsoft.Agents.AI;
+using Microsoft.AspNetCore.Http;
 
-namespace AI.Agents.Server;
+namespace AI.Agents.AGUI;
 
 #pragma warning disable MAAI001
 
-internal sealed class CopilotKitAIContextProvider(IHttpContextAccessor httpContextAccessor) : AIContextProvider
+public sealed class AGUIAIContextProvider(IHttpContextAccessor httpContextAccessor) : AIContextProvider
 {
     protected override ValueTask<AIContext> ProvideAIContextAsync(
         InvokingContext context,
         CancellationToken cancellationToken = default)
     {
-        if (httpContextAccessor.HttpContext?.Items.TryGetValue(CopilotKitRequestContext.HttpContextItemKey, out var value) != true
-            || value is not CopilotKitRequestContext requestContext)
+        if (httpContextAccessor.HttpContext?.Items.TryGetValue(AGUIRequestContext.HttpContextItemKey, out var value) != true
+            || value is not AGUIRequestContext requestContext)
         {
             return new(new AIContext());
         }
@@ -21,7 +22,7 @@ internal sealed class CopilotKitAIContextProvider(IHttpContextAccessor httpConte
         return new(new AIContext { Instructions = instructions });
     }
 
-    private static string BuildInstructions(CopilotKitRequestContext requestContext)
+    private static string BuildInstructions(AGUIRequestContext requestContext)
     {
         var builder = new StringBuilder();
         builder.AppendLine("The current request includes client-side CopilotKit context.");

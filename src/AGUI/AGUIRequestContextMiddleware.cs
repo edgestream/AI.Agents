@@ -1,8 +1,9 @@
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 
-namespace AI.Agents.Server;
+namespace AI.Agents.AGUI;
 
-internal sealed class CopilotKitRequestContextMiddleware(RequestDelegate next)
+public sealed class AGUIRequestContextMiddleware(RequestDelegate next)
 {
     public async Task InvokeAsync(HttpContext httpContext)
     {
@@ -23,7 +24,7 @@ internal sealed class CopilotKitRequestContextMiddleware(RequestDelegate next)
             var requestContext = Parse(document.RootElement);
             if (requestContext is not null)
             {
-                httpContext.Items[CopilotKitRequestContext.HttpContextItemKey] = requestContext;
+                httpContext.Items[AGUIRequestContext.HttpContextItemKey] = requestContext;
             }
         }
         catch (JsonException)
@@ -44,9 +45,9 @@ internal sealed class CopilotKitRequestContextMiddleware(RequestDelegate next)
             && request.ContentType?.Contains("application/json", StringComparison.OrdinalIgnoreCase) == true;
     }
 
-    private static CopilotKitRequestContext? Parse(JsonElement root)
+    private static AGUIRequestContext? Parse(JsonElement root)
     {
-        var contextItems = new List<CopilotKitContextItem>();
+        var contextItems = new List<AGUIContextItem>();
 
         if (root.TryGetProperty("context", out var contextElement)
             && contextElement.ValueKind == JsonValueKind.Array)
@@ -89,6 +90,6 @@ internal sealed class CopilotKitRequestContextMiddleware(RequestDelegate next)
 
         return contextItems.Count == 0 && string.IsNullOrWhiteSpace(a2uiAction)
             ? null
-            : new CopilotKitRequestContext(contextItems, a2uiAction);
+            : new AGUIRequestContext(contextItems, a2uiAction);
     }
 }

@@ -10,7 +10,6 @@ public class UserProfileFunctionFactory
         /// <summary>
         /// Returns the current authenticated user's profile.
         /// </summary>
-        /// [Description("Get the weather for a given location.")]
         [Description("Returns the current authenticated user's profile.")]
         public JsonElement GetUserProfile()
         {
