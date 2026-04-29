@@ -1,4 +1,5 @@
 using AI.Agents.Abstractions;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace AI.Agents.Microsoft.Auth;
@@ -23,6 +24,22 @@ public static class ServiceCollectionExtensions
         services.AddHttpContextAccessor();
         services.AddSingleton<IUserContextAccessor, HttpUserContextAccessor>();
         services.AddSingleton<IUserProfileService, GraphUserProfileService>();
+        return services;
+    }
+
+    /// <summary>
+    /// Adds the custom Entra Easy Auth authentication scheme and ASP.NET Core authorization services.
+    /// </summary>
+    public static IServiceCollection AddEntraAuth(this IServiceCollection services)
+    {
+        services
+            .AddAuthentication(EntraAuthenticationDefaults.AuthenticationScheme)
+            .AddScheme<AuthenticationSchemeOptions, EntraAuthenticationHandler>(
+                EntraAuthenticationDefaults.AuthenticationScheme,
+                _ => { });
+
+        services.AddAuthorization();
+
         return services;
     }
 }
