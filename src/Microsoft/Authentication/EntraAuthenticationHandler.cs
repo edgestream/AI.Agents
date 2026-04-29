@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Microsoft.Authentication;
 
 /// <summary>
 /// Authentication handler that maps App Service Easy Auth headers to an ASP.NET Core user principal.

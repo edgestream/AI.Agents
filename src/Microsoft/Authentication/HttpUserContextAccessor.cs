@@ -1,7 +1,7 @@
 using AI.Agents.Abstractions;
 using Microsoft.AspNetCore.Http;
 
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Microsoft.Authentication;
 
 /// <summary>
 /// Default implementation of <see cref="IUserContextAccessor"/> that retrieves

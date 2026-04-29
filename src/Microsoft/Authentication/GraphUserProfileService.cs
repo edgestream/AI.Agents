@@ -4,7 +4,7 @@ using Microsoft.Graph;
 using Microsoft.Kiota.Abstractions.Authentication;
 using Microsoft.Kiota.Http.HttpClientLibrary;
 
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Microsoft.Authentication;
 
 /// <summary>
 /// Implementation of <see cref="IUserProfileService"/> using the Microsoft Graph SDK.

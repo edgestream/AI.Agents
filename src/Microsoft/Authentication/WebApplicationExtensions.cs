@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Microsoft.Authentication;
 
 public static class WebApplicationExtensions
 {

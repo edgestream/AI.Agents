@@ -1,4 +1,4 @@
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Microsoft.Authentication;
 
 /// <summary>
 /// Constants for the custom Entra Easy Auth authentication scheme.

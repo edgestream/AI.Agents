@@ -1,7 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using AI.Agents.Abstractions;
-using AI.Agents.Microsoft.Auth;
+using AI.Agents.Microsoft.Authentication;
 
 namespace AI.Agents.Server.Tests;
 

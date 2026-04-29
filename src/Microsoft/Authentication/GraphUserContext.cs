@@ -1,6 +1,6 @@
 using AI.Agents.Abstractions;
 
-namespace AI.Agents.Microsoft.Auth;
+namespace AI.Agents.Microsoft.Authentication;
 
 /// <summary>
 /// Graph implementation of <see cref="IUserContext"/> for the current HTTP request.
