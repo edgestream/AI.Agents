@@ -5,7 +5,7 @@ namespace AI.Agents.Microsoft.Auth;
 
 /// <summary>
 /// Default implementation of <see cref="IUserContextAccessor"/> that retrieves
-/// the user context from <see cref="HttpContext.Items"/>.
+/// the user context established by the Entra authentication handler.
 /// </summary>
 public sealed class HttpUserContextAccessor : IUserContextAccessor
 {
@@ -21,7 +21,7 @@ public sealed class HttpUserContextAccessor : IUserContextAccessor
         get
         {
             var httpContext = _httpContextAccessor.HttpContext;
-            if (httpContext?.Items.TryGetValue(typeof(IUserContext), out var userContext) == true)
+            if (httpContext?.Items.TryGetValue(EntraAuthenticationDefaults.UserContextItemKey, out var userContext) == true)
             {
                 return (IUserContext)userContext!;
             }

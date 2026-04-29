@@ -31,7 +31,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
     }
 
     /// <summary>
-    /// Overrides the <c>Auth:RequireAuthenticationForAgent</c> setting for tests.
+    /// Overrides the <c>Auth:AgentRequiresAuthentication</c> setting for tests.
     /// </summary>
     public AGUIServerFactory WithRequireAuthenticationForAgent(bool requireAuthentication)
     {
@@ -46,7 +46,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
         // Default to false in tests so existing AGUI endpoint tests continue to work
         // unless explicitly overridden via WithRequireAuthenticationForAgent.
         builder.UseSetting(
-            "Auth:RequireAuthenticationForAgent",
+            "Auth:AgentRequiresAuthentication",
             (_requireAuthenticationForAgent ?? false).ToString().ToLowerInvariant());
 
         builder.ConfigureServices(services =>
@@ -70,7 +70,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             }
 
             services.AddSingleton<IChatClient, FakeChatClient>();
-            services.AddKeyedSingleton<AIAgent>("agui-agent", (sp, key) =>
+            services.AddKeyedSingleton<AIAgent>("clerk", (sp, key) =>
             {
                 var chatClient = sp.GetRequiredService<IChatClient>();
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
@@ -94,6 +94,9 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
                     loggerFactory,
                     services: sp);
             });
+
+            services.AddKeyedSingleton<AIAgent>("agui-agent", (sp, key) =>
+                sp.GetRequiredKeyedService<AIAgent>("clerk"));
 
             // Remove the MCP hosted service so no connections are attempted in tests.
             var mcpDescriptor = services.SingleOrDefault(

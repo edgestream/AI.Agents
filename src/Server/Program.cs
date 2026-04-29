@@ -1,13 +1,13 @@
+using AI.Agents.AGUI;
 using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Auth;
-using AI.Agents.AGUI;
+using AI.Agents.Microsoft.Configuration;
+using AI.Agents.Server.Configuration;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Options;
-using AI.Agents.Server.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,11 +18,12 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["Foundry:ModelId"]
     ?? "gpt-5.3-chat";
 
-builder.Services.AddOptions<AgentAccessSettings>().BindConfiguration("Auth");
+builder.Services.AddOptions<AuthSettings>().BindConfiguration("Auth");
 builder.Services.AddGraphUserProfileService();
-builder.Services.AddSingleton<AGUIAIContextProvider>();
+builder.Services.AddEntraAuth();
+builder.Services.AddAGUIContextProvider();
 builder.Services.AddAIClient(builder.Configuration);
-builder.Services.AddAIAgent("agui-agent", (sp, key) =>
+builder.Services.AddAIAgent("clerk", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
     return chatClient.AsAIAgent(
@@ -43,15 +44,16 @@ builder.Services.AddAIAgent("agui-agent", (sp, key) =>
 
 var app = builder.Build();
 
-app.UseEntraAuthMiddleware();
+app.UseEntraAuth();
 app.UseAGUIRequestMiddleware();
 
-app.MapGraphProfileEndpoint("/api/me");
-app.MapGet("/api/health", () => "OK");
+var aguiEndpoint = app.MapAGUI("/", app.Services.GetRequiredKeyedService<AIAgent>("clerk"));
+if (builder.Configuration.GetValue<bool>("Auth:AgentRequiresAuthentication"))
+{
+    aguiEndpoint.RequireAuthorization();
+}
 
-var agent = app.Services.GetRequiredKeyedService<AIAgent>("agui-agent");
-var requireAuthenticationForAgent = app.Services.GetRequiredService<IOptions<AgentAccessSettings>>().Value.RequireAuthenticationForAgent;
-if (requireAuthenticationForAgent) app.MapAGUI("/", agent).AddAuthenticatedFilter();
-else app.MapAGUI("/", agent);
+app.MapGet("/api/health", () => "OK");
+app.MapGraphUserProfileEndpoint("/api/me");
 
 await app.RunAsync();

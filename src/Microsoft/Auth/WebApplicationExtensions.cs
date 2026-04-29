@@ -1,18 +1,21 @@
 using AI.Agents.Abstractions;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 
 namespace AI.Agents.Microsoft.Auth;
 
 public static class WebApplicationExtensions
 {
     /// <summary>
-    /// Adds the EntraAuthMiddleware to the application's request pipeline, which authenticates incoming requests using Entra ID and populates the IUserContext for downstream processing.
+    /// Adds ASP.NET Core authentication and authorization middleware configured for Entra Easy Auth headers.
     /// </summary>
     /// <param name="app">The <see cref="WebApplication"/> to add the middleware to.</param>
-    public static void UseEntraAuthMiddleware(this WebApplication app)
+    public static void UseEntraAuth(this WebApplication app)
     {
-        app.UseMiddleware<EntraAuthMiddleware>();
+        app.UseAuthentication();
+        app.UseAuthorization();
     }
     
     /// <summary>
@@ -20,7 +23,7 @@ public static class WebApplicationExtensions
     /// </summary>
     /// <param name="app">The <see cref="WebApplication"/> to add the endpoint to.</param>
     /// <param name="endpoint">The endpoint path.</param>
-    public static WebApplication MapGraphProfileEndpoint(this WebApplication app, string endpoint)
+    public static WebApplication MapGraphUserProfileEndpoint(this WebApplication app, string endpoint)
     {
         app.MapGet(endpoint, (IUserContextAccessor userContextAccessor) =>
         {

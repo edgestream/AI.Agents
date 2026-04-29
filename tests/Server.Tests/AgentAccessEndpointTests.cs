@@ -1,13 +1,12 @@
 using System.Net;
 using System.Net.Http.Json;
-using System.Text.Json;
 using AI.Agents.Abstractions;
 using AI.Agents.Microsoft.Auth;
 
 namespace AI.Agents.Server.Tests;
 
 /// <summary>
-/// Integration tests for <see cref="AgentAccessEndpointFilter"/>.
+/// Integration tests for the AG-UI endpoint authorization behavior.
 /// </summary>
 [TestClass]
 public sealed class AgentAccessEndpointTests
@@ -33,10 +32,6 @@ public sealed class AgentAccessEndpointTests
         var response = await client.PostAsJsonAsync("/", payload, cts.Token);
 
         Assert.AreEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-
-        var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync(cts.Token));
-        Assert.IsTrue(json.RootElement.TryGetProperty("error", out var errorProp));
-        StringAssert.Contains(errorProp.GetString(), "Authentication required", StringComparison.OrdinalIgnoreCase);
 
         factory.Dispose();
     }
@@ -75,8 +70,8 @@ public sealed class AgentAccessEndpointTests
             .WithUserProfileService(new StubUserProfileService());
 
         using var client = factory.CreateClient();
-        client.DefaultRequestHeaders.Add(EntraAuthMiddleware.MS_CLIENT_PRINCIPAL_ID, "user-123");
-        client.DefaultRequestHeaders.Add(EntraAuthMiddleware.MS_TOKEN_AAD_ACCESS_TOKEN, "test-token");
+        client.DefaultRequestHeaders.Add(EntraAuthenticationDefaults.PrincipalIdHeader, "user-123");
+        client.DefaultRequestHeaders.Add(EntraAuthenticationDefaults.AccessTokenHeader, "test-token");
 
         var payload = new
         {
