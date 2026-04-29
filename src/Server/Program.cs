@@ -9,6 +9,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.Extensions.AI;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,7 +19,6 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["AzureOpenAI:DeploymentName"]
     ?? builder.Configuration["Foundry:ModelId"]
     ?? "gpt-5.3-chat";
-var authSettings = builder.Configuration.GetSection("Auth").Get<AuthSettings>() ?? new();
 
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddEntraAuth();
@@ -61,8 +61,9 @@ var app = builder.Build();
 app.UseEntraAuth();
 app.UseAGUIRequestMiddleware();
 
-var agent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
-var aguiEndpoint = app.MapAGUI("/", agent);
+var clerkAgent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
+var aguiEndpoint = app.MapAGUI("/", clerkAgent);
+var authSettings = app.Services.GetRequiredService<IOptions<AuthSettings>>().Value;
 if (authSettings.AgentRequiresAuthentication)
 {
     aguiEndpoint.RequireAuthorization(AuthorizationPolicies.AgentAuthenticated);
