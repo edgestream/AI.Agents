@@ -1,6 +1,7 @@
 using AI.Agents.Abstractions;
 using AI.Agents.AGUI;
 using AI.Agents.MCP;
+using AI.Agents.Server.Tools;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
@@ -70,6 +71,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             }
 
             services.AddSingleton<IChatClient, FakeChatClient>();
+            services.AddHttpClient("fetch");
             services.AddKeyedSingleton<AIAgent>("clerk", (sp, key) =>
             {
                 var chatClient = sp.GetRequiredService<IChatClient>();
@@ -86,7 +88,8 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
                             Instructions = "You are a test assistant.",
                             Tools =
                             [
-                                UserProfileFunctionFactory.Create(sp)
+                                UserProfileFunctionFactory.Create(sp),
+                                FetchAIFunctionFactory.CreateAIFunction(sp)
                             ]
                         },
                         AIContextProviders = [sp.GetRequiredService<AGUIAIContextProvider>()]

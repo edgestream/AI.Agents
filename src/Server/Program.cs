@@ -3,6 +3,7 @@ using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Configuration;
+using AI.Agents.Server.Tools;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -31,6 +32,7 @@ builder.Services.AddAuthorizationBuilder()
     });
 builder.Services.AddAGUIContextProvider();
 builder.Services.AddAIClient(builder.Configuration);
+builder.Services.AddHttpClient("fetch");
 builder.Services.AddAIAgent("clerk", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
@@ -43,7 +45,11 @@ builder.Services.AddAIAgent("clerk", (sp, key) =>
             {
                 ModelId = defaultModelId,
                 Instructions = """You are a helpful assistant.""",
-                Tools = [UserProfileFunctionFactory.Create(sp)]
+                Tools =
+                [
+                    UserProfileFunctionFactory.Create(sp),
+                    FetchAIFunctionFactory.CreateAIFunction(sp)
+                ]
             },
             AIContextProviders = [sp.GetRequiredService<AGUIAIContextProvider>()]
         },
