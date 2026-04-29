@@ -1,6 +1,6 @@
 using System.Text.Json;
 using AI.Agents.Abstractions;
-using AI.Agents.Microsoft.Auth;
+using AI.Agents.Microsoft.Authentication;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 

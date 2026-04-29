@@ -1,6 +1,6 @@
 using AI.Agents.Abstractions;
 using AI.Agents.MCP;
-using AI.Agents.Microsoft.Auth;
+using AI.Agents.Microsoft.Authentication;
 using AI.Agents.OAuth;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Abstractions;
