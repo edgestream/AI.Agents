@@ -17,17 +17,18 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["AzureOpenAI:DeploymentName"]
     ?? builder.Configuration["Foundry:ModelId"]
     ?? "gpt-5.3-chat";
+var authSettings = builder.Configuration.GetSection("Auth").Get<AuthSettings>() ?? new();
 
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddEntraAuth();
 builder.Services.AddOptions<AuthSettings>().BindConfiguration("Auth");
-builder.Services.AddAuthorizationBuilder().AddPolicy(
-    AuthorizationPolicies.AgentRequiresAuthentication, policy => {
-        policy.RequireAssertion(context =>
-            !builder.Configuration.GetValue<bool>("Auth:AgentRequiresAuthentication")
-            || context.User.Identity?.IsAuthenticated == true);
-    }
-);
+builder.Services.AddAuthorizationBuilder()
+    .AddPolicy(AuthorizationPolicies.AgentAuthenticated, policy =>
+    {
+        policy
+            .AddAuthenticationSchemes(EntraAuthenticationDefaults.AuthenticationScheme)
+            .RequireAuthenticatedUser();
+    });
 builder.Services.AddAGUIContextProvider();
 builder.Services.AddAIClient(builder.Configuration);
 builder.Services.AddAIAgent("clerk", (sp, key) =>
@@ -55,8 +56,11 @@ app.UseEntraAuth();
 app.UseAGUIRequestMiddleware();
 
 var agent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
-
-app.MapAGUI("/", agent).RequireAuthorization(AuthorizationPolicies.AgentRequiresAuthentication);
+var aguiEndpoint = app.MapAGUI("/", agent);
+if (authSettings.AgentRequiresAuthentication)
+{
+    aguiEndpoint.RequireAuthorization(AuthorizationPolicies.AgentAuthenticated);
+}
 app.MapGet("/api/health", () => "OK");
 app.MapGraphUserProfileEndpoint("/api/me");
 
