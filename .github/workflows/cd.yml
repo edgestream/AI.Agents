@@ -19,6 +19,7 @@ jobs:
     env:
       BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
       FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
+      SAMPLES_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-samples
       K8S_NAMESPACE: development
 
     steps:
@@ -42,6 +43,16 @@ jobs:
       - name: Apply Kubernetes base
         run: kubectl apply -k deploy/k8s
 
+      - name: Detect optional samples deployment
+        id: detect-samples
+        run: |
+          if kubectl get service/agents-news --namespace "${{ env.K8S_NAMESPACE }}" >/dev/null 2>&1 && \
+             kubectl get deployment/agents-news --namespace "${{ env.K8S_NAMESPACE }}" >/dev/null 2>&1; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Update backend image
         run: |
           kubectl set image deployment/agents-backend \
@@ -54,6 +65,13 @@ jobs:
             frontend="${{ env.FRONTEND_IMAGE }}:${{ steps.image-tag.outputs.tag }}" \
             --namespace "${{ env.K8S_NAMESPACE }}"
 
+      - name: Update samples image
+        if: ${{ steps.detect-samples.outputs.present == 'true' }}
+        run: |
+          kubectl set image deployment/agents-news \
+            agents-news="${{ env.SAMPLES_IMAGE }}:${{ steps.image-tag.outputs.tag }}" \
+            --namespace "${{ env.K8S_NAMESPACE }}"
+
       - name: Wait for rollout
         run: |
           kubectl rollout status deployment/agents-backend \
@@ -62,3 +80,8 @@ jobs:
           kubectl rollout status deployment/agents-frontend \
             --namespace "${{ env.K8S_NAMESPACE }}" \
             --timeout=5m
+          if [ "${{ steps.detect-samples.outputs.present }}" = "true" ]; then
+            kubectl rollout status deployment/agents-news \
+              --namespace "${{ env.K8S_NAMESPACE }}" \
+              --timeout=5m
+          fi
