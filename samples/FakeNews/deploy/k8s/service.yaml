@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: agents-news
+  labels:
+    app: agents-news
+spec:
+  selector:
+    app: agents-news
+  ports:
+    - name: http
+      port: 8888
+      targetPort: http

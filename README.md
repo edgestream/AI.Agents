@@ -50,6 +50,30 @@ cd src/Web
 npm run dev
 ```
 
+### Remote AG-UI Agents
+
+The backend can expose configured remote AG-UI agents as delegate tools for the primary `clerk` agent. Configure named agents under `Agents`:
+
+```json
+{
+  "Agents": {
+    "news": {
+      "Protocol": "AGUI",
+      "Endpoint": "http://localhost:8888",
+      "Description": "Mock news agent that returns structured Fake News stories."
+    }
+  }
+}
+```
+
+Run the mock news agent locally in a separate console:
+
+```bash
+dotnet run --project samples/Fake-News
+```
+
+The sample also includes Kubernetes manifests in `samples/Fake-News/deploy/k8s`.
+
 ### Running tests
 
 Tests are grouped into categories to make it easy to run only what you need:

@@ -11,6 +11,6 @@
     <Project Path="tests/samples/MealPlanner/MealPlanner.Tests.csproj" />
   </Folder>
   <Folder Name="/samples/">
-    <Project Path="samples/MealPlanner/MealPlanner.csproj" />
+    <Project Path="samples/FakeNews/FakeNews.csproj" />
   </Folder>
 </Solution>

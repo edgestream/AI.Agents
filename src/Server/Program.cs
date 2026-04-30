@@ -3,6 +3,7 @@ using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Configuration;
+using AI.Agents.Server.Remoting;
 using AI.Agents.Server.Tools;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
@@ -20,9 +21,9 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["Foundry:ModelId"]
     ?? "gpt-5.3-chat";
 
-builder.Services.AddGraphUserProfileService();
-builder.Services.AddEntraAuth();
 builder.Services.AddOptions<AuthSettings>().BindConfiguration("Auth");
+builder.Services.AddHttpClient();
+builder.Services.AddEntraAuth();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AuthorizationPolicies.AgentAuthenticated, policy =>
     {
@@ -30,9 +31,10 @@ builder.Services.AddAuthorizationBuilder()
             .AddAuthenticationSchemes(EntraAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser();
     });
+builder.Services.AddGraphUserProfileService();
 builder.Services.AddAGUIContextProvider();
 builder.Services.AddAIClient(builder.Configuration);
-builder.Services.AddHttpClient("fetch");
+builder.Services.AddAIAgents(builder.Configuration);
 builder.Services.AddAIAgent("clerk", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
@@ -45,13 +47,15 @@ builder.Services.AddAIAgent("clerk", (sp, key) =>
             {
                 ModelId = defaultModelId,
                 Instructions = """You are a helpful assistant.""",
-                Tools =
-                [
+                Tools = [
                     UserProfileFunctionFactory.Create(sp),
-                    FetchAIFunctionFactory.CreateAIFunction(sp)
+                    FetchAIFunctionFactory.CreateAIFunction(sp),
+                    .. RemoteAgentFunctionFactory.CreateAIFunctions(sp)
                 ]
             },
-            AIContextProviders = [sp.GetRequiredService<AGUIAIContextProvider>()]
+            AIContextProviders = [
+                //sp.GetRequiredService<AGUIAIContextProvider>()
+            ]
         },
         services: sp);
 });
@@ -61,8 +65,8 @@ var app = builder.Build();
 app.UseEntraAuth();
 app.UseAGUIRequestMiddleware();
 
-var clerkAgent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
-var aguiEndpoint = app.MapAGUI("/", clerkAgent);
+var defaultAgent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
+var aguiEndpoint = app.MapAGUI("/", defaultAgent);
 var authSettings = app.Services.GetRequiredService<IOptions<AuthSettings>>().Value;
 if (authSettings.AgentRequiresAuthentication)
 {

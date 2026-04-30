@@ -32,11 +32,11 @@
             "preLaunchTask": "build"
         },
         {
-            "name": "Samples (MealPlanner)",
+            "name": "Samples (FakeNews)",
             "type": "dotnet",
             "request": "launch",
-            "projectPath": "${workspaceFolder}/samples/MealPlanner/MealPlanner.csproj",
-            "preLaunchTask": "build (MealPlanner)"
+            "projectPath": "${workspaceFolder}/samples/FakeNews/FakeNews.csproj",
+            "preLaunchTask": "build"
         }
     ],
     "compounds": [
