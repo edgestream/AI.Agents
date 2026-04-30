@@ -1,0 +1,4 @@
+interface:
+  display_name: "GitHub Issue Governance"
+  short_description: "Create governed GitHub backlog issues."
+  default_prompt: "Use $github-issue-governance to create a properly typed, labeled, related, assigned backlog issue."
