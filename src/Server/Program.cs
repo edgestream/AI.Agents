@@ -39,18 +39,19 @@ builder.Services.AddAIClient(builder.Configuration);
 builder.Services.AddAIAgents(builder.Configuration);
 builder.Services.AddAIAgent("default", (sp, key) =>
 {
-    var agentCatalog = sp.GetRequiredService<AgentCatalog>();
     var chatClient = sp.GetRequiredService<IChatClient>();
-    var remoteAgents = agentCatalog.AgentDefinitions.Select(d => sp.GetRequiredKeyedService<AIAgent>(d.Name)).ToList();
     var clerkAgent = chatClient.AsAIAgent(
         new ChatClientAgentOptions
         {
             Name = key,
-            Description = "Clerk agent handles front inquiries and requests.",
+            Description = "Clerk agent handles front inquiries.",
             ChatOptions = new()
             {
                 ModelId = defaultModelId,
-                Instructions = """You are routing requests to other agents."""
+                Instructions = """
+                You are routing requests to other agents.
+                If there are no agents available to handle a request, try to handle it yourself.
+                """
             },
             AIContextProviders = [
                 sp.GetRequiredService<AGUIAIContextProvider>()
@@ -58,14 +59,23 @@ builder.Services.AddAIAgent("default", (sp, key) =>
         },
         services: sp
     );
-    var workflow = AgentWorkflowBuilder.CreateHandoffBuilderWith(clerkAgent)
-        .WithHandoffs(clerkAgent, remoteAgents)
-        .Build();
-    return workflow.AsAIAgent(
-        id: "default",
-        name: "default",
-        description: "Agent with handoffs to sub-agents"
-    );
+    var agentCatalog = sp.GetService<AgentCatalog>();
+    if (agentCatalog is not null && agentCatalog.AgentDefinitions.Count > 0)
+    {
+        var agents = agentCatalog.AgentDefinitions.Select(d => sp.GetRequiredKeyedService<AIAgent>(d.Name)).ToList();
+        var workflow = AgentWorkflowBuilder.CreateHandoffBuilderWith(clerkAgent)
+            .WithHandoffs(clerkAgent, agents)
+            .Build();
+        return workflow.AsAIAgent(
+            id: "default", 
+            name: "default", 
+            description: "Agent with handoffs to sub-agents"
+        );
+    }
+    else
+    {
+        return clerkAgent;
+    }
 });
 
 var app = builder.Build();
