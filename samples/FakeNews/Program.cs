@@ -17,7 +17,7 @@ builder.Services.AddKeyedSingleton<AIAgent>("news", (sp, key) =>
             Description = "Mock news agent that returns structured Fake News stories.",
             ChatOptions = new()
             {
-                Instructions = "Return deterministic Fake News stories for remote AG-UI handoff demos."
+                Instructions = "Return deterministic Fake News stories."
             }
         },
         loggerFactory,

@@ -1,18 +1,21 @@
-using System.Text.RegularExpressions;
 using AI.Agents.Server.Configuration;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.AGUI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
-namespace AI.Agents.Server.RemoteAgents;
+namespace AI.Agents.Server.Remoting;
 
-internal static class RemoteAgentServiceCollectionExtensions
+public static class ServiceCollectionExtensions
 {
-    public static IServiceCollection AddRemoteAgents(
+    /// <summary>
+    /// Adds remote agents defined in the configuration to the service collection. Remote agents are expected to be hosted separately and communicate using the AGUI protocol. Each remote agent is registered as an IChatClient-based AIAgent and also exposed as an AIFunction tool for delegation from other agents.
+    /// </summary>
+    /// <param name="services">The service collection to add the agents to.</param>
+    /// <param name="configuration">The configuration containing the remote agent definitions.</param>
+    /// <returns>The updated service collection.</returns>
+    public static IServiceCollection AddAIAgents(
         this IServiceCollection services,
         IConfiguration configuration)
     {

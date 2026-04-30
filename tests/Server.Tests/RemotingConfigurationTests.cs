@@ -1,4 +1,4 @@
-using AI.Agents.Server.RemoteAgents;
+using AI.Agents.Server.Remoting;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,10 +6,10 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AI.Agents.Server.Tests;
 
 [TestClass]
-public sealed class RemoteAgentConfigurationTests
+public sealed class RemotingConfigurationTests
 {
     [TestMethod]
-    public void AddRemoteAgents_RegistersConfiguredAguiAgent()
+    public void AddAIAgents_RegistersConfiguredAguiAgent()
     {
         using var provider = CreateProvider(
             new Dictionary<string, string?>
@@ -39,7 +39,7 @@ public sealed class RemoteAgentConfigurationTests
                 ["Agents:news:Description"] = "Mock news agent."
             });
 
-        var tools = RemoteAgentServiceCollectionExtensions.CreateRemoteAgentTools(provider);
+        var tools = ServiceCollectionExtensions.CreateRemoteAgentTools(provider);
 
         Assert.AreEqual(1, tools.Count);
         Assert.AreEqual("delegate_to_news", tools[0].Name);
@@ -83,7 +83,7 @@ public sealed class RemoteAgentConfigurationTests
         services.AddLogging();
         services.AddHttpClient();
         services.AddSingleton<IConfiguration>(configuration);
-        services.AddRemoteAgents(configuration);
+        services.AddAIAgents(configuration);
         return services.BuildServiceProvider();
     }
 }

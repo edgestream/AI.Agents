@@ -3,7 +3,7 @@ using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Configuration;
-using AI.Agents.Server.RemoteAgents;
+using AI.Agents.Server.Remoting;
 using AI.Agents.Server.Tools;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
@@ -34,7 +34,7 @@ builder.Services.AddAuthorizationBuilder()
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddAGUIContextProvider();
 builder.Services.AddAIClient(builder.Configuration);
-builder.Services.AddRemoteAgents(builder.Configuration);
+builder.Services.AddAIAgents(builder.Configuration);
 builder.Services.AddAIAgent("clerk", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
@@ -43,7 +43,7 @@ builder.Services.AddAIAgent("clerk", (sp, key) =>
         UserProfileFunctionFactory.Create(sp),
         FetchAIFunctionFactory.CreateAIFunction(sp)
     };
-    tools.AddRange(RemoteAgentServiceCollectionExtensions.CreateRemoteAgentTools(sp));
+    tools.AddRange(AI.Agents.Server.Remoting.ServiceCollectionExtensions.CreateRemoteAgentTools(sp));
 
     return chatClient.AsAIAgent(
         new ChatClientAgentOptions
@@ -56,7 +56,9 @@ builder.Services.AddAIAgent("clerk", (sp, key) =>
                 Instructions = """You are a helpful assistant.""",
                 Tools = tools
             },
-            AIContextProviders = [sp.GetRequiredService<AGUIAIContextProvider>()]
+            AIContextProviders = [
+                //sp.GetRequiredService<AGUIAIContextProvider>()
+            ]
         },
         services: sp);
 });

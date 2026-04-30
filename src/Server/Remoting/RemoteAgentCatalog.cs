@@ -1,4 +1,4 @@
-namespace AI.Agents.Server.RemoteAgents;
+namespace AI.Agents.Server.Remoting;
 
 internal sealed class RemoteAgentCatalog(IReadOnlyList<RemoteAgentDefinition> agents)
 {

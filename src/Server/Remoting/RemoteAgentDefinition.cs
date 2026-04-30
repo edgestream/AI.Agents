@@ -1,6 +1,6 @@
 using AI.Agents.Server.Configuration;
 
-namespace AI.Agents.Server.RemoteAgents;
+namespace AI.Agents.Server.Remoting;
 
 internal sealed record RemoteAgentDefinition(
     string Name,
