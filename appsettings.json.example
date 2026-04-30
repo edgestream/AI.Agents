@@ -17,5 +17,12 @@
     "OrganizationId": "",
     "ProjectId": "",
     "Protocol": "responses"
+  },
+  "Agents": {
+    "news": {
+      "Protocol": "AGUI",
+      "Endpoint": "http://localhost:8888",
+      "Description": "Mock news agent that returns structured Fake News stories."
+    }
   }
 }

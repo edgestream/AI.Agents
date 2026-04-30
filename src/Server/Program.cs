@@ -3,6 +3,7 @@ using AI.Agents.Microsoft;
 using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Configuration;
+using AI.Agents.Server.RemoteAgents;
 using AI.Agents.Server.Tools;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
@@ -20,9 +21,9 @@ var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["Foundry:ModelId"]
     ?? "gpt-5.3-chat";
 
-builder.Services.AddGraphUserProfileService();
-builder.Services.AddEntraAuth();
 builder.Services.AddOptions<AuthSettings>().BindConfiguration("Auth");
+builder.Services.AddHttpClient();
+builder.Services.AddEntraAuth();
 builder.Services.AddAuthorizationBuilder()
     .AddPolicy(AuthorizationPolicies.AgentAuthenticated, policy =>
     {
@@ -30,12 +31,20 @@ builder.Services.AddAuthorizationBuilder()
             .AddAuthenticationSchemes(EntraAuthenticationDefaults.AuthenticationScheme)
             .RequireAuthenticatedUser();
     });
+builder.Services.AddGraphUserProfileService();
 builder.Services.AddAGUIContextProvider();
 builder.Services.AddAIClient(builder.Configuration);
-builder.Services.AddHttpClient("fetch");
+builder.Services.AddRemoteAgents(builder.Configuration);
 builder.Services.AddAIAgent("clerk", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
+    var tools = new List<AITool>
+    {
+        UserProfileFunctionFactory.Create(sp),
+        FetchAIFunctionFactory.CreateAIFunction(sp)
+    };
+    tools.AddRange(RemoteAgentServiceCollectionExtensions.CreateRemoteAgentTools(sp));
+
     return chatClient.AsAIAgent(
         new ChatClientAgentOptions
         {
@@ -45,11 +54,7 @@ builder.Services.AddAIAgent("clerk", (sp, key) =>
             {
                 ModelId = defaultModelId,
                 Instructions = """You are a helpful assistant.""",
-                Tools =
-                [
-                    UserProfileFunctionFactory.Create(sp),
-                    FetchAIFunctionFactory.CreateAIFunction(sp)
-                ]
+                Tools = tools
             },
             AIContextProviders = [sp.GetRequiredService<AGUIAIContextProvider>()]
         },
