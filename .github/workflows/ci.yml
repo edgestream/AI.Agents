@@ -9,6 +9,7 @@ env:
   REGISTRY: ghcr.io
   BACKEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-server
   FRONTEND_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-web
+  SAMPLES_IMAGE: ghcr.io/${{ github.repository_owner }}/agents-samples
 
 jobs:
   # ── Unit tests ──────────────────────────────────────────────────────────────
@@ -106,6 +107,15 @@ jobs:
             type=sha
             type=raw,value=latest
 
+      - name: Extract samples metadata
+        id: meta-samples
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.SAMPLES_IMAGE }}
+          tags: |
+            type=sha
+            type=raw,value=latest
+
       - name: Build and push backend image
         uses: docker/build-push-action@v6
         with:
@@ -130,4 +140,14 @@ jobs:
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,mode=max,scope=frontend
 
-      
+      - name: Build and push samples image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: samples/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta-samples.outputs.tags }}
+          labels: ${{ steps.meta-samples.outputs.labels }}
+          cache-from: type=gha,scope=samples
+          cache-to: type=gha,mode=max,scope=samples

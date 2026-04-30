@@ -121,7 +121,8 @@ Workflow behavior:
 - validates that the credential can patch deployments and read pods in the namespace
 - applies `deploy/k8s`
 - updates `agents-backend` and `agents-frontend` to the CI tag `sha-<7>` derived from the triggering commit
-- waits for both rollouts to complete
+- if `agents-news` already exists as both a Service and Deployment in the namespace, updates it to the matching `agents-samples:sha-<7>` image tag too
+- waits for the required rollouts to complete
 
 Create the GitHub environment named `development` and configure:
 

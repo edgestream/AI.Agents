@@ -41,10 +41,11 @@ Published package names:
 
 - `ghcr.io/edgestream/agents-server`
 - `ghcr.io/edgestream/agents-web`
+- `ghcr.io/edgestream/agents-samples`
 
 The current Kubernetes rollout assumes these packages are pullable by the cluster. If your GHCR packages are private, configure image pull credentials or a pull secret in the cluster before enabling CD.
 
-The CD workflow updates the `agents-backend` and `agents-frontend` deployments to `sha-<7>` tags derived from CI. On fresh developer or automation machines outside GitHub Actions, authenticate with:
+The CD workflow updates the `agents-backend` and `agents-frontend` deployments to `sha-<7>` tags derived from CI. If the target namespace already contains both the `agents-news` Service and Deployment, CD also updates `agents-news` to the matching `agents-samples:sha-<7>` tag. On fresh developer or automation machines outside GitHub Actions, authenticate with:
 
 ```powershell
 docker login ghcr.io
