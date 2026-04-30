@@ -1,9 +1,7 @@
 using AI.Agents.Server.Configuration;
-using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.AGUI;
 using Microsoft.Agents.AI.Hosting;
 using Microsoft.Extensions.AI;
-using System.Text.RegularExpressions;
 
 namespace AI.Agents.Server.Remoting;
 
@@ -49,23 +47,6 @@ public static class ServiceCollectionExtensions
         return services;
     }
 
-    public static IReadOnlyList<AIFunction> CreateRemoteAgentTools(IServiceProvider services)
-    {
-        var catalog = services.GetRequiredService<RemoteAgentCatalog>();
-
-        return catalog.Agents
-            .Select(agent =>
-            {
-                var remoteAgent = services.GetRequiredKeyedService<AIAgent>(agent.Name);
-                return remoteAgent.AsAIFunction(new AIFunctionFactoryOptions
-                {
-                    Name = $"delegate_to_{SanitizeAgentName(agent.Name)}",
-                    Description = $"Delegate the user's request to the remote '{agent.Name}' agent. {agent.Description}"
-                });
-            })
-            .ToArray();
-    }
-
     private static IReadOnlyList<RemoteAgentDefinition> ReadDefinitions(IConfiguration configuration)
     {
         var settings = configuration
@@ -76,11 +57,5 @@ public static class ServiceCollectionExtensions
         return settings
             .Select(pair => RemoteAgentDefinition.FromSettings(pair.Key, pair.Value))
             .ToArray();
-    }
-
-    private static string SanitizeAgentName(string name)
-    {
-        var sanitized = Regex.Replace(name, "[^0-9A-Za-z]+", "_").Trim('_');
-        return string.IsNullOrWhiteSpace(sanitized) ? "agent" : sanitized;
     }
 }

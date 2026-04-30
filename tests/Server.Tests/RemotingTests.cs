@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AI.Agents.Server.Tests;
 
 [TestClass]
-public sealed class RemotingConfigurationTests
+public sealed class RemotingTests
 {
     [TestMethod]
     public void AddAIAgents_RegistersConfiguredAguiAgent()
@@ -39,10 +39,10 @@ public sealed class RemotingConfigurationTests
                 ["Agents:news:Description"] = "Mock news agent."
             });
 
-        var tools = ServiceCollectionExtensions.CreateRemoteAgentTools(provider);
+        var tools = RemoteAgentFunctionFactory.CreateAIFunctions(provider);
 
         Assert.AreEqual(1, tools.Count);
-        Assert.AreEqual("delegate_to_news", tools[0].Name);
+        Assert.AreEqual("handoff_to_news", tools[0].Name);
     }
 
     [TestMethod]

@@ -38,13 +38,6 @@ builder.Services.AddAIAgents(builder.Configuration);
 builder.Services.AddAIAgent("clerk", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
-    var tools = new List<AITool>
-    {
-        UserProfileFunctionFactory.Create(sp),
-        FetchAIFunctionFactory.CreateAIFunction(sp)
-    };
-    tools.AddRange(AI.Agents.Server.Remoting.ServiceCollectionExtensions.CreateRemoteAgentTools(sp));
-
     return chatClient.AsAIAgent(
         new ChatClientAgentOptions
         {
@@ -54,7 +47,11 @@ builder.Services.AddAIAgent("clerk", (sp, key) =>
             {
                 ModelId = defaultModelId,
                 Instructions = """You are a helpful assistant.""",
-                Tools = tools
+                Tools = [
+                    UserProfileFunctionFactory.Create(sp),
+                    FetchAIFunctionFactory.CreateAIFunction(sp),
+                    .. RemoteAgentFunctionFactory.CreateAIFunctions(sp)
+                ]
             },
             AIContextProviders = [
                 //sp.GetRequiredService<AGUIAIContextProvider>()
@@ -68,8 +65,8 @@ var app = builder.Build();
 app.UseEntraAuth();
 app.UseAGUIRequestMiddleware();
 
-var clerkAgent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
-var aguiEndpoint = app.MapAGUI("/", clerkAgent);
+var defaultAgent = app.Services.GetRequiredKeyedService<AIAgent>("clerk");
+var aguiEndpoint = app.MapAGUI("/", defaultAgent);
 var authSettings = app.Services.GetRequiredService<IOptions<AuthSettings>>().Value;
 if (authSettings.AgentRequiresAuthentication)
 {
