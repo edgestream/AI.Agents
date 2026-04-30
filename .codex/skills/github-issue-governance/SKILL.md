@@ -12,7 +12,7 @@ Use this skill whenever creating GitHub issues in `edgestream/AI.Agents`.
 Always set these fields as metadata, not only in the issue body:
 
 - Issue type: one of `Bug`, `Epic`, `Feature`, or `Task`.
-- Label: apply the corresponding repo label when it exists, matching case-insensitively if needed.
+- Labels: apply component/status labels that add information beyond the issue type. Do not add labels that duplicate the issue type metadata (for example, do not add `feature` to a `Feature` issue). For feature work, prefer relevant labels such as `frontend`, `backend`, `enhancement`, `documentation`, `testing`, or `infrastructure` when they apply.
 - Assignee: assign the authenticated/current GitHub user.
 - Project: add every `Epic` and `Feature` issue to `edgestream/projects/1` (`AI` backlog).
 
@@ -27,15 +27,17 @@ For `Feature` issues, also check relationship metadata:
 
 1. Resolve repo context as `edgestream/AI.Agents` unless the user explicitly provides another repo.
 2. Identify the intended issue type. If unclear, ask the user to choose one of `Bug`, `Epic`, `Feature`, or `Task`.
-3. Inspect existing labels and use the label matching the type (`bug`, `epic`, `feature`, `task`) when present.
-4. Get the authenticated GitHub login and use it as the assignee.
-5. For `Feature` issues:
+3. Use a short stakeholder-facing title. Prefer concise titles like `Visualize workflows and sub-agent execution` over implementation-heavy titles that include protocol, library, or framework names.
+4. Inspect existing labels and choose labels that describe scope or intent without duplicating issue type metadata. For example, a `Feature` issue may use `frontend`, `backend`, and `enhancement`, but should not use `feature`.
+5. Get the authenticated GitHub login and use it as the assignee.
+6. For `Feature` issues:
    - Search open `Epic` issues for a parent candidate.
+   - Include known broad epics in the candidate set even when they are not labeled `epic`; for workflow, AG-UI, CopilotKit, A2UI, extensibility, or user-experience work, consider #93 (`Extensibility and User Experience`) as a likely parent.
    - Search open issues for blockers or follow-up work using the request terms, component names, and related issue numbers.
    - Set metadata relationships only when confidence is high.
-6. Create the issue with the selected type, label, assignee, and body.
-7. Add `Epic` and `Feature` issues to `edgestream/projects/1`.
-8. Verify the created issue metadata after creation: type, label, assignee, project membership, and relationships.
+7. Create the issue with the selected type, labels, assignee, and body.
+8. Add `Epic` and `Feature` issues to `edgestream/projects/1`.
+9. Verify the created issue metadata after creation: type, labels, assignee, project membership, and relationships.
 
 ## Tool Guidance
 
