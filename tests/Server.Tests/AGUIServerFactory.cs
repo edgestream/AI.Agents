@@ -72,7 +72,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
 
             services.AddSingleton<IChatClient, FakeChatClient>();
             services.AddHttpClient("fetch");
-            services.AddKeyedSingleton<AIAgent>("clerk", (sp, key) =>
+            services.AddKeyedSingleton<AIAgent>("default", (sp, key) =>
             {
                 var chatClient = sp.GetRequiredService<IChatClient>();
                 var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
@@ -99,7 +99,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
             });
 
             services.AddKeyedSingleton<AIAgent>("agui-agent", (sp, key) =>
-                sp.GetRequiredKeyedService<AIAgent>("clerk"));
+                sp.GetRequiredKeyedService<AIAgent>("default"));
 
             // Remove the MCP hosted service so no connections are attempted in tests.
             var mcpDescriptor = services.SingleOrDefault(

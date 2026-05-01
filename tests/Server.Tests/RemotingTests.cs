@@ -1,4 +1,4 @@
-using AI.Agents.Server.Remoting;
+using AI.Agents.Server.Catalog;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 namespace AI.Agents.Server.Tests;
 
 [TestClass]
-public sealed class RemotingTests
+public sealed class CatalogTests
 {
     [TestMethod]
     public void AddAIAgents_RegistersConfiguredAguiAgent()
@@ -19,30 +19,13 @@ public sealed class RemotingTests
                 ["Agents:news:Description"] = "Mock news agent."
             });
 
-        var catalog = provider.GetRequiredService<RemoteAgentCatalog>();
+        var catalog = provider.GetRequiredService<AgentCatalog>();
         var agent = provider.GetRequiredKeyedService<AIAgent>("news");
 
-        Assert.AreEqual(1, catalog.Agents.Count);
-        Assert.AreEqual("news", catalog.Agents[0].Name);
-        Assert.AreEqual("http://localhost:8888/", catalog.Agents[0].Endpoint.ToString());
+        Assert.AreEqual(1, catalog.AgentDefinitions.Count);
+        Assert.AreEqual("news", catalog.AgentDefinitions[0].Name);
+        Assert.AreEqual("http://localhost:8888/", catalog.AgentDefinitions[0].Endpoint.ToString());
         Assert.AreEqual("news", agent.Name);
-    }
-
-    [TestMethod]
-    public void CreateRemoteAgentTools_ExposesDelegateToolForConfiguredAgent()
-    {
-        using var provider = CreateProvider(
-            new Dictionary<string, string?>
-            {
-                ["Agents:news:Protocol"] = "AGUI",
-                ["Agents:news:Endpoint"] = "http://localhost:8888",
-                ["Agents:news:Description"] = "Mock news agent."
-            });
-
-        var tools = RemoteAgentFunctionFactory.CreateAIFunctions(provider);
-
-        Assert.AreEqual(1, tools.Count);
-        Assert.AreEqual("handoff_to_news", tools[0].Name);
     }
 
     [TestMethod]
