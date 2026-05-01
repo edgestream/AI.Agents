@@ -25,10 +25,10 @@ public static class ServiceCollectionExtensions
             switch (definition.Protocol)
             {
                 case RemoteAgentProtocol.AGUI:
-                    services.AddHttpClient(definition.Name, client => { client.BaseAddress = definition.Endpoint; });
-                    services.AddAIAgent(definition.Name, (sp, key) =>
+                    services.AddHttpClient(definition.Name.ToLowerInvariant(), client => { client.BaseAddress = definition.Endpoint; });
+                    services.AddAIAgent(definition.Name.ToLowerInvariant(), (sp, key) =>
                     {
-                        var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient(definition.Name);
+                        var httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient(key);
                         var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
                         var chatClient = new AGUIChatClient(
                             httpClient,
@@ -37,7 +37,7 @@ public static class ServiceCollectionExtensions
                             jsonSerializerOptions: null,
                             serviceProvider: sp);
                         return chatClient.AsAIAgent(
-                            name: definition.Name,
+                            name: key,
                             description: definition.Description);
                     });
                     break;

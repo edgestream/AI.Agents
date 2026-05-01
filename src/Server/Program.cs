@@ -40,42 +40,34 @@ builder.Services.AddAIAgents(builder.Configuration);
 builder.Services.AddAIAgent("default", (sp, key) =>
 {
     var chatClient = sp.GetRequiredService<IChatClient>();
-    var clerkAgent = chatClient.AsAIAgent(
+    var frontAgent = chatClient.AsAIAgent(
         new ChatClientAgentOptions
         {
             Name = key,
-            Description = "Clerk agent handles front inquiries.",
+            Description = "Front agent",
             ChatOptions = new()
             {
                 ModelId = defaultModelId,
                 Instructions = """
-                You are routing requests to other agents.
-                If there are no agents available to handle a request, try to handle it yourself.
+                Route messages to the appropriate agent.
+                If the message can't be handled by an agent,
+                try to help the user as best as you can.
                 """
             },
-            AIContextProviders = [
-                sp.GetRequiredService<AGUIAIContextProvider>()
-            ]
         },
         services: sp
     );
     var agentCatalog = sp.GetService<AgentCatalog>();
-    if (agentCatalog is not null && agentCatalog.AgentDefinitions.Count > 0)
-    {
-        var agents = agentCatalog.AgentDefinitions.Select(d => sp.GetRequiredKeyedService<AIAgent>(d.Name)).ToList();
-        var workflow = AgentWorkflowBuilder.CreateHandoffBuilderWith(clerkAgent)
-            .WithHandoffs(clerkAgent, agents)
-            .Build();
-        return workflow.AsAIAgent(
-            id: "default", 
-            name: "default", 
-            description: "Agent with handoffs to sub-agents"
+    if (agentCatalog is null || !agentCatalog.AgentDefinitions.Any()) return frontAgent;
+    var otherAgents = agentCatalog.AgentDefinitions.Select(x => sp.GetRequiredKeyedService<AIAgent>(x.Name.ToLowerInvariant()));
+    return AgentWorkflowBuilder.CreateHandoffBuilderWith(frontAgent)
+        .WithHandoffs(frontAgent, otherAgents)
+        .Build()
+        .AsAIAgent(
+            id: key,
+            name: key,
+            description: "Workflow to route messages to the appropriate agent."
         );
-    }
-    else
-    {
-        return clerkAgent;
-    }
 });
 
 var app = builder.Build();
