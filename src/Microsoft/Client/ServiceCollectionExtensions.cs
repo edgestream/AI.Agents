@@ -1,4 +1,5 @@
 using AI.Agents.Microsoft.Configuration;
+using AI.Microsoft.Client;
 using Azure;
 using Azure.AI.Extensions.OpenAI;
 using Azure.AI.OpenAI;
@@ -12,6 +13,8 @@ using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Responses;
 using System.ClientModel;
+using System.ClientModel.Primitives;
+using System.Text.Json;
 
 #pragma warning disable OPENAI001
 
@@ -33,6 +36,7 @@ public static class ServiceCollectionExtensions
         if (configuration.GetSection("Foundry").Exists()) services.AddAIProjectClient();
         else if (configuration.GetSection("AzureOpenAI").Exists()) services.AddAzureOpenAIClient();
         else if (configuration.GetSection("OpenAI").Exists()) services.AddOpenAIClient();
+        else if (configuration.GetSection("Codex").Exists()) services.AddCodexClient();
         else throw new InvalidOperationException("AI provider not configured.");
 
         return services;
@@ -197,6 +201,75 @@ public static class ServiceCollectionExtensions
             {
                 throw new Exception("Unsupported wire API protocol.");
             }
+        });
+        return services;
+    }
+
+    /// <summary>
+    /// Registers <see cref="ChatClient"/>, <see cref="ResponsesClient"/>, and <see cref="IChatClient"/>
+    /// from a configuration section defined as <see cref="CodexSettings"/>.
+    /// </summary>
+    public static IServiceCollection AddCodexClient(this IServiceCollection services, string sectionName = "Codex")
+    {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentException.ThrowIfNullOrWhiteSpace(sectionName);
+
+        services.AddOptions<CodexSettings>().BindConfiguration(sectionName);
+        services.AddSingleton(sp =>
+        {
+            var options = sp.GetRequiredService<IOptions<CodexSettings>>().Value;
+            var accessToken = options.AccessToken;
+            var accountId = options.AccountID;
+            if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(accountId))
+            {
+                if (string.IsNullOrWhiteSpace(options.AuthFile))
+                {
+                    throw new InvalidOperationException($"{sectionName}:AuthFile is not configured, and AccessToken or AccountID is not provided.");
+                };
+                var content = File.ReadAllText(options.AuthFile);
+                using JsonDocument auth = JsonDocument.Parse(content);
+                JsonElement tokens = auth.RootElement.GetProperty("tokens");
+                accessToken = tokens.GetProperty("access_token").GetString()!;
+                accountId = tokens.GetProperty("account_id").GetString()!;
+                if (string.IsNullOrWhiteSpace(accessToken) || string.IsNullOrWhiteSpace(accountId))
+                {
+                    throw new InvalidOperationException($"AccessToken or AccountID could not be obtained from the AuthFile.");
+                };
+            }
+            var credential = new ApiKeyCredential(accessToken);
+            var clientOptions = new OpenAIClientOptions()
+            {
+                Endpoint = new Uri("https://chatgpt.com/backend-api/codex")
+            };
+            clientOptions.AddPolicy(new CodexHeadersPolicy(accountId), PipelinePosition.PerCall);
+            var openAIClient = new OpenAIClient(credential, clientOptions);
+            return openAIClient;
+        });
+        services.AddSingleton(sp =>
+        {
+            var openAIClient = sp.GetRequiredService<OpenAIClient>();
+            return openAIClient.GetResponsesClient();
+        });
+        services.AddSingleton(sp =>
+        {
+            var responsesClient = sp.GetRequiredService<ResponsesClient>();
+            var options = sp.GetRequiredService<IOptions<CodexSettings>>().Value;
+            return responsesClient.AsIChatClient(options.ModelId)
+                .AsBuilder()
+                .ConfigureOptions(options =>
+                {
+                    options.RawRepresentationFactory = _ =>
+                    {
+                        var raw = new CreateResponseOptions()
+                        {
+                            StoredOutputEnabled = false,
+                            StreamingEnabled = true
+                        };
+                        raw.IncludedProperties.Add(IncludedResponseProperty.ReasoningEncryptedContent);
+                        return raw;
+                    };
+                })
+                .Build();
         });
         return services;
     }

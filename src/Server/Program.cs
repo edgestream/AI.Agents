@@ -21,7 +21,8 @@ builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environmen
 var defaultModelId = builder.Configuration["OpenAI:ModelId"]
     ?? builder.Configuration["AzureOpenAI:DeploymentName"]
     ?? builder.Configuration["Foundry:ModelId"]
-    ?? "gpt-5.3-chat";
+    ?? builder.Configuration["Codex:ModelId"]
+    ?? "gpt-5.4";
 
 builder.Services.AddHttpClient();
 builder.Services.AddOptions<AuthSettings>().BindConfiguration("Auth");
