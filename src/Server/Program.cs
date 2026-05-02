@@ -4,6 +4,7 @@ using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Catalog;
 using AI.Agents.Server.Configuration;
+using AI.Agents.Server.Tools;
 using Azure.AI.Projects;
 using Microsoft.Agents.AI;
 using Microsoft.Agents.AI.Hosting;
@@ -53,7 +54,11 @@ builder.Services.AddAIAgent("default", (sp, key) =>
                 Route messages to the appropriate agent.
                 If the message can't be handled by an agent,
                 try to help the user as best as you can.
-                """
+                """,
+                Tools = [
+                    UserProfileFunctionFactory.CreateAIFunction(sp),
+                    FetchAIFunctionFactory.CreateAIFunction(sp)
+                ]
             },
         },
         services: sp

@@ -5,7 +5,7 @@ using Microsoft.Extensions.AI;
 
 public class UserProfileFunctionFactory
 {
-    internal class UserProfileTool(IUserContextAccessor userContextAccessor)
+    private class UserProfileTool(IUserContextAccessor userContextAccessor)
     {
         /// <summary>
         /// Returns the current authenticated user's profile.
@@ -29,7 +29,7 @@ public class UserProfileFunctionFactory
     /// </summary>
     /// <param name="serviceProvider">The service provider used to resolve dependencies.</param>
     /// <returns>An AI function that returns the current authenticated user's profile.</returns>
-    public static AIFunction Create(IServiceProvider serviceProvider)
+    public static AIFunction CreateAIFunction(IServiceProvider serviceProvider)
     {
         var userContextAccessor = serviceProvider.GetRequiredService<IUserContextAccessor>();
         var userProfileTool = new UserProfileTool(userContextAccessor);

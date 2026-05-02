@@ -63,7 +63,7 @@ public sealed class UserProfileSkillTests
     {
         var services = new ServiceCollection();
         services.AddSingleton<IUserContextAccessor>(new TestUserContextAccessor(userContext));
-        return global::UserProfileFunctionFactory.Create(services.BuildServiceProvider());
+        return global::UserProfileFunctionFactory.CreateAIFunction(services.BuildServiceProvider());
     }
 
     private static JsonDocument ParseJsonResult(object? result)
