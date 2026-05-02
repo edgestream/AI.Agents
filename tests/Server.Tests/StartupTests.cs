@@ -1,4 +1,7 @@
+using AI.Agents;
 using AI.Agents.Microsoft;
+using AI.Agents.Microsoft.Configuration;
+using AI.Agents.OpenAI;
 using Azure.AI.Projects;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -46,51 +49,57 @@ public sealed class StartupTests
         using var provider = CreateProvider(
             new Dictionary<string, string?>
             {
-                ["AzureOpenAI:DeploymentName"] = "some-deployment"
+                ["AzureOpenAI:Model"] = "some-deployment"
             },
-            (services, _) => services.AddAzureOpenAIClient());
+            (services, _) => services.AddAIClient());
 
         _ = provider.GetRequiredService<IChatClient>();
     }
 
     [TestMethod]
     [ExpectedException(typeof(InvalidOperationException))]
-    public void AddAzureOpenAIClient_MissingDeploymentName_ThrowsInvalidOperationException()
+    public void AddAzureOpenAIClient_MissingModel_ThrowsInvalidOperationException()
     {
         using var provider = CreateProvider(
             new Dictionary<string, string?>
             {
                 ["AzureOpenAI:Endpoint"] = "https://fake.openai.azure.com/"
             },
-            (services, _) => services.AddAzureOpenAIClient());
-
-        _ = provider.GetRequiredService<IChatClient>();
-    }
-
-    [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
-    public void AddOpenAIClient_MissingApiKey_ThrowsInvalidOperationException()
-    {
-        using var provider = CreateProvider(
-            new Dictionary<string, string?>
-            {
-                ["OpenAI:ModelId"] = "gpt-5.3-mini"
-            },
-            (services, _) => services.AddOpenAIClient());
+            (services, _) => services.AddAIClient());
 
         _ = provider.GetRequiredService<IChatClient>();
     }
 
     [TestMethod]
     [ExpectedException(typeof(InvalidOperationException))]
-    public void AddOpenAIClient_MissingModelId_ThrowsInvalidOperationException()
+    public void AddOpenAIClient_MissingApiKey_ThrowsInvalidOperationException()
+    {
+        using var provider = CreateProvider(
+            new Dictionary<string, string?>
+            {
+                ["OpenAI:Model"] = "gpt-5.3-mini"
+            },
+            (services, configuration) =>
+            {
+                services.AddAIClient();
+            });
+
+        _ = provider.GetRequiredService<IChatClient>();
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public void AddOpenAIClient_MissingModel_ThrowsInvalidOperationException()
     {
         using var provider = CreateProvider(
             new Dictionary<string, string?>
             {
                 ["OpenAI:ApiKey"] = "test-api-key"
             },
-            (services, _) => services.AddOpenAIClient());
+            (services, configuration) =>
+            {
+                services.AddAIClient();
+            });
 
         _ = provider.GetRequiredService<IChatClient>();
     }
@@ -102,10 +111,14 @@ public sealed class StartupTests
             new Dictionary<string, string?>
             {
                 ["OpenAI:ApiKey"] = "test-api-key",
-                ["OpenAI:ModelId"] = "openai/gpt-5-mini",
+                ["OpenAI:Model"] = "openai/gpt-5-mini",
                 ["OpenAI:Endpoint"] = "https://openrouter.ai/api/v1/"
             },
-            (services, _) => services.AddOpenAIClient());
+            (services, configuration) =>
+            {
+                services.AddOpenAIClient();
+                services.AddAIClient();
+            });
 
         var chatClient = provider.GetRequiredService<ChatClient>();
         var responsesClient = provider.GetRequiredService<ResponsesClient>();
@@ -122,7 +135,10 @@ public sealed class StartupTests
     {
         using var provider = CreateProvider(
             [],
-            (services, configuration) => services.AddAIClient(configuration));
+            (services, configuration) =>
+            {
+                services.AddAIClient();
+            });
 
         _ = provider.GetRequiredService<IChatClient>();
     }
@@ -134,15 +150,54 @@ public sealed class StartupTests
             new Dictionary<string, string?>
             {
                 ["OpenAI:ApiKey"] = "test-api-key",
-                ["OpenAI:ModelId"] = "gpt-5.3-mini"
+                ["OpenAI:Model"] = "gpt-5.3-mini"
             },
-            (services, configuration) => services.AddAIClient(configuration));
+            (services, configuration) =>
+            {
+                services.AddAIClient();
+            });
 
         var chatClient = provider.GetRequiredService<IChatClient>();
-        var responsesClient = provider.GetRequiredService<ResponsesClient>();
 
         Assert.IsNotNull(chatClient);
-        Assert.IsNotNull(responsesClient);
+    }
+
+    [TestMethod]
+    public void AddAIClient_UsesCodexProvider_WhenCodexIsConfigured()
+    {
+        using var provider = CreateProvider(
+            new Dictionary<string, string?>
+            {
+                ["Codex:ApiKey"] = "test-api-key",
+                ["Codex:AccountID"] = "test-account",
+                ["Codex:Model"] = "gpt-5.4"
+            },
+            (services, configuration) =>
+            {
+                services.AddAIClient();
+            });
+
+        var chatClient = provider.GetRequiredService<IChatClient>();
+
+        Assert.IsNotNull(chatClient);
+    }
+
+    [TestMethod]
+    [ExpectedException(typeof(InvalidOperationException))]
+    public void AddAIClient_CodexMissingAccountId_ThrowsInvalidOperationException()
+    {
+        using var provider = CreateProvider(
+            new Dictionary<string, string?>
+            {
+                ["Codex:ApiKey"] = "test-api-key",
+                ["Codex:Model"] = "gpt-5.4"
+            },
+            (services, configuration) =>
+            {
+                services.AddAIClient();
+            });
+
+        _ = provider.GetRequiredService<IChatClient>();
     }
 
     private static ServiceProvider CreateProvider(

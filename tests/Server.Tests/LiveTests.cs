@@ -1,13 +1,17 @@
 using System.Net;
 using System.Net.Http.Json;
+using AI.Agents.Microsoft;
+using AI.Agents.Microsoft.Client;
+using AI.Agents.Microsoft.Configuration;
+using AI.Agents.OpenAI;
 using Microsoft.Extensions.Configuration;
 
 namespace AI.Agents.Server.Tests;
 
 /// <summary>
 /// Optional live integration tests that boot the real application against real cloud credentials.
-/// The current server wiring uses <see cref="AI.Agents.Microsoft.ServiceCollectionExtensions.AddAIProjectClient"/>,
-/// so live tests require the <c>Foundry:Endpoint</c> setting in local configuration.
+/// The current server wiring uses provider options and <see cref="AI.Agents.ServiceCollectionExtensions.AddAIClient"/>,
+/// so live tests require a configured provider in local configuration.
 /// Tests are skipped when Foundry is not configured (e.g. in CI without credentials).
 /// </summary>
 [TestClass]
@@ -15,19 +19,67 @@ namespace AI.Agents.Server.Tests;
 [TestCategory("Live")]
 public sealed class LiveTests
 {
+    private static string EnvironmentName => Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development";
+
     /// <summary>
     /// Returns true when the Foundry endpoint is configured in local settings,
     /// indicating that real cloud calls can be made.
     /// </summary>
     private static bool HasProviderConfig()
     {
+        var serverBasePath = FindServerBasePath();
         var config = new ConfigurationBuilder()
+            .SetBasePath(serverBasePath)
             .AddJsonFile("appsettings.json", optional: true)
-            .AddJsonFile($"appsettings.{Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") ?? "Development"}.json", optional: true)
+            .AddJsonFile($"appsettings.{EnvironmentName}.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
-        return !string.IsNullOrWhiteSpace(config["Foundry:Endpoint"]);
+        var openAI = config.GetSection("OpenAI").Get<OpenAISettings>();
+        if (openAI is not null && HasRequiredOpenAISettings(openAI))
+        {
+            return true;
+        }
+
+        var codex = config.GetSection("Codex").Get<CodexSettings>();
+        if (codex is not null && HasRequiredOpenAISettings(codex) && !string.IsNullOrWhiteSpace(codex.AccountID))
+        {
+            return true;
+        }
+
+        var foundry = config.GetSection("Foundry").Get<FoundrySettings>();
+        if (foundry is not null && FoundryChatClientProvider.HasValidSettings(foundry))
+        {
+            return true;
+        }
+
+        var azureOpenAI = config.GetSection("AzureOpenAI").Get<AzureOpenAISettings>();
+        return azureOpenAI is not null && AzureOpenAIChatClientProvider.HasValidSettings(azureOpenAI);
+    }
+
+    private static bool HasRequiredOpenAISettings(OpenAISettings settings)
+    {
+        return !string.IsNullOrWhiteSpace(settings.ApiKey)
+            && !string.IsNullOrWhiteSpace(settings.Model)
+            && (string.IsNullOrWhiteSpace(settings.Endpoint)
+                || Uri.TryCreate(settings.Endpoint, UriKind.Absolute, out _));
+    }
+
+    private static string FindServerBasePath()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "Server");
+            if (File.Exists(Path.Combine(candidate, "appsettings.json")))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return Path.GetDirectoryName(typeof(Program).Assembly.Location)!;
     }
 
     [TestMethod]
@@ -36,7 +88,8 @@ public sealed class LiveTests
         if (!HasProviderConfig())
             Assert.Inconclusive("No AI provider configured — skipping live test.");
 
-        using var factory = new WebApplicationFactory<Program>();
+        using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment(EnvironmentName));
         using var client = factory.CreateClient();
 
         var response = await client.GetAsync("/api/health");
@@ -50,7 +103,8 @@ public sealed class LiveTests
         if (!HasProviderConfig())
             Assert.Inconclusive("No AI provider configured — skipping live test.");
 
-        using var factory = new WebApplicationFactory<Program>();
+        using var factory = new WebApplicationFactory<Program>()
+            .WithWebHostBuilder(builder => builder.UseEnvironment(EnvironmentName));
         using var client = factory.CreateClient();
 
         var payload = new

@@ -6,9 +6,11 @@ COPY src/Directory.Build.props src/
 COPY src/Directory.Packages.props src/
 COPY src/Abstractions/Abstractions.csproj src/Abstractions/
 COPY src/AGUI/AGUI.csproj src/AGUI/
+COPY src/Client/Client.csproj src/Client/
 COPY src/Microsoft/Microsoft.csproj src/Microsoft/
 COPY src/MCP/MCP.csproj src/MCP/
 COPY src/OAuth/OAuth.csproj src/OAuth/
+COPY src/OpenAI/OpenAI.csproj src/OpenAI/
 COPY src/Server/Server.csproj src/Server/
 RUN dotnet restore src/Server/Server.csproj
 COPY . .

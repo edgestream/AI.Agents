@@ -16,7 +16,7 @@ builder.AddAIAgent("chef", (sp, name) =>
 {
     var projectClient = sp.GetRequiredService<AIProjectClient>();
     return projectClient.AsAIAgent(
-        model: builder.Configuration["Foundry:ModelId"]!,
+        model: builder.Configuration["Client:Model"]!,
         instructions: "You are an agent that helps users find recipes.",
         name: name,
         description: "An agent that helps users find recipes.",

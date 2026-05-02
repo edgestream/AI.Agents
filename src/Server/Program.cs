@@ -1,5 +1,6 @@
+using AI.Agents;
 using AI.Agents.AGUI;
-using AI.Agents.Microsoft;
+using AI.Agents.Configuration;
 using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Catalog;
@@ -19,12 +20,6 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Configuration.AddJsonFile($"/run/secrets/appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false);
 
-var defaultModelId = builder.Configuration["OpenAI:ModelId"]
-    ?? builder.Configuration["AzureOpenAI:DeploymentName"]
-    ?? builder.Configuration["Foundry:ModelId"]
-    ?? builder.Configuration["Codex:ModelId"]
-    ?? "gpt-5.4";
-
 builder.Services.AddHttpClient();
 builder.Services.AddOptions<AuthSettings>().BindConfiguration("Auth");
 builder.Services.AddEntraAuth();
@@ -37,7 +32,7 @@ builder.Services.AddAuthorizationBuilder()
     });
 builder.Services.AddGraphUserProfileService();
 builder.Services.AddAGUIContextProvider();
-builder.Services.AddAIClient(builder.Configuration);
+builder.Services.AddAIClient();
 builder.Services.AddAIAgents(builder.Configuration);
 builder.Services.AddAIAgent("default", (sp, key) =>
 {
@@ -49,7 +44,7 @@ builder.Services.AddAIAgent("default", (sp, key) =>
             Description = "Front agent",
             ChatOptions = new()
             {
-                ModelId = defaultModelId,
+                ModelId = sp.GetRequiredService<IOptions<ClientSettings>>().Value.Model,
                 Instructions = """
                 Route messages to the appropriate agent.
                 If the message can't be handled by an agent,

@@ -31,9 +31,12 @@ Alternative Azure OpenAI example:
 
 ```json
 {
+  "Client": {
+    "Model": "<deployment-name>"
+  },
   "AzureOpenAI": {
     "Endpoint": "https://<your-resource>.openai.azure.com/",
-    "DeploymentName": "<deployment-name>",
+    "Model": "<deployment-name>",
     "ApiKey": "<api-key>"
   }
 }
@@ -76,7 +79,7 @@ If you prefer Azure OpenAI environment variables over a mounted settings file, s
 
 ```powershell
 azd env set AZURE_OPENAI_ENDPOINT https://<your-resource>.openai.azure.com/
-azd env set AZURE_OPENAI_DEPLOYMENT_NAME <deployment-name>
+azd env set AZURE_OPENAI_MODEL <deployment-name>
 azd env set AZURE_OPENAI_API_KEY <api-key>
 ```
 

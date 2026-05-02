@@ -19,7 +19,9 @@
 
   <ItemGroup>
     <ProjectReference Include="../../src/Server/Server.csproj" />
+    <ProjectReference Include="../../src/Client/Client.csproj" />
     <ProjectReference Include="../../src/Microsoft/Microsoft.csproj" />
+    <ProjectReference Include="../../src/OpenAI/OpenAI.csproj" />
     <ProjectReference Include="../../src/OAuth/OAuth.csproj" />
   </ItemGroup>
 

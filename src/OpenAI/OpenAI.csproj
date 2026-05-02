@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <AssemblyName>AI.Agents.Microsoft</AssemblyName>
-    <RootNamespace>AI.Agents.Microsoft</RootNamespace>
+    <AssemblyName>AI.Agents.OpenAI</AssemblyName>
+    <RootNamespace>AI.Agents.OpenAI</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,7 +18,6 @@
     <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Agents.AI" />
     <PackageReference Include="Microsoft.Agents.AI.Abstractions" />
-    <PackageReference Include="Microsoft.Agents.AI.Foundry" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
     <PackageReference Include="Microsoft.Graph" />
