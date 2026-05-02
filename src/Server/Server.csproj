@@ -19,9 +19,11 @@
 
   <ItemGroup>
     <ProjectReference Include="../AGUI/AGUI.csproj" />
+    <ProjectReference Include="../Client/Client.csproj" />
     <ProjectReference Include="../Microsoft/Microsoft.csproj" />
     <ProjectReference Include="../MCP/MCP.csproj" />
     <ProjectReference Include="../OAuth/OAuth.csproj" />
+    <ProjectReference Include="../OpenAI/OpenAI.csproj" />
   </ItemGroup>
 
   <ItemGroup>

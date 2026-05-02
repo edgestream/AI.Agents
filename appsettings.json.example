@@ -1,10 +1,13 @@
 {
+  "Client": {
+    "Model": "gpt-5.4"
+  },
   "Auth": {
     "RequireAuthenticationForAgent": false
   },
   "AzureOpenAI": {
     "Endpoint": "",
-    "DeploymentName": "",
+    "Model": "",
     "ApiKey": ""
   },
   "Foundry": {
@@ -12,11 +15,16 @@
   },
   "OpenAI": {
     "ApiKey": "",
-    "ModelId": "",
+    "Model": "",
     "Endpoint": "",
     "OrganizationId": "",
     "ProjectId": "",
     "Protocol": "responses"
+  },
+  "Codex": {
+    "ApiKey": "",
+    "AccountID": "",
+    "Model": "gpt-5.4"
   },
   "Agents": {
     "news": {

@@ -3,4 +3,8 @@
     <AssemblyName>AI.Agents.Abstractions</AssemblyName>
     <RootNamespace>AI.Agents.Abstractions</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" />
+  </ItemGroup>
 </Project>

@@ -6,8 +6,8 @@ param frontendImage string
 @description('Azure OpenAI endpoint URL. When set, overrides the value from the mounted appsettings file.')
 param azureOpenAIEndpoint string = ''
 
-@description('Azure OpenAI deployment name. When set, overrides the value from the mounted appsettings file.')
-param azureOpenAIDeploymentName string = ''
+@description('Azure OpenAI model name. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIModel string = ''
 
 @secure()
 @description('Azure OpenAI API key. When set, overrides the value from the mounted appsettings file.')
@@ -132,11 +132,11 @@ resource app 'Microsoft.App/containerApps@2023-05-01' = {
               name: 'AzureOpenAI__Endpoint'
               value: azureOpenAIEndpoint
             }
-          ] : [], !empty(azureOpenAIDeploymentName) ? [
+          ] : [], !empty(azureOpenAIModel) ? [
             {
-              // CD override: azd env set AZURE_OPENAI_DEPLOYMENT_NAME <value>
-              name: 'AzureOpenAI__DeploymentName'
-              value: azureOpenAIDeploymentName
+              // CD override: azd env set AZURE_OPENAI_MODEL <value>
+              name: 'AzureOpenAI__Model'
+              value: azureOpenAIModel
             }
           ] : [], !empty(azureOpenAIApiKey) ? [
             {

@@ -1,9 +1,11 @@
 <Solution>
   <Project Path="src/Abstractions/Abstractions.csproj" />
   <Project Path="src/AGUI/AGUI.csproj" />
+  <Project Path="src/Client/Client.csproj" />
   <Project Path="src/MCP/MCP.csproj" />
   <Project Path="src/Microsoft/Microsoft.csproj" />
   <Project Path="src/OAuth/OAuth.csproj" />
+  <Project Path="src/OpenAI/OpenAI.csproj" />
   <Project Path="src/Server/Server.csproj" />
   <Folder Name="/tests/">
     <Project Path="tests/Server.Tests/Server.Tests.csproj" />
@@ -13,4 +15,5 @@
   <Folder Name="/samples/">
     <Project Path="samples/FakeNews/FakeNews.csproj" />
   </Folder>
+</Solution>
 </Solution>

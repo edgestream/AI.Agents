@@ -1,6 +1,6 @@
 using System.ClientModel.Primitives;
 
-namespace AI.Microsoft.Client;
+namespace AI.Agents.OpenAI.Client;
 
 internal class CodexHeadersPolicy : PipelinePolicy
 {

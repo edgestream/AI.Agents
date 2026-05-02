@@ -18,8 +18,8 @@ param frontendImage string = 'ghcr.io/edgestream/agents-web:latest'
 @description('Azure OpenAI endpoint URL. When set, overrides the value from the mounted appsettings file.')
 param azureOpenAIEndpoint string = ''
 
-@description('Azure OpenAI deployment name. When set, overrides the value from the mounted appsettings file.')
-param azureOpenAIDeploymentName string = ''
+@description('Azure OpenAI model name. When set, overrides the value from the mounted appsettings file.')
+param azureOpenAIModel string = ''
 
 @secure()
 @description('Azure OpenAI API key. When set, overrides the value from the mounted appsettings file.')
@@ -65,7 +65,7 @@ module resources './resources.bicep' = {
     backendImage: backendImage
     frontendImage: frontendImage
     azureOpenAIEndpoint: azureOpenAIEndpoint
-    azureOpenAIDeploymentName: azureOpenAIDeploymentName
+    azureOpenAIModel: azureOpenAIModel
     azureOpenAIApiKey: azureOpenAIApiKey
     appSettingsJson: appSettingsJson
     entraClientId: entraClientId
