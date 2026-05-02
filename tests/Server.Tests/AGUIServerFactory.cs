@@ -88,7 +88,7 @@ internal sealed class AGUIServerFactory : WebApplicationFactory<Program>
                             Instructions = "You are a test assistant.",
                             Tools =
                             [
-                                UserProfileFunctionFactory.Create(sp),
+                                UserProfileFunctionFactory.CreateAIFunction(sp),
                                 FetchAIFunctionFactory.CreateAIFunction(sp)
                             ]
                         },
