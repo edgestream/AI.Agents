@@ -1,5 +1,4 @@
 using AI.Agents.Abstractions;
-using AI.Agents.Configuration;
 using AI.Agents.Microsoft;
 using AI.Agents.OpenAI;
 using Microsoft.Extensions.AI;
@@ -21,7 +20,6 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        services.AddOptions<ClientSettings>().BindConfiguration("Client");
         services.AddOpenAIProvider("OpenAI");
         services.AddCodexProvider("Codex");
         services.AddFoundryAIProvider("Foundry");

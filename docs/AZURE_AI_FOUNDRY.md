@@ -31,9 +31,6 @@ Alternative Azure OpenAI example:
 
 ```json
 {
-  "Client": {
-    "Model": "<deployment-name>"
-  },
   "AzureOpenAI": {
     "Endpoint": "https://<your-resource>.openai.azure.com/",
     "Model": "<deployment-name>",
