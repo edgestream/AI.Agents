@@ -19,5 +19,6 @@
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Graph" Version="5.77.0" />
     <PackageVersion Include="ModelContextProtocol" Version="1.2.0" />
+    <PackageVersion Include="OpenTelemetry.Api" Version="1.15.3" />
   </ItemGroup>
 </Project>
