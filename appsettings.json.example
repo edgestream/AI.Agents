@@ -1,7 +1,4 @@
 {
-  "Client": {
-    "Model": "gpt-5.4"
-  },
   "Auth": {
     "RequireAuthenticationForAgent": false
   },
@@ -24,7 +21,7 @@
   "Codex": {
     "ApiKey": "",
     "AccountID": "",
-    "Model": "gpt-5.4"
+    "Model": ""
   },
   "Agents": {
     "news": {

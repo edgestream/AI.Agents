@@ -1,6 +1,5 @@
 using AI.Agents;
 using AI.Agents.AGUI;
-using AI.Agents.Configuration;
 using AI.Agents.Microsoft.Authentication;
 using AI.Agents.Server.Authorization;
 using AI.Agents.Server.Catalog;
@@ -44,7 +43,6 @@ builder.Services.AddAIAgent("default", (sp, key) =>
             Description = "Front agent",
             ChatOptions = new()
             {
-                ModelId = sp.GetRequiredService<IOptions<ClientSettings>>().Value.Model,
                 Instructions = """
                 Route messages to the appropriate agent.
                 If the message can't be handled by an agent,

@@ -10,9 +10,6 @@ Copy the application settings example into `appsettings.Development.json` in the
 
 ```appsettings.Development.json
 {
-  "Client": {
-    "Model": "gpt-5.4"
-  },
   "OpenAI": {
     "ApiKey": "<your-api-key>",
     "Model": "<provider-model>"

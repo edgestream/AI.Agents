@@ -7,6 +7,8 @@ using Microsoft.Agents.AI.Hosting;
 using Microsoft.Agents.AI.Hosting.AGUI.AspNetCore;
 using Microsoft.Agents.AI;
 
+#pragma warning disable OPENAI001
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddHttpClient();
@@ -15,8 +17,7 @@ builder.Services.AddAIProjectClient();
 builder.AddAIAgent("chef", (sp, name) =>
 {
     var projectClient = sp.GetRequiredService<AIProjectClient>();
-    return projectClient.AsAIAgent(
-        model: builder.Configuration["Client:Model"]!,
+    return projectClient.GetProjectOpenAIClient().GetResponsesClient().AsIChatClient().AsAIAgent(
         instructions: "You are an agent that helps users find recipes.",
         name: name,
         description: "An agent that helps users find recipes.",
