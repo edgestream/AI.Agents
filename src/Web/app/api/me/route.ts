@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { canSignIn, getAuthMode, type AuthMode } from "@/app/lib/auth/config";
+import { getOidcProxyIdentity } from "@/app/lib/auth/oidcProxy";
 import { resolveLocalSession } from "@/app/lib/auth/resolveLocalSession";
 
 /**
@@ -13,7 +14,7 @@ export interface UserInfo {
   picture?: string;
   tenantId?: string;
   domain?: string;
-  /** Indicates the active auth mode (`"local"` or `"aca"`). */
+  /** Indicates the active auth mode (`"local"`, `"aca"`, or `"oidc"`). */
   authMode?: AuthMode;
   /** Whether the current process is configured to offer an interactive sign-in flow. */
   canSignIn?: boolean;
@@ -51,26 +52,55 @@ function getTenantIdFromIdToken(idToken: string | null): string | undefined {
 }
 
 /**
- * GET /api/me - Proxies user info from backend or returns info from Easy Auth headers.
- * 
- * In local auth mode the Next.js middleware injects X-MS-* headers from the
- * encrypted session cookie, so this handler works identically for both modes.
+ * GET /api/me - Proxies user info from backend or returns info from auth headers.
+ *
+ * In local auth mode the route handler resolves the encrypted session cookie
+ * directly so the backend still sees the same `X-MS-*` contract as ACA.
  *
  * In development without auth: Returns anonymous user.
- * In production (ACA with Easy Auth): Extracts identity from X-MS-* headers
- * and forwards to backend for validation.
+ * In production:
+ * - ACA mode trusts the platform `X-MS-*` headers and forwards them to backend.
+ * - OIDC mode trusts ingress-proxy `X-Auth-Request-*` headers and returns a
+ *   frontend-authenticated user shape without Graph enrichment.
  */
 export async function GET(request: NextRequest) {
   const authMode = getAuthMode();
   const signInEnabled = canSignIn();
+
+  if (authMode === "oidc") {
+    const oidcIdentity = getOidcProxyIdentity(request);
+
+    if (
+      oidcIdentity.userId
+      || oidcIdentity.principalName
+      || oidcIdentity.accessToken
+      || oidcIdentity.authorization
+    ) {
+      return NextResponse.json({
+        authenticated: true,
+        userId: oidcIdentity.userId,
+        email: oidcIdentity.email,
+        domain: getDomainFromEmail(oidcIdentity.email),
+        authMode,
+        canSignIn: signInEnabled,
+      } satisfies UserInfo);
+    }
+
+    return NextResponse.json({
+      authenticated: false,
+      authMode,
+      canSignIn: signInEnabled,
+    } satisfies UserInfo);
+  }
+
   let principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
   let principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
   let accessToken = request.headers.get("X-MS-TOKEN-AAD-ACCESS-TOKEN");
   let idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
 
-  // In local auth mode, headers come from the route handler itself (not middleware)
-  // because middleware runs in a separate worker and cannot share in-memory state.
-  if (!principalId && !principalName) {
+  // In local auth mode, route handlers resolve the session directly because the
+  // Edge middleware worker cannot access the in-memory server-side session store.
+  if (authMode === "local" && !principalId && !principalName) {
     const localSession = await resolveLocalSession(request);
     if (localSession) {
       principalId = localSession.principalId;
@@ -81,7 +111,7 @@ export async function GET(request: NextRequest) {
   }
   const tenantId = getTenantIdFromIdToken(idToken);
 
-  // If we have Easy Auth headers (or local-auth injected headers), forward to backend
+  // If we have Easy Auth headers (or locally resolved session headers), forward to backend
   if (principalId || principalName || accessToken || idToken) {
     const backendUrl = (process.env.BACKEND_URL || "http://localhost:8000").replace(/\/+$/, "");
     try {

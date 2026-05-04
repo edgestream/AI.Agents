@@ -5,19 +5,22 @@ import type { NextRequest } from "next/server";
  *
  * - `"local"` – the Next.js app drives an MSAL authorization-code flow on
  *   localhost and stores the resulting Entra tokens in an encrypted cookie.
- *   A Next.js middleware then injects the standard `X-MS-*` headers so
- *   downstream route handlers and the backend see the same contract as ACA
- *   Easy Auth.
+ *   Route handlers resolve the local session directly so downstream handlers
+ *   and the backend see the same `X-MS-*` contract as ACA Easy Auth.
  *
  * - `"aca"` – Azure Container Apps Easy Auth is responsible for
  *   authentication; the Next.js app trusts the `X-MS-*` headers provided by
  *   the ingress.
  *
+ * - `"oidc"` – an external ingress auth proxy such as oauth2-proxy performs
+ *   OIDC sign-in; the Next.js app trusts the forwarded `X-Auth-Request-*`
+ *   headers provided by the proxy.
+ *
  * `local` is the safe default for developer workstations. Azure-hosted
- * deployments must set `AUTH_MODE=aca` explicitly.
+ * deployments must set `AUTH_MODE=aca` or `AUTH_MODE=oidc` explicitly.
  */
 
-export type AuthMode = "local" | "aca";
+export type AuthMode = "local" | "aca" | "oidc";
 
 type AuthRequest = Pick<NextRequest, "headers" | "nextUrl">;
 
@@ -82,7 +85,13 @@ function hasLocalAuthAppRegistration(): boolean {
  * Returns the current authentication mode.
  */
 export function getAuthMode(): AuthMode {
-  return process.env.AUTH_MODE === "aca" ? "aca" : "local";
+  const authMode = process.env.AUTH_MODE?.toLowerCase();
+
+  if (authMode === "aca" || authMode === "oidc") {
+    return authMode;
+  }
+
+  return "local";
 }
 
 /**
@@ -100,7 +109,7 @@ export function isLocalAuth(): boolean {
  * settings and the session secret are configured.
  */
 export function canSignIn(): boolean {
-  if (getAuthMode() === "aca") {
+  if (getAuthMode() !== "local") {
     return true;
   }
 

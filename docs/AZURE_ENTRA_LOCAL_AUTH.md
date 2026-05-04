@@ -2,7 +2,7 @@
 
 The web app supports an optional **local authentication mode** that lets developers sign in with Microsoft Entra ID on `localhost`, without deploying to Azure Container Apps (ACA).
 
-When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flow via MSAL, stores the resulting tokens in an encrypted session cookie, and injects the same `X-MS-*` Easy Auth headers that ACA would provide. The backend, Graph enrichment, and all auth-sensitive UI work identically in both modes.
+When enabled, the Next.js app drives a standard OAuth 2.0 authorization-code flow via MSAL and stores the resulting tokens in an encrypted session cookie. Route handlers then resolve that session and expose the same `X-MS-*` Easy Auth headers that ACA would provide. The backend, Graph enrichment, and all auth-sensitive UI work identically in both modes.
 
 When the local Entra variables are omitted, the app still starts in anonymous local mode. In that state the Sign in UI stays hidden, and backend Foundry calls can still authenticate through `DefaultAzureCredential` sources such as `az login`.
 
@@ -51,7 +51,8 @@ The root `.env` is the **single source of truth** for all local development cred
 Add the following to the root `.env` (alongside the existing credentials):
 
 ```env
-# Local Entra auth is the default. Set AUTH_MODE=aca only for hosted / Easy Auth behavior.
+# Local Entra auth is the default. Set AUTH_MODE=aca for hosted ACA Easy Auth
+# or AUTH_MODE=oidc for an external ingress OIDC proxy.
 # AUTH_MODE=local
 
 # Required only when you want interactive local sign-in.
@@ -85,43 +86,45 @@ After that, `docker compose up` and `npm run dev` both read the same file. Do **
 ## How It Works
 
 ```
-Browser                  Next.js Middleware           Route Handler / Backend
-  │                            │                            │
-  ├── GET /api/auth/login ────►│                            │
-  │   ◄── 302 → Entra ID ─────┤                            │
-  │                            │                            │
-  │── (user signs in at        │                            │
-  │    Entra ID)               │                            │
-  │                            │                            │
-  ├── GET /api/auth/callback?code=… ──────────────────────►│
-  │   ◄── Set-Cookie + 302 → / ────────────────────────────┤
-  │                            │                            │
-  ├── GET /api/me ────────────►│                            │
-  │                            ├── decrypt cookie           │
-  │                            ├── inject X-MS-* headers ──►│
-  │   ◄── user profile ────────┤◄──────────────────────────┤
+Browser                    Route Handler / Backend
+  │                                  │
+  ├── GET /api/auth/login ──────────►│
+  │   ◄── 302 → Entra ID ───────────┤
+  │                                  │
+  │── (user signs in at Entra ID)    │
+  │                                  │
+  ├── GET /api/auth/callback?code=… ►│
+  │   ◄── Set-Cookie + 302 → / ──────┤
+  │                                  │
+  ├── GET /api/me ──────────────────►│
+  │                                  ├── decrypt cookie
+  │                                  ├── resolve local session
+  │                                  ├── forward X-MS-* headers ───────────► backend
+  │   ◄── user profile ──────────────┤◄─────────────────────────────────────┤
 ```
 
 1. **`/api/auth/login`** — Redirects the browser to the Entra ID authorization endpoint.
 2. **Entra ID** — The user authenticates and consents.
 3. **`/api/auth/callback`** — Exchanges the authorization code for tokens via MSAL and stores them in an encrypted `httpOnly` cookie.
-4. **Next.js middleware** — On subsequent requests to `/api/me` and `/api/copilotkit`, the middleware decrypts the cookie and injects `X-MS-CLIENT-PRINCIPAL-ID`, `X-MS-CLIENT-PRINCIPAL-NAME`, `X-MS-TOKEN-AAD-ACCESS-TOKEN`, and `X-MS-TOKEN-AAD-ID-TOKEN` headers.
+4. **Route handlers** — On subsequent requests to `/api/me` and `/api/copilotkit`, the route handlers decrypt the cookie, resolve the local session, and forward `X-MS-CLIENT-PRINCIPAL-ID`, `X-MS-CLIENT-PRINCIPAL-NAME`, `X-MS-TOKEN-AAD-ACCESS-TOKEN`, and `X-MS-TOKEN-AAD-ID-TOKEN` headers.
 5. **Route handlers & backend** — See the exact same header contract as ACA Easy Auth. No backend changes are needed.
 
 ## Sign In / Sign Out
 
-| Action | Local mode | ACA mode |
-|---|---|---|
-| Sign in | `GET /api/auth/login` | `GET /.auth/login/aad` |
-| Sign out | `GET /api/auth/logout` | `GET /.auth/logout` |
+| Action | Local mode | ACA mode | OIDC proxy mode |
+|---|---|---|---|
+| Sign in | `GET /api/auth/login` | `GET /.auth/login/aad` | `GET /oauth2/start?rd=%2F` |
+| Sign out | `GET /api/auth/logout` | `GET /.auth/logout` | `GET /oauth2/sign_out` |
 
-The UI components (`UserMenu`, `UserAvatar`) automatically select the correct URL based on the `authMode` field returned by `/api/me`. Local processes default to `local`; hosted ACA deployments must set `AUTH_MODE=aca` explicitly. In local mode the Sign in action is only shown when either the `ENTRA_*` or `AZURE_*` app-registration variables and `AUTH_SESSION_SECRET` are present.
+The UI components (`UserMenu`, `UserAvatar`) automatically select the correct URL based on the `authMode` field returned by `/api/me`. Local processes default to `local`; hosted ACA deployments must set `AUTH_MODE=aca` explicitly; ingress-proxy deployments should set `AUTH_MODE=oidc`. In local mode the Sign in action is only shown when either the `ENTRA_*` or `AZURE_*` app-registration variables and `AUTH_SESSION_SECRET` are present.
+
+In `AUTH_MODE=oidc`, the frontend trusts ingress-forwarded `X-Auth-Request-*` headers for the browser session and leaves the local MSAL flow completely untouched. That mode is intended for hosted environments where an external auth wall such as `oauth2-proxy` already performs the OIDC redirect flow.
 
 ## Security Notes
 
 - The session cookie is encrypted with AES-256-GCM. The key is derived from `AUTH_SESSION_SECRET` via PBKDF2.
 - The cookie is `httpOnly`, `SameSite=Lax`, and `Secure` in production.
-- **This mode is intended for local development only.** In production, continue to use ACA Easy Auth.
+- **This local cookie-based mode is intended for local development only.** In hosted environments, continue to use ACA Easy Auth or an external OIDC proxy.
 - The cookie has an 8-hour lifetime. After that the user must sign in again.
 
 ## Troubleshooting
@@ -133,5 +136,5 @@ The UI components (`UserMenu`, `UserAvatar`) automatically select the correct UR
 | You want anonymous local usage only | No local sign-in configuration | Leave the Entra variables unset, sign in stays hidden, and use `az login` for backend `DefaultAzureCredential` access |
 | Sign in redirects but callback fails with "invalid_grant" | Authorization code reuse or clock skew | Clear cookies and try again |
 | Callback fails with "redirect_uri mismatch" | Redirect URI not registered | Add `http://localhost:3000/api/auth/callback` to the app registration |
-| Profile shows anonymous after sign-in | Middleware not matching the route | Ensure `AUTH_MODE` is unset or set to `local`, then restart the dev server |
+| Profile shows anonymous after sign-in | Local session route handling not active | Ensure `AUTH_MODE` is unset or set to `local`, then restart the dev server |
 | Graph enrichment returns no photo/display name | Access token lacks `User.Read` scope | Re-consent or update the app registration's API permissions |
