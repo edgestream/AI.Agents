@@ -14,7 +14,7 @@ import { storeNonce } from "@/app/lib/auth/nonceStore";
 export async function GET(request: NextRequest) {
   if (!isLocalAuth()) {
     return NextResponse.json(
-      { error: "Local auth is disabled because AUTH_MODE=aca." },
+      { error: "This route is only available when AUTH_MODE=local." },
       { status: 404 },
     );
   }

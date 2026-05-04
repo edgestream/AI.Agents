@@ -34,6 +34,8 @@ An example is provided in `frontend-auth-secret.example.yaml`.
 
 If you enable `agents-frontend-auth`, the frontend uses this repo's built-in Entra authorization-code flow behind your Kubernetes ingress. Ingress-hosted requests still use the deployed `AUTH_REDIRECT_URI`, but loopback requests such as `kubectl port-forward` now use the active localhost origin instead of bouncing through the ingress host. The shared Entra app registration must therefore contain a **Web** redirect URI for each hosted ingress host and for each localhost port you actually use.
 
+If you instead protect the ingress with an external OIDC proxy such as `oauth2-proxy`, keep `agents-frontend-auth` disabled and set `AUTH_MODE=oidc` in the frontend environment. In that mode the hosted frontend trusts the forwarded `X-Auth-Request-*` headers from the ingress proxy, while local development can keep using `AUTH_MODE=local` unchanged.
+
 Keep these redirect URI entries on the same app registration when you reuse it across environments:
 
 - `http://localhost:3000/api/auth/callback` for local development
@@ -91,6 +93,8 @@ kubectl create secret generic agents-backend-azure-identity \
 ```
 
 If you want frontend sign-in enabled, add the optional frontend auth secret too.
+
+If your ingress already enforces sign-in through an external OIDC proxy, skip the frontend auth secret and set `AUTH_MODE=oidc` on the frontend deployment instead.
 
 Before you apply `frontend-auth-secret.yaml`, add the matching Kubernetes callback URI to the shared app registration in **Authentication** -> **Web**. If you use Azure CLI, include every existing redirect URI in the update command because `az ad app update --web-redirect-uris` replaces the full list.
 

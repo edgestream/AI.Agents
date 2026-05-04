@@ -5,6 +5,8 @@ import {
 } from "@copilotkit/runtime";
 import { HttpAgent } from "@ag-ui/client";
 import { NextRequest } from "next/server";
+import { getAuthMode } from "@/app/lib/auth/config";
+import { getOidcProxyIdentity } from "@/app/lib/auth/oidcProxy";
 import { resolveLocalSession } from "@/app/lib/auth/resolveLocalSession";
 
 const serviceAdapter = new ExperimentalEmptyAdapter();
@@ -15,6 +17,22 @@ const serviceAdapter = new ExperimentalEmptyAdapter();
 async function createAuthenticatedAgent(request: NextRequest): Promise<HttpAgent> {
   const backendUrl = (process.env.BACKEND_URL || "http://localhost:8000").replace(/\/+$/, "");
   const authHeaders: Record<string, string> = {};
+  const authMode = getAuthMode();
+
+  if (authMode === "oidc") {
+    const oidcIdentity = getOidcProxyIdentity(request);
+
+    if (oidcIdentity.userId) authHeaders["X-Auth-Request-User"] = oidcIdentity.userId;
+    if (oidcIdentity.principalName) authHeaders["X-Auth-Request-Preferred-Username"] = oidcIdentity.principalName;
+    if (oidcIdentity.email) authHeaders["X-Auth-Request-Email"] = oidcIdentity.email;
+    if (oidcIdentity.accessToken) authHeaders["X-Auth-Request-Access-Token"] = oidcIdentity.accessToken;
+    if (oidcIdentity.authorization) authHeaders.Authorization = oidcIdentity.authorization;
+
+    return new HttpAgent({
+      url: backendUrl,
+      headers: authHeaders,
+    });
+  }
 
   let principalId = request.headers.get("X-MS-CLIENT-PRINCIPAL-ID");
   let principalName = request.headers.get("X-MS-CLIENT-PRINCIPAL-NAME");
@@ -22,7 +40,7 @@ async function createAuthenticatedAgent(request: NextRequest): Promise<HttpAgent
   let idToken = request.headers.get("X-MS-TOKEN-AAD-ID-TOKEN");
 
   // In local auth mode, resolve session directly (middleware can't share in-memory state)
-  if (!principalId && !principalName) {
+  if (authMode === "local" && !principalId && !principalName) {
     const localSession = await resolveLocalSession(request);
     if (localSession) {
       principalId = localSession.principalId;

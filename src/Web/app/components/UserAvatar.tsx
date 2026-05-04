@@ -86,18 +86,36 @@ function getProfileDetails(user: UserInfo): Array<{ label: string; value: string
  * Returns the sign-in URL based on the auth mode.
  * - Local mode: `/api/auth/login` (MSAL flow handled by our route handler)
  * - ACA mode: `/.auth/login/aad` (handled by Azure Container Apps Easy Auth)
+ * - OIDC mode: `/oauth2/start?rd=%2F` (handled by an external ingress auth proxy)
  */
-function getSignInUrl(authMode: string | undefined): string {
-  return authMode === "local" ? "/api/auth/login" : "/.auth/login/aad";
+function getSignInUrl(authMode: UserInfo["authMode"]): string {
+  if (authMode === "local") {
+    return "/api/auth/login";
+  }
+
+  if (authMode === "oidc") {
+    return "/oauth2/start?rd=%2F";
+  }
+
+  return "/.auth/login/aad";
 }
 
 /**
  * Returns the sign-out URL based on the auth mode.
  * - Local mode: `/api/auth/logout` (clears session cookie)
  * - ACA mode: `/.auth/logout` (handled by Azure Container Apps Easy Auth)
+ * - OIDC mode: `/oauth2/sign_out` (handled by an external ingress auth proxy)
  */
-function getSignOutUrl(authMode: string | undefined): string {
-  return authMode === "local" ? "/api/auth/logout" : "/.auth/logout";
+function getSignOutUrl(authMode: UserInfo["authMode"]): string {
+  if (authMode === "local") {
+    return "/api/auth/logout";
+  }
+
+  if (authMode === "oidc") {
+    return "/oauth2/sign_out";
+  }
+
+  return "/.auth/logout";
 }
 
 function showSignIn(user: UserInfo | null | undefined): boolean {

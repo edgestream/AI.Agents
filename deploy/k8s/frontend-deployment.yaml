@@ -27,6 +27,8 @@ spec:
           env:
             - name: NODE_ENV
               value: production
+            - name: AUTH_MODE
+              value: oidc
             - name: PORT
               value: "3000"
             - name: BACKEND_URL
